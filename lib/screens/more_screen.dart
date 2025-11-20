@@ -38,37 +38,31 @@ class _MoreScreenState extends State<MoreScreen>
 
   /// Build panel header (tabs only - drag handle is built-in)
   Widget _buildPanelHeader() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Tabs dengan pastel theme
-        Padding(
-          padding: const EdgeInsets.only(top: 4, bottom: 8),
-          child: TabBar(
-            controller: _tabController,
-            isScrollable: false,
-            labelColor: AppColors.primary,
-            unselectedLabelColor: AppColors.textSecondary,
-            indicatorColor: AppColors.primary,
-            indicatorSize: TabBarIndicatorSize.tab,
-            indicator: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12.0),
-            ),
-            labelStyle: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
-            unselectedLabelStyle: const TextStyle(
-              fontWeight: FontWeight.normal,
-              fontSize: 14,
-            ),
-            tabs: const [
-              Tab(text: 'Pengaturan'),
-            ],
-          ),
+    return Padding(
+      padding: const EdgeInsets.only(top: 4, bottom: 8),
+      child: TabBar(
+        controller: _tabController,
+        isScrollable: false,
+        labelColor: AppColors.primary,
+        unselectedLabelColor: AppColors.textSecondary,
+        indicatorColor: AppColors.primary,
+        indicatorSize: TabBarIndicatorSize.tab,
+        indicator: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(12.0),
         ),
-      ],
+        labelStyle: const TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.normal,
+          fontSize: 14,
+        ),
+        tabs: const [
+          Tab(text: 'Pengaturan'),
+        ],
+      ),
     );
   }
 
@@ -234,13 +228,25 @@ class _MoreScreenState extends State<MoreScreen>
           ),
         ),
       ),
-      // Header di sheet (tabs) - tetap di atas
-      sheetHeader: _buildPanelHeader(),
-      // Content dalam sheet (scrollable tab content)
-      sheetContent: _buildPanelContent(),
-      sheetColor: AppColors.tabBackground,
-      initialSize: 0.85,
-      minSize: 0.3,
+          // Content dalam sheet dengan tabs dan content
+          sheetContent: LayoutBuilder(
+            builder: (context, constraints) {
+              return Column(
+                children: [
+                  // Header di sheet (tabs)
+                  _buildPanelHeader(),
+                  // Content dalam sheet (scrollable tab content)
+                  SizedBox(
+                    height: constraints.maxHeight - 60, // Subtract tab bar height
+                    child: _buildPanelContent(),
+                  ),
+                ],
+              );
+            },
+          ),
+          sheetColor: AppColors.tabBackground,
+          initialSize: 0.85,
+          minSize: 0.7,
     );
   }
 
