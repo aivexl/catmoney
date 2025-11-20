@@ -1,0 +1,47 @@
+import 'package:intl/intl.dart';
+
+class Formatters {
+  static String _currencySymbol = 'Rp ';
+  static String _currencyName = 'Rupiah';
+  static String get currencySymbol => _currencySymbol;
+  static String get currencyName => _currencyName;
+
+  static void setCurrency({required String symbol, required String name}) {
+    _currencySymbol = symbol.endsWith(' ') ? symbol : '$symbol ';
+    _currencyName = name;
+  }
+
+  /// Format currency (Rupiah)
+  static String formatCurrency(double amount) {
+    final formatter = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: _currencySymbol,
+      decimalDigits: 0,
+    );
+    return formatter.format(amount);
+  }
+
+  /// Format date (long format)
+  static String formatDate(DateTime date) {
+    return DateFormat('d MMMM yyyy', 'id_ID').format(date);
+  }
+
+  /// Format date (short format)
+  static String formatDateShort(DateTime date) {
+    return DateFormat('d MMM', 'id_ID').format(date);
+  }
+
+  /// Format month and year
+  static String formatMonthYear(DateTime date) {
+    return DateFormat('MMMM yyyy', 'id_ID').format(date);
+  }
+
+  /// Format time
+  static String formatTime(DateTime date) {
+    return DateFormat('HH:mm', 'id_ID').format(date);
+  }
+}
+
+
+
+
