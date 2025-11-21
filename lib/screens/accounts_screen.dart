@@ -6,6 +6,8 @@ import '../providers/transaction_provider.dart';
 import '../models/transaction.dart';
 import '../utils/formatters.dart';
 import '../widgets/meow_draggable_sheet.dart';
+import '../utils/pastel_colors.dart';
+import '../models/account.dart';
 
 class AccountsScreen extends StatefulWidget {
   const AccountsScreen({super.key});
@@ -45,7 +47,6 @@ class _AccountsScreenState extends State<AccountsScreen>
     super.dispose();
   }
 
-
   /// Build panel header (tabs only - drag handle is built-in)
   Widget _buildPanelHeader() {
     return Padding(
@@ -70,34 +71,30 @@ class _AccountsScreenState extends State<AccountsScreen>
           fontSize: 14,
         ),
         tabs: const [
-          Tab(text: 'Akun'),
+          Tab(text: 'Wallets'),
         ],
       ),
     );
   }
 
   /// Build panel content (tab views)
-  Widget _buildPanelContent(AccountProvider accountProvider, TransactionProvider transactionProvider) {
+  Widget _buildPanelContent(
+      AccountProvider accountProvider,
+      TransactionProvider transactionProvider,
+      ScrollController scrollController) {
     final accounts = accountProvider.accounts;
     final transactions = transactionProvider.transactions
         .where((t) => _isSameMonth(t.date))
         .toList();
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SizedBox(
-          height: constraints.maxHeight,
-          child: TabBarView(
-            controller: _tabController,
-            physics: const NeverScrollableScrollPhysics(),
-            children: [
-              SingleChildScrollView(
-                child: _buildAccountsView(accounts, transactions),
-              ),
-            ],
-          ),
-        );
-      },
+    return TabBarView(
+      controller: _tabController,
+      children: [
+        SingleChildScrollView(
+          controller: scrollController,
+          child: _buildAccountsView(accounts, transactions),
+        ),
+      ],
     );
   }
 
@@ -106,6 +103,26 @@ class _AccountsScreenState extends State<AccountsScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Add Wallet Button
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.md),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _showAddWalletDialog(context),
+              icon: const Icon(Icons.add),
+              label: const Text('Tambah Wallet'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ),
         // Accounts list
         if (accounts.isEmpty)
           _buildEmptyState()
@@ -134,8 +151,12 @@ class _AccountsScreenState extends State<AccountsScreen>
               margin: const EdgeInsets.only(bottom: AppSpacing.md),
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: Color(account.color).withOpacity(0.15),
                 borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+                border: Border.all(
+                  color: Color(account.color).withOpacity(0.5),
+                  width: 2,
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,8 +167,9 @@ class _AccountsScreenState extends State<AccountsScreen>
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                          color: Color(account.color).withOpacity(0.3),
+                          borderRadius:
+                              BorderRadius.circular(AppBorderRadius.md),
                         ),
                         child: Center(
                           child: Text(
@@ -240,64 +262,29 @@ class _AccountsScreenState extends State<AccountsScreen>
 
   /// Build empty state
   Widget _buildEmptyState() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Calculate available height
-        final screenHeight = MediaQuery.of(context).size.height;
-        final availableHeight = constraints.maxHeight;
-
-        // Use SingleChildScrollView to prevent overflow
-        return SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: availableHeight > 0 ? availableHeight : screenHeight * 0.6,
-            ),
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: AppSpacing.md,
-                right: AppSpacing.md,
-                top: 0,
-                bottom: AppSpacing.sm,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Copywriting di atas gambar, sangat dekat dengan tabs
-                  const SizedBox(height: AppSpacing.sm),
-                  Center(
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: const Text(
-                        'Welcome',
-                        style: AppTextStyle.h2,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Center(
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: Text(
-                        'Start managing your finances by adding your first account',
-                        style: AppTextStyle.caption.copyWith(
-                          fontSize: 14,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: AppSpacing.xl),
+          const Text(
+            'Welcome',
+            style: AppTextStyle.h2,
+            textAlign: TextAlign.center,
           ),
-        );
-      },
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Start managing your finances by adding your first account',
+            style: AppTextStyle.caption.copyWith(
+              fontSize: 14,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.xl),
+        ],
+      ),
     );
   }
 
@@ -372,21 +359,19 @@ class _AccountsScreenState extends State<AccountsScreen>
             ),
           ),
           // Content dalam sheet dengan tabs dan content
-          sheetContent: LayoutBuilder(
-            builder: (context, constraints) {
-              return Column(
-                children: [
-                  // Header di sheet (tabs)
-                  _buildPanelHeader(),
-                  // Content dalam sheet (scrollable tab content)
-                  SizedBox(
-                    height: constraints.maxHeight - 60, // Subtract tab bar height
-                    child: _buildPanelContent(accountProvider, transactionProvider),
-                  ),
-                ],
-              );
-            },
-          ),
+          sheetBuilder: (context, scrollController) {
+            return Column(
+              children: [
+                // Header di sheet (tabs)
+                _buildPanelHeader(),
+                // Content dalam sheet (scrollable tab content)
+                Expanded(
+                  child: _buildPanelContent(
+                      accountProvider, transactionProvider, scrollController),
+                ),
+              ],
+            );
+          },
           sheetColor: AppColors.tabBackground,
           initialSize: 0.85,
           minSize: 0.7,
@@ -394,5 +379,164 @@ class _AccountsScreenState extends State<AccountsScreen>
       },
     );
   }
-}
 
+  void _showAddWalletDialog(BuildContext context) {
+    final nameController = TextEditingController();
+    int selectedColorIndex = 0;
+    String selectedIcon = '💰';
+    final icons = ['💰', '💳', '🏦', '💵', '🐖', '💎', '🏠', '🚗'];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                left: 24,
+                right: 24,
+                top: 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Tambah Wallet Baru',
+                    style: AppTextStyle.h2,
+                  ),
+                  const SizedBox(height: 24),
+                  TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: 'Nama Wallet',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      prefixIcon: const Icon(Icons.account_balance_wallet),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text('Pilih Icon', style: AppTextStyle.h3),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 60,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: icons.length,
+                      itemBuilder: (context, index) {
+                        final icon = icons[index];
+                        final isSelected = icon == selectedIcon;
+                        return GestureDetector(
+                          onTap: () => setState(() => selectedIcon = icon),
+                          child: Container(
+                            width: 50,
+                            height: 50,
+                            margin: const EdgeInsets.only(right: 12),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.primary.withOpacity(0.2)
+                                  : Colors.grey.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                              border: isSelected
+                                  ? Border.all(
+                                      color: AppColors.primary, width: 2)
+                                  : null,
+                            ),
+                            child: Center(
+                              child: Text(
+                                icon,
+                                style: const TextStyle(fontSize: 24),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  const Text('Pilih Warna', style: AppTextStyle.h3),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 50,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: PastelColors.palette.length,
+                      itemBuilder: (context, index) {
+                        final color = PastelColors.palette[index];
+                        final isSelected = index == selectedColorIndex;
+                        return GestureDetector(
+                          onTap: () =>
+                              setState(() => selectedColorIndex = index),
+                          child: Container(
+                            width: 40,
+                            height: 40,
+                            margin: const EdgeInsets.only(right: 12),
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                              border: isSelected
+                                  ? Border.all(
+                                      color: AppColors.primary, width: 2)
+                                  : null,
+                              boxShadow: [
+                                if (isSelected)
+                                  BoxShadow(
+                                    color: color.withOpacity(0.5),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                              ],
+                            ),
+                            child: isSelected
+                                ? const Icon(Icons.check,
+                                    color: Colors.black54, size: 20)
+                                : null,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (nameController.text.isEmpty) return;
+
+                        final newAccount = Account(
+                          id: DateTime.now().millisecondsSinceEpoch.toString(),
+                          name: nameController.text,
+                          icon: selectedIcon,
+                          color: PastelColors.palette[selectedColorIndex].value,
+                        );
+
+                        context.read<AccountProvider>().addAccount(newAccount);
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text('Simpan Wallet'),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}

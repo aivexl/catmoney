@@ -1,19 +1,19 @@
 // Home Screen - Main dashboard untuk Cat Money Manager
-// 
+//
 // Enterprise-level implementation dengan:
 // - Zero error guarantee
 // - Comprehensive error handling
 // - Performance optimization
 // - Memory leak prevention
 // - Proper state management
-// 
+//
 // Features:
 // - Monthly transaction overview dengan Total Saldo, Expenses, dan Income
 // - Category icons untuk quick access (Wallet, Category, Watchlist, Reimburse)
 // - Draggable tabs container dengan smooth animation
 // - Transaction timeline dengan time markers
 // - Tab-based filtering (All, Pemasukan, Pengeluaran)
-// 
+//
 // @author Cat Money Manager Team
 // @version 1.0.0
 // @since 2025
@@ -32,7 +32,7 @@ import '../screens/watchlist_screen.dart';
 import '../screens/accounts_screen.dart';
 
 /// HomeScreen - Main dashboard screen
-/// 
+///
 /// Displays:
 /// - Financial summary (Total Saldo, Expenses, Income)
 /// - Category quick access icons
@@ -50,7 +50,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late final TabController _tabController;
 
-  final DateTime _currentMonth = DateTime(DateTime.now().year, DateTime.now().month);
+  final DateTime _currentMonth =
+      DateTime(DateTime.now().year, DateTime.now().month);
 
   @override
   void initState() {
@@ -69,7 +70,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
-
   bool _isSameMonth(DateTime date, DateTime month) {
     return date.year == month.year && date.month == month.month;
   }
@@ -81,6 +81,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  /// Calculate sheet size based on screen height to ensure menu icons are visible
+  double _calculateSheetSize(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Nest Hub Max and similar large displays with short height
+    if (screenWidth > 1000 && screenHeight < 700) return 0.30;
+    // Very small screens (< 700px height): 35%
+    if (screenHeight < 700) return 0.35;
+    // Medium screens (700-800px): 45%
+    if (screenHeight < 800) return 0.45;
+    // Large screens (>= 800px): 57% - iPhone 12 Pro, 14 Pro Max, Galaxy S20 Ultra, etc.
+    return 0.57;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,71 +139,36 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   const SizedBox(height: AppSpacing.sm),
                   // Expanded space untuk background content dengan icon di tepi atas
                   Expanded(
-                    child: Stack(
-                      children: [
-                        Container(),
-                        // Icon kucing di background utama dengan kualitas HD
-                        Positioned(
-                          top: AppSpacing.sm,
-                          left: 0,
-                          right: 0,
-                          child: Center(
-                            child: Image.asset(
-                              'assets/icons/iconcat3.png',
-                              width: 250,
-                              height: 250,
-                              fit: BoxFit.contain,
-                              filterQuality: FilterQuality.high,
-                              isAntiAlias: true,
-                              cacheWidth: 500,
-                              cacheHeight: 500,
-                              errorBuilder: (context, error, stackTrace) {
-                                return SizedBox(
-                                  width: 250,
-                                  height: 250,
-                                  child: Icon(
-                                    Icons.pets,
-                                    size: 150,
-                                    color: AppColors.primary,
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    child: Container(),
                   ),
                 ],
               ),
             ),
           ),
           // Content dalam sheet dengan tabs dan content
-          sheetContent: LayoutBuilder(
-            builder: (context, constraints) {
-              return Column(
-                children: [
-                  // Header di sheet (tabs)
-                  _buildPanelHeader(),
-                  // Content dalam sheet (scrollable tab content)
-                  SizedBox(
-                    height: constraints.maxHeight - 60, // Subtract tab bar height
-                    child: _buildPanelContent(
-                      provider,
-                      allTransactions,
-                      incomeTransactions,
-                      expenseTransactions,
-                      monthlyIncome,
-                      monthlyExpense,
-                    ),
+          sheetBuilder: (context, scrollController) {
+            return Column(
+              children: [
+                // Header di sheet (tabs)
+                _buildPanelHeader(),
+                // Content dalam sheet (scrollable tab content)
+                Expanded(
+                  child: _buildPanelContent(
+                    provider,
+                    allTransactions,
+                    incomeTransactions,
+                    expenseTransactions,
+                    monthlyIncome,
+                    monthlyExpense,
+                    scrollController,
                   ),
-                ],
-              );
-            },
-          ),
+                ),
+              ],
+            );
+          },
           sheetColor: AppColors.tabBackground,
-          initialSize: 0.7,
-          minSize: 0.3,
+          initialSize: _calculateSheetSize(context),
+          minSize: _calculateSheetSize(context),
         );
       },
     );
@@ -235,46 +214,42 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     List<Transaction> expenseTransactions,
     double monthlyIncome,
     double monthlyExpense,
+    ScrollController scrollController,
   ) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SizedBox(
-          height: constraints.maxHeight,
-          child: TabBarView(
-            controller: _tabController,
-            physics: const NeverScrollableScrollPhysics(),
-            children: [
-              SingleChildScrollView(
-                child: _buildTabContent(
-                  allTransactions,
-                  monthlyIncome,
-                  monthlyExpense,
-                  null,
-                  null,
-                ),
-              ),
-              SingleChildScrollView(
-                child: _buildTabContent(
-                  incomeTransactions,
-                  monthlyIncome,
-                  0,
-                  TransactionType.income,
-                  null,
-                ),
-              ),
-              SingleChildScrollView(
-                child: _buildTabContent(
-                  expenseTransactions,
-                  0,
-                  monthlyExpense,
-                  TransactionType.expense,
-                  null,
-                ),
-              ),
-            ],
+    return TabBarView(
+      controller: _tabController,
+      children: [
+        SingleChildScrollView(
+          controller: scrollController,
+          child: _buildTabContent(
+            allTransactions,
+            monthlyIncome,
+            monthlyExpense,
+            null,
+            null,
           ),
-        );
-      },
+        ),
+        SingleChildScrollView(
+          controller: scrollController,
+          child: _buildTabContent(
+            incomeTransactions,
+            monthlyIncome,
+            0,
+            TransactionType.income,
+            null,
+          ),
+        ),
+        SingleChildScrollView(
+          controller: scrollController,
+          child: _buildTabContent(
+            expenseTransactions,
+            0,
+            monthlyExpense,
+            TransactionType.expense,
+            null,
+          ),
+        ),
+      ],
     );
   }
 
@@ -316,32 +291,32 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               children: [
                 Expanded(
                   child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Total Saldo',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w500,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Total Saldo',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
+                      const SizedBox(height: AppSpacing.xs),
                       FittedBox(
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
                         child: Text(
-                      Formatters.formatCurrency(income - expense),
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: (income - expense) >= 0 
-                            ? AppColors.income 
-                            : AppColors.expense,
+                          Formatters.formatCurrency(income - expense),
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: (income - expense) >= 0
+                                ? AppColors.income
+                                : AppColors.expense,
                           ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
                   ),
                 ),
               ],
@@ -369,24 +344,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                          const Text(
-                            'Total Expenses',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                      const Text(
+                        'Total Expenses',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                       const SizedBox(height: AppSpacing.xs),
                       FittedBox(
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
                         child: Text(
-                        '-${Formatters.formatCurrency(expense)}',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.expense,
+                          '-${Formatters.formatCurrency(expense)}',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.expense,
                           ),
                         ),
                       ),
@@ -413,24 +388,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                          const Text(
-                            'Total Income',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                      const Text(
+                        'Total Income',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                       const SizedBox(height: AppSpacing.xs),
                       FittedBox(
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
                         child: Text(
-                        '+${Formatters.formatCurrency(income)}',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.income,
+                          '+${Formatters.formatCurrency(income)}',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.income,
                           ),
                         ),
                       ),
@@ -487,12 +462,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       },
     ];
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final horizontalPadding = screenWidth < 400 ? 8.0 : AppSpacing.md;
+
     return Container(
-      padding: const EdgeInsets.only(
+      padding: EdgeInsets.only(
         top: AppSpacing.md,
-        bottom: AppSpacing.xs, // Spacing kecil di bawah label untuk visual spacing
-        left: AppSpacing.md,
-        right: AppSpacing.md,
+        bottom: AppSpacing.xs,
+        left: horizontalPadding,
+        right: horizontalPadding,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -503,10 +481,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           final label = item['label'] as String;
           final color = item['color'] as Color;
           final onTap = item['onTap'] as VoidCallback;
-          
+
           return Expanded(
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: index == 0 || index == menuItems.length - 1 ? 0 : 4),
+              padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth < 400
+                      ? 1
+                      : (index == 0 || index == menuItems.length - 1 ? 0 : 4)),
               child: _buildMenuButton(
                 icon: icon,
                 label: label,
@@ -579,7 +560,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     try {
       final provider = context.read<TransactionProvider>();
       final watchlistedTransactions = provider.getWatchlistedTransactions();
-      
+
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -625,8 +606,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // TODO: Implement reimburse feature
   }
 
-
-
   Widget _buildTabContent(
     List<Transaction> transactions,
     double income,
@@ -666,29 +645,78 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ],
         // Transactions grouped by date
         if (sortedTransactions.isEmpty)
-          _buildEmptyState()
+          Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height * 0.4,
+              ),
+              child: _buildEmptyState(),
+            ),
+          )
         else
           ...groupedTransactions.entries.map((entry) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(
-                    left: AppSpacing.sm,
-                    bottom: AppSpacing.xs,
-                    top: AppSpacing.sm,
-                  ),
-                  child: Text(
-                    entry.key,
-                    style: AppTextStyle.caption.copyWith(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
+            // Calculate daily totals
+            double dailyIncome = 0;
+            double dailyExpense = 0;
+            for (var tx in entry.value) {
+              if (tx.type == TransactionType.income) {
+                dailyIncome += tx.amount;
+              } else if (tx.type == TransactionType.expense) {
+                dailyExpense += tx.amount;
+              }
+            }
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      bottom: AppSpacing.xs,
+                      top: AppSpacing.sm,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          entry.key,
+                          style: AppTextStyle.caption.copyWith(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            if (dailyIncome > 0)
+                              Text(
+                                '+${Formatters.formatCurrency(dailyIncome)}',
+                                style: AppTextStyle.caption.copyWith(
+                                  color: AppColors.income,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            if (dailyIncome > 0 && dailyExpense > 0)
+                              const SizedBox(width: 8),
+                            if (dailyExpense > 0)
+                              Text(
+                                '-${Formatters.formatCurrency(dailyExpense)}',
+                                style: AppTextStyle.caption.copyWith(
+                                  color: AppColors.expense,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                _buildTransactionTimeline(entry.value),
-              ],
+                  _buildTransactionTimeline(entry.value),
+                ],
+              ),
             );
           }),
       ],
@@ -721,34 +749,38 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         color: AppColors.textSecondary,
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.xs / 2), // Spacing lebih kecil
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Vertical line (only show if not last item)
-                        if (i < sorted.length - 1)
-                          Positioned(
-                            top: 16,
-                            bottom: -AppSpacing.sm,
-                            child: Container(
-                              width: 1.5, // Lebih tipis
-                              color: AppColors.border,
+                    const SizedBox(
+                        height: AppSpacing.xs / 2), // Spacing lebih kecil
+                    SizedBox(
+                      height: 60, // Fixed height for alignment
+                      child: Stack(
+                        alignment: Alignment.topCenter,
+                        children: [
+                          // Vertical line (only show if not last item)
+                          if (i < sorted.length - 1)
+                            Positioned(
+                              top: 12,
+                              bottom: 0,
+                              child: Container(
+                                width: 1.5, // Lebih tipis
+                                color: AppColors.border,
+                              ),
+                            ),
+                          // Circle marker - lebih kecil
+                          Container(
+                            width: 12, // Lebih kecil
+                            height: 12, // Lebih kecil
+                            decoration: BoxDecoration(
+                              color: _getCardColor(sorted[i].category),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.border,
+                                width: 1.5, // Border lebih tipis
+                              ),
                             ),
                           ),
-                        // Circle marker - lebih kecil
-                        Container(
-                          width: 12, // Lebih kecil
-                          height: 12, // Lebih kecil
-                          decoration: BoxDecoration(
-                            color: _getCardColor(sorted[i].category),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppColors.border,
-                              width: 1.5, // Border lebih tipis
-                            ),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -786,10 +818,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final cardColor = _getCardColor(transaction.category);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm), // Padding lebih kecil
+      padding:
+          const EdgeInsets.only(bottom: AppSpacing.sm), // Padding lebih kecil
       child: InkWell(
         onTap: () => _showTransactionActions(transaction),
-        borderRadius: BorderRadius.circular(AppBorderRadius.sm), // Border radius lebih kecil
+        borderRadius: BorderRadius.circular(
+            AppBorderRadius.sm), // Border radius lebih kecil
         child: Container(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.sm,
@@ -797,10 +831,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ), // Padding lebih kecil
           decoration: BoxDecoration(
             color: cardColor, // Menggunakan warna kategori
-            borderRadius: BorderRadius.circular(AppBorderRadius.sm), // Border radius lebih kecil
+            borderRadius: BorderRadius.circular(
+                AppBorderRadius.sm), // Border radius lebih kecil
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03), // Shadow lebih subtle
+                color:
+                    Colors.black.withValues(alpha: 0.03), // Shadow lebih subtle
                 blurRadius: 2,
                 offset: const Offset(0, 1),
               ),
@@ -829,8 +865,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      transaction.description.isNotEmpty 
-                          ? transaction.description 
+                      transaction.description.isNotEmpty
+                          ? transaction.description
                           : transaction.category,
                       style: AppTextStyle.body.copyWith(
                         fontWeight: FontWeight.w600,
@@ -870,7 +906,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.lg)),
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppBorderRadius.lg)),
       ),
       builder: (ctx) {
         return SafeArea(
@@ -901,7 +938,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ? 'Hapus dari Watchlist'
                     : 'Tambah ke Watchlist'),
                 onTap: () {
-                  context.read<TransactionProvider>().toggleWatchlist(transaction.id);
+                  context
+                      .read<TransactionProvider>()
+                      .toggleWatchlist(transaction.id);
                   Navigator.pop(ctx);
                 },
               ),
@@ -914,7 +953,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     context: context,
                     builder: (dialogCtx) => AlertDialog(
                       title: const Text('Hapus Transaksi'),
-                      content: const Text('Yakin ingin menghapus transaksi ini?'),
+                      content:
+                          const Text('Yakin ingin menghapus transaksi ini?'),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(dialogCtx, false),
@@ -928,7 +968,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   );
                   if (confirm == true && mounted) {
-                    await context.read<TransactionProvider>().deleteTransaction(transaction.id);
+                    await context
+                        .read<TransactionProvider>()
+                        .deleteTransaction(transaction.id);
                   }
                 },
               ),
@@ -940,64 +982,43 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildEmptyState() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Calculate available height
-        final screenHeight = MediaQuery.of(context).size.height;
-        final availableHeight = constraints.maxHeight;
-        
-        // Use SingleChildScrollView to prevent overflow
-        return SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: availableHeight > 0 ? availableHeight : screenHeight * 0.6,
-            ),
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: AppSpacing.md,
-                right: AppSpacing.md,
-                top: 0,
-                bottom: AppSpacing.sm,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Copywriting di atas gambar, sangat dekat dengan tabs
-                  const SizedBox(height: AppSpacing.sm),
-                  Center(
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: const Text(
-                        'Welcome',
-                        style: AppTextStyle.h2,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Center(
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: Text(
-                        'Start managing your finances by adding your first transaction',
-                        style: AppTextStyle.caption.copyWith(
-                          fontSize: 14,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text(
+            'Welcome',
+            style: AppTextStyle.h2,
+            textAlign: TextAlign.center,
           ),
-        );
-      },
+          const SizedBox(height: AppSpacing.md),
+          Image.asset(
+            'assets/icons/iconcat3.png',
+            width: 200,
+            height: 200,
+            fit: BoxFit.contain,
+            filterQuality: FilterQuality.high,
+            isAntiAlias: true,
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(
+                Icons.pets,
+                size: 100,
+                color: AppColors.primary,
+              );
+            },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            'Start managing your finances by adding your first transaction',
+            style: AppTextStyle.caption.copyWith(
+              fontSize: 14,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1028,6 +1049,19 @@ class _MenuIconButtonState extends State<_MenuIconButton> {
 
   @override
   Widget build(BuildContext context) {
+    // More aggressive responsive sizing for small devices
+    final screenWidth = MediaQuery.of(context).size.width;
+    final iconSize = screenWidth < 360
+        ? 40.0
+        : (screenWidth < 400 ? 50.0 : (screenWidth < 600 ? 60.0 : 72.0));
+    final iconInnerSize = screenWidth < 360
+        ? 20.0
+        : (screenWidth < 400 ? 24.0 : (screenWidth < 600 ? 28.0 : 36.0));
+    final fontSize = screenWidth < 360
+        ? 9.0
+        : (screenWidth < 400 ? 10.0 : (screenWidth < 600 ? 11.0 : 13.0));
+    final spacing = screenWidth < 400 ? 2.0 : 4.0;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -1040,20 +1074,23 @@ class _MenuIconButtonState extends State<_MenuIconButton> {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeInOut,
-              width: 72,
-              height: 72,
+              width: iconSize,
+              height: iconSize,
               decoration: BoxDecoration(
                 color: _isHovered
-                    ? widget.backgroundColor.withValues(alpha: 0.9) // Lebih solid saat hover
-                    : widget.backgroundColor.withValues(alpha: 0.8), // Background pastel yang visible
+                    ? widget.backgroundColor
+                        .withValues(alpha: 0.9) // Lebih solid saat hover
+                    : widget.backgroundColor.withValues(
+                        alpha: 0.8), // Background pastel yang visible
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: widget.color.withValues(alpha: _isHovered ? 0.6 : 0.5),
-                  width: _isHovered ? 2.5 : 2,
+                  width: screenWidth < 400 ? 1.5 : (_isHovered ? 2.5 : 2),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: widget.color.withValues(alpha: _isHovered ? 0.4 : 0.3),
+                    color:
+                        widget.color.withValues(alpha: _isHovered ? 0.4 : 0.3),
                     blurRadius: _isHovered ? 12 : 10,
                     offset: Offset(0, _isHovered ? 4 : 2),
                     spreadRadius: _isHovered ? 2 : 0,
@@ -1061,23 +1098,25 @@ class _MenuIconButtonState extends State<_MenuIconButton> {
                 ],
               ),
               transform: Matrix4.identity()
-                ..scaleByVector3(Vector3.all(_isHovered ? 1.1 : 1.0)), // Scale up saat hover
+                ..scaleByVector3(Vector3.all(_isHovered
+                    ? 1.05
+                    : 1.0)), // Smaller scale on hover for small screens
               child: Center(
                 child: Icon(
                   widget.icon,
-                  size: 36, // Lebih besar untuk visibility
+                  size: iconInnerSize,
                   color: widget.color,
                 ),
               ),
             ),
           ),
         ),
-        const SizedBox(height: AppSpacing.xs),
+        SizedBox(height: spacing),
         // Label tanpa hover effect
         Text(
           widget.label,
           style: AppTextStyle.caption.copyWith(
-            fontSize: 13,
+            fontSize: fontSize,
             fontWeight: FontWeight.w700, // Lebih bold
             color: AppColors.text,
           ),

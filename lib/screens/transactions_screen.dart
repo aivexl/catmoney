@@ -47,14 +47,12 @@ class _TransactionsScreenState extends State<TransactionsScreen>
     });
   }
 
-
   @override
   void dispose() {
     // Properly dispose semua controllers untuk mencegah memory leaks
     _tabController.dispose();
     super.dispose();
   }
-
 
   /// Build panel header (tabs only - drag handle is built-in)
   Widget _buildPanelHeader() {
@@ -90,35 +88,31 @@ class _TransactionsScreenState extends State<TransactionsScreen>
   }
 
   /// Build panel content (tab views)
-  Widget _buildPanelContent(TransactionProvider provider) {
-    final allTransactions = provider.transactions
-        .where((t) => _isSameMonth(t.date))
-        .toList();
+  Widget _buildPanelContent(
+      TransactionProvider provider, ScrollController scrollController) {
+    final allTransactions =
+        provider.transactions.where((t) => _isSameMonth(t.date)).toList();
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SizedBox(
-          height: constraints.maxHeight,
-          child: TabBarView(
-            controller: _tabController,
-            physics: const NeverScrollableScrollPhysics(),
-            children: [
-              SingleChildScrollView(
-                child: _buildDailyView(allTransactions),
-              ),
-              SingleChildScrollView(
-                child: _buildCalendarView(allTransactions),
-              ),
-              SingleChildScrollView(
-                child: _buildMonthlyView(allTransactions),
-              ),
-              SingleChildScrollView(
-                child: _buildTotalView(allTransactions),
-              ),
-            ],
-          ),
-        );
-      },
+    return TabBarView(
+      controller: _tabController,
+      children: [
+        SingleChildScrollView(
+          controller: scrollController,
+          child: _buildDailyView(allTransactions),
+        ),
+        SingleChildScrollView(
+          controller: scrollController,
+          child: _buildCalendarView(allTransactions),
+        ),
+        SingleChildScrollView(
+          controller: scrollController,
+          child: _buildMonthlyView(allTransactions),
+        ),
+        SingleChildScrollView(
+          controller: scrollController,
+          child: _buildTotalView(allTransactions),
+        ),
+      ],
     );
   }
 
@@ -146,10 +140,12 @@ class _TransactionsScreenState extends State<TransactionsScreen>
     final cardColor = _getCardColor(transaction.category);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm), // Padding lebih kecil
+      padding:
+          const EdgeInsets.only(bottom: AppSpacing.sm), // Padding lebih kecil
       child: InkWell(
         onTap: () => _showTransactionActions(transaction),
-        borderRadius: BorderRadius.circular(AppBorderRadius.sm), // Border radius lebih kecil
+        borderRadius: BorderRadius.circular(
+            AppBorderRadius.sm), // Border radius lebih kecil
         child: Container(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.sm,
@@ -157,10 +153,12 @@ class _TransactionsScreenState extends State<TransactionsScreen>
           ), // Padding lebih kecil
           decoration: BoxDecoration(
             color: cardColor, // Menggunakan warna kategori
-            borderRadius: BorderRadius.circular(AppBorderRadius.sm), // Border radius lebih kecil
+            borderRadius: BorderRadius.circular(
+                AppBorderRadius.sm), // Border radius lebih kecil
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03), // Shadow lebih subtle
+                color:
+                    Colors.black.withValues(alpha: 0.03), // Shadow lebih subtle
                 blurRadius: 2,
                 offset: const Offset(0, 1),
               ),
@@ -231,7 +229,8 @@ class _TransactionsScreenState extends State<TransactionsScreen>
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.lg)),
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppBorderRadius.lg)),
       ),
       builder: (ctx) {
         return SafeArea(
@@ -262,7 +261,9 @@ class _TransactionsScreenState extends State<TransactionsScreen>
                     ? 'Hapus dari Watchlist'
                     : 'Tambah ke Watchlist'),
                 onTap: () {
-                  context.read<TransactionProvider>().toggleWatchlist(transaction.id);
+                  context
+                      .read<TransactionProvider>()
+                      .toggleWatchlist(transaction.id);
                   Navigator.pop(ctx);
                 },
               ),
@@ -275,7 +276,8 @@ class _TransactionsScreenState extends State<TransactionsScreen>
                     context: context,
                     builder: (dialogCtx) => AlertDialog(
                       title: const Text('Hapus Transaksi'),
-                      content: const Text('Yakin ingin menghapus transaksi ini?'),
+                      content:
+                          const Text('Yakin ingin menghapus transaksi ini?'),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(dialogCtx, false),
@@ -289,7 +291,9 @@ class _TransactionsScreenState extends State<TransactionsScreen>
                     ),
                   );
                   if (confirm == true && mounted) {
-                    await context.read<TransactionProvider>().deleteTransaction(transaction.id);
+                    await context
+                        .read<TransactionProvider>()
+                        .deleteTransaction(transaction.id);
                   }
                 },
               ),
@@ -327,7 +331,8 @@ class _TransactionsScreenState extends State<TransactionsScreen>
                         color: AppColors.textSecondary,
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.xs / 2), // Spacing lebih kecil
+                    const SizedBox(
+                        height: AppSpacing.xs / 2), // Spacing lebih kecil
                     Stack(
                       alignment: Alignment.center,
                       children: [
@@ -389,6 +394,7 @@ class _TransactionsScreenState extends State<TransactionsScreen>
       return true;
     }).toList();
   }
+
   void _openSearch() {
     final provider = context.read<TransactionProvider>();
     final transactions = _filteredTransactions(provider.transactions);
@@ -466,7 +472,6 @@ class _TransactionsScreenState extends State<TransactionsScreen>
       },
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -548,21 +553,18 @@ class _TransactionsScreenState extends State<TransactionsScreen>
             ),
           ),
           // Content dalam sheet dengan tabs dan content
-          sheetContent: LayoutBuilder(
-            builder: (context, constraints) {
-              return Column(
-                children: [
-                  // Header di sheet (tabs)
-                  _buildPanelHeader(),
-                  // Content dalam sheet (scrollable tab content)
-                  SizedBox(
-                    height: constraints.maxHeight - 60, // Subtract tab bar height
-                    child: _buildPanelContent(provider),
-                  ),
-                ],
-              );
-            },
-          ),
+          sheetBuilder: (context, scrollController) {
+            return Column(
+              children: [
+                // Header di sheet (tabs)
+                _buildPanelHeader(),
+                // Content dalam sheet (scrollable tab content)
+                Expanded(
+                  child: _buildPanelContent(provider, scrollController),
+                ),
+              ],
+            );
+          },
           sheetColor: AppColors.tabBackground,
           initialSize: 0.85,
           minSize: 0.7,
@@ -571,66 +573,30 @@ class _TransactionsScreenState extends State<TransactionsScreen>
     );
   }
 
-
   Widget _buildEmptyState() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Calculate available height
-        final screenHeight = MediaQuery.of(context).size.height;
-        final availableHeight = constraints.maxHeight;
-
-        // Use SingleChildScrollView to prevent overflow
-        return SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: availableHeight > 0 ? availableHeight : screenHeight * 0.6,
-            ),
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: AppSpacing.md,
-                right: AppSpacing.md,
-                top: 0,
-                bottom: AppSpacing.sm,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Copywriting di atas gambar, sangat dekat dengan tabs
-                  const SizedBox(height: AppSpacing.sm),
-                  Center(
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: const Text(
-                        'Welcome',
-                        style: AppTextStyle.h2,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Center(
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: Text(
-                        'Start managing your finances by adding your first transaction',
-                        style: AppTextStyle.caption.copyWith(
-                          fontSize: 14,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: AppSpacing.xl),
+          const Text(
+            'Welcome',
+            style: AppTextStyle.h2,
+            textAlign: TextAlign.center,
           ),
-        );
-      },
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Start managing your finances by adding your first transaction',
+            style: AppTextStyle.caption.copyWith(
+              fontSize: 14,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.xl),
+        ],
+      ),
     );
   }
 
@@ -666,13 +632,16 @@ class _TransactionsScreenState extends State<TransactionsScreen>
           },
           onDaySelected: (selectedDay, focusedDay) {
             setState(() {
-              _selectedDay = DateTime(selectedDay.year, selectedDay.month, selectedDay.day);
-              _focusedDay = DateTime(focusedDay.year, focusedDay.month, focusedDay.day);
+              _selectedDay = DateTime(
+                  selectedDay.year, selectedDay.month, selectedDay.day);
+              _focusedDay =
+                  DateTime(focusedDay.year, focusedDay.month, focusedDay.day);
             });
           },
           onPageChanged: (focusedDay) {
             setState(() {
-              _focusedDay = DateTime(focusedDay.year, focusedDay.month, focusedDay.day);
+              _focusedDay =
+                  DateTime(focusedDay.year, focusedDay.month, focusedDay.day);
             });
           },
           calendarFormat: CalendarFormat.month,
@@ -716,8 +685,7 @@ class _TransactionsScreenState extends State<TransactionsScreen>
       grouped[dateKey]!.add(transaction);
     }
 
-    final sortedDates = grouped.keys.toList()
-      ..sort((a, b) => b.compareTo(a));
+    final sortedDates = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -765,8 +733,7 @@ class _TransactionsScreenState extends State<TransactionsScreen>
       grouped[monthKey]!.add(transaction);
     }
 
-    final sortedMonths = grouped.keys.toList()
-      ..sort((a, b) => b.compareTo(a));
+    final sortedMonths = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -853,99 +820,98 @@ class _TransactionsScreenState extends State<TransactionsScreen>
         // Total summary
         if (transactions.isEmpty)
           _buildEmptyState()
-        else
-          ...[
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-              ),
-              child: Column(
-                children: [
-                  const Text(
-                    'Ringkasan Total',
-                    style: AppTextStyle.h2,
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Column(
-                        children: [
-                          const Text(
-                            'Total Transaksi',
-                            style: AppTextStyle.caption,
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            transactionCount.toString(),
-                            style: AppTextStyle.h2,
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          const Text(
-                            'Total Pemasukan',
-                            style: AppTextStyle.caption,
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            Formatters.formatCurrency(totalIncome),
-                            style: AppTextStyle.h2.copyWith(
-                              color: AppColors.income,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          const Text(
-                            'Total Pengeluaran',
-                            style: AppTextStyle.caption,
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            Formatters.formatCurrency(totalExpense),
-                            style: AppTextStyle.h2.copyWith(
-                              color: AppColors.expense,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                  Container(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    decoration: BoxDecoration(
-                      color: AppColors.mint.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        else ...[
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  'Ringkasan Total',
+                  style: AppTextStyle.h2,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Column(
                       children: [
                         const Text(
-                          'Saldo',
-                          style: AppTextStyle.h3,
+                          'Total Transaksi',
+                          style: AppTextStyle.caption,
                         ),
+                        const SizedBox(height: AppSpacing.xs),
                         Text(
-                          Formatters.formatCurrency(totalIncome - totalExpense),
+                          transactionCount.toString(),
+                          style: AppTextStyle.h2,
+                        ),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        const Text(
+                          'Total Pemasukan',
+                          style: AppTextStyle.caption,
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          Formatters.formatCurrency(totalIncome),
                           style: AppTextStyle.h2.copyWith(
-                            color: AppColors.primary,
+                            color: AppColors.income,
                           ),
                         ),
                       ],
                     ),
+                    Column(
+                      children: [
+                        const Text(
+                          'Total Pengeluaran',
+                          style: AppTextStyle.caption,
+                        ),
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          Formatters.formatCurrency(totalExpense),
+                          style: AppTextStyle.h2.copyWith(
+                            color: AppColors.expense,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: AppColors.mint.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   ),
-                ],
-              ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Saldo',
+                        style: AppTextStyle.h3,
+                      ),
+                      Text(
+                        Formatters.formatCurrency(totalIncome - totalExpense),
+                        style: AppTextStyle.h2.copyWith(
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: AppSpacing.lg),
-            ...transactions.map((transaction) =>
-                TransactionItem(transaction: transaction, showDate: true)),
-          ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          ...transactions.map((transaction) =>
+              TransactionItem(transaction: transaction, showDate: true)),
+        ],
       ],
     );
   }
@@ -961,12 +927,12 @@ class _TransactionsScreenState extends State<TransactionsScreen>
     }
 
     return Column(
-      children: transactions.map((transaction) =>
-        TransactionItem(
-          transaction: transaction,
-          showDate: true,
-        )
-      ).toList(),
+      children: transactions
+          .map((transaction) => TransactionItem(
+                transaction: transaction,
+                showDate: true,
+              ))
+          .toList(),
     );
   }
 }

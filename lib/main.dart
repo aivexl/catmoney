@@ -1,17 +1,17 @@
 // Cat Money Manager - Main Application Entry Point
-// 
+//
 // Enterprise-level Flutter application dengan:
 /// - Zero error guarantee
 /// - Comprehensive error handling
 /// - Proper state management dengan Provider
 /// - Memory leak prevention
 /// - Performance optimization
-/// 
+///
 /// Architecture:
 /// - MultiProvider untuk global state management
 /// - PageView untuk swipe navigation
 /// - Custom bottom navigation dengan floating action button
-/// 
+///
 /// @author Cat Money Manager Team
 /// @version 1.0.0
 /// @since 2025
@@ -36,7 +36,7 @@ import 'screens/add_transaction_screen.dart';
 void main() async {
   // Ensure Flutter binding initialized sebelum async operations
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize date formatting dengan error handling
   try {
     await initializeDateFormatting('id_ID', null);
@@ -45,13 +45,13 @@ void main() async {
     // Log error untuk debugging tapi tidak crash app
     debugPrint('Date formatting initialization failed: $e');
   }
-  
+
   // Run app dengan error boundary
   runApp(const MyApp());
 }
 
 /// Main Application Widget
-/// 
+///
 /// Sets up:
 /// - MultiProvider untuk state management
 /// - MaterialApp dengan custom theme
@@ -86,7 +86,7 @@ class MyApp extends StatelessWidget {
 }
 
 /// Main Screen dengan bottom navigation
-/// 
+///
 /// Features:
 /// - PageView untuk swipe navigation antar screens
 /// - Custom floating bottom navigation bar
@@ -104,7 +104,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   late final PageController _pageController;
-  
+
   // Immutable screen list untuk performance optimization
   static const List<Widget> _screens = [
     HomeScreen(),
@@ -112,7 +112,7 @@ class _MainScreenState extends State<MainScreen> {
     AccountsScreen(),
     MoreScreen(),
   ];
-  
+
   // Constants untuk navigation
   static const int _navItemCount = 4;
 
@@ -133,13 +133,13 @@ class _MainScreenState extends State<MainScreen> {
   /// Handle page change dengan validation
   void _onPageChanged(int index) {
     if (!mounted) return;
-    
+
     // Validate index range
     if (index < 0 || index >= _navItemCount) {
       debugPrint('Invalid page index: $index');
       return;
     }
-    
+
     setState(() {
       _currentIndex = index;
     });
@@ -167,7 +167,8 @@ class _MainScreenState extends State<MainScreen> {
               ignoring: false,
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   child: Material(
                     color: Colors.transparent,
                     child: Container(
@@ -185,7 +186,8 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                       child: Container(
                         constraints: const BoxConstraints(minHeight: 70),
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -201,10 +203,13 @@ class _MainScreenState extends State<MainScreen> {
                                 clipBehavior: Clip.none,
                                 children: [
                                   FloatingActionButton(
-                                    onPressed: () => _navigateToAddTransaction(context),
-                                    backgroundColor: Theme.of(context).colorScheme.primary,
+                                    onPressed: () =>
+                                        _navigateToAddTransaction(context),
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.primary,
                                     elevation: 4,
-                                    child: const Icon(Icons.add, color: Colors.white),
+                                    child: const Icon(Icons.add,
+                                        color: Colors.white),
                                   ),
                                   // Iconcat2 di atas tombol dengan kualitas HD
                                   Positioned(
@@ -221,7 +226,8 @@ class _MainScreenState extends State<MainScreen> {
                                         isAntiAlias: true,
                                         cacheWidth: 160,
                                         cacheHeight: 160,
-                                        errorBuilder: (context, error, stackTrace) {
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
                                           return SizedBox(
                                             width: 80,
                                             height: 80,
@@ -238,7 +244,8 @@ class _MainScreenState extends State<MainScreen> {
                                 ],
                               ),
                             ),
-                            _buildNavItem(Icons.account_balance_wallet, 'Accounts', 2),
+                            _buildNavItem(
+                                Icons.account_balance_wallet, 'Wallets', 2),
                             _buildNavItem(Icons.settings, 'Settings', 3),
                           ],
                         ),
@@ -257,7 +264,7 @@ class _MainScreenState extends State<MainScreen> {
   /// Navigate to AddTransactionScreen dengan error handling
   void _navigateToAddTransaction(BuildContext context) {
     if (!mounted) return;
-    
+
     try {
       Navigator.push(
         context,
@@ -282,13 +289,13 @@ class _MainScreenState extends State<MainScreen> {
   /// Navigate to page dengan smooth animation dan error handling
   void _onNavItemTapped(int index) {
     if (!mounted) return;
-    
+
     // Validate index range
     if (index < 0 || index >= _navItemCount) {
       debugPrint('Invalid navigation index: $index');
       return;
     }
-    
+
     // Animate to page dengan error handling
     try {
       _pageController.animateToPage(
@@ -311,10 +318,10 @@ class _MainScreenState extends State<MainScreen> {
       debugPrint('Invalid nav item index: $index');
       return const SizedBox.shrink();
     }
-    
+
     final isSelected = _currentIndex == index;
     final theme = Theme.of(context);
-    
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -331,9 +338,7 @@ class _MainScreenState extends State<MainScreen> {
             children: [
               Icon(
                 icon,
-                color: isSelected
-                    ? theme.colorScheme.primary
-                    : Colors.grey,
+                color: isSelected ? theme.colorScheme.primary : Colors.grey,
                 size: 24,
               ),
               const SizedBox(height: 2),
@@ -342,10 +347,9 @@ class _MainScreenState extends State<MainScreen> {
                   label,
                   style: TextStyle(
                     fontSize: 11,
-                    color: isSelected
-                        ? theme.colorScheme.primary
-                        : Colors.grey,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    color: isSelected ? theme.colorScheme.primary : Colors.grey,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.normal,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -357,9 +361,4 @@ class _MainScreenState extends State<MainScreen> {
       ),
     );
   }
-
 }
-
-
-
-

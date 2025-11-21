@@ -1,6 +1,5 @@
-# Script to run Flutter in Chrome
-# Usage: .\run_flutter_chrome.ps1 [flutter_path]
-# Example: .\run_flutter_chrome.ps1 "C:\flutter"
+# Script to build Flutter APK for Android
+# Usage: .\build_apk.ps1 [flutter_path]
 
 param(
     [string]$FlutterPath = ""
@@ -14,7 +13,8 @@ if($FlutterPath -eq "") {
         "C:\src\flutter",
         "$env:USERPROFILE\flutter",
         "$env:USERPROFILE\development\flutter",
-        "$env:USERPROFILE\dev\flutter"
+        "$env:USERPROFILE\dev\flutter",
+        "E:\flutter"
     )
     
     foreach($path in $searchPaths) {
@@ -29,7 +29,7 @@ if($FlutterPath -eq "" -or -not (Test-Path "$FlutterPath\bin\flutter.bat")) {
     Write-Host "Flutter SDK not found!" -ForegroundColor Red
     Write-Host ""
     Write-Host "Please provide Flutter path:" -ForegroundColor Yellow
-    Write-Host "  .\run_flutter_chrome.ps1 -FlutterPath 'C:\flutter'" -ForegroundColor Cyan
+    Write-Host "  .\build_apk.ps1 -FlutterPath 'E:\flutter'" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "Or install Flutter from:" -ForegroundColor Yellow
     Write-Host "  https://docs.flutter.dev/get-started/install/windows" -ForegroundColor Cyan
@@ -38,12 +38,20 @@ if($FlutterPath -eq "" -or -not (Test-Path "$FlutterPath\bin\flutter.bat")) {
 
 $flutterBat = "$FlutterPath\bin\flutter.bat"
 Write-Host "Using Flutter at: $FlutterPath" -ForegroundColor Green
-Write-Host "Launching in Chrome..." -ForegroundColor Yellow
+Write-Host "Building APK for Android..." -ForegroundColor Yellow
 Write-Host ""
 
-& $flutterBat run -d chrome
+& $flutterBat build apk --release
 
-
-
-
-
+if($LASTEXITCODE -eq 0) {
+    Write-Host ""
+    Write-Host "✅ APK built successfully!" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "APK location:" -ForegroundColor Yellow
+    Write-Host "  build\app\outputs\flutter-apk\app-release.apk" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "You can install this APK on your Android device!" -ForegroundColor Green
+} else {
+    Write-Host ""
+    Write-Host "❌ Build failed!" -ForegroundColor Red
+}

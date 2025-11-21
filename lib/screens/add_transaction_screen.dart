@@ -10,16 +10,16 @@ import '../providers/transaction_provider.dart';
 import '../providers/account_provider.dart';
 import '../providers/category_provider.dart';
 import '../theme/app_colors.dart';
-import '../widgets/cat_button.dart';
 import '../models/transaction.dart';
 import '../models/category.dart';
 import '../models/account.dart';
 import '../utils/formatters.dart';
+import '../utils/pastel_colors.dart';
 
 class AddTransactionScreen extends StatefulWidget {
   final TransactionType? initialType;
   final Transaction? transaction;
-  
+
   const AddTransactionScreen({
     super.key,
     this.initialType,
@@ -37,7 +37,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   final _notesController = TextEditingController();
   final _accountNameController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
-  
+
   late TransactionType _selectedType;
   String? _selectedCategoryId;
   DateTime _selectedDate = DateTime.now();
@@ -51,7 +51,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedType = widget.transaction?.type ?? widget.initialType ?? TransactionType.expense;
+    _selectedType = widget.transaction?.type ??
+        widget.initialType ??
+        TransactionType.expense;
     if (_editingTransaction != null) {
       final tx = _editingTransaction!;
       _amountController.text = tx.amount.toString();
@@ -90,122 +92,228 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Future<void> _showAddCategoryDialog() async {
-    final nameController = TextEditingController();
-    final emojiController = TextEditingController(text: '🐱');
-    final colors = [
-      AppColors.primary,
-      AppColors.pink,
-      AppColors.primaryBlue,
-      AppColors.mint,
-      AppColors.peach,
-      AppColors.lavender,
-      AppColors.yellow,
-      AppColors.cardPink,
-      AppColors.lightBlue,
-    ];
-    Color selectedColor = colors.first;
-    final customColorController = TextEditingController();
-    // Store the widget context to access providers
-    final widgetContext = context;
-    await showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (builderContext, setStateDialog) {
-            return AlertDialog(
-              title: const Text('Tambah Kategori'),
-              content: SingleChildScrollView(
+    debugPrint('🐱 _showAddCategoryDialog called');
+
+    try {
+      final nameController = TextEditingController();
+      int selectedColorIndex = 0;
+      String selectedIcon = '🏷️'; // Default icon
+      // List of icons instead of emojis
+      final icons = [
+        '🏷️',
+        '🍔',
+        '🛒',
+        '🚗',
+        '🏠',
+        '💊',
+        '🎓',
+        '✈️',
+        '🎮',
+        '🎁',
+        '💡',
+        '🔧'
+      ];
+
+      final widgetContext = context;
+
+      await showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (ctx) {
+          return StatefulBuilder(
+            builder: (context, setStateDialog) {
+              return Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                  left: 24,
+                  right: 24,
+                  top: 24,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const Text(
+                      'Tambah Kategori',
+                      style: AppTextStyle.h2,
+                    ),
+                    const SizedBox(height: 24),
                     TextField(
                       controller: nameController,
-                      decoration: const InputDecoration(labelText: 'Nama Kategori'),
+                      decoration: InputDecoration(
+                        labelText: 'Nama Kategori',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        prefixIcon: const Icon(Icons.category),
+                      ),
                     ),
-                    TextField(
-                      controller: emojiController,
-                      decoration: const InputDecoration(labelText: 'Emoji (opsional)'),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Wrap(
-                      spacing: AppSpacing.sm,
-                      runSpacing: AppSpacing.sm,
-                      children: colors.map((color) {
-                        final isSelected = selectedColor == color;
-                        return GestureDetector(
-                          onTap: () {
-                            setStateDialog(() {
-                              selectedColor = color;
-                            });
-                          },
-                          child: Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: color,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isSelected ? Colors.black : Colors.transparent,
-                                width: 2,
+                    const SizedBox(height: 24),
+                    const Text('Pilih Icon', style: AppTextStyle.h3),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 60,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: icons.length,
+                        itemBuilder: (context, index) {
+                          final icon = icons[index];
+                          final isSelected = icon == selectedIcon;
+                          return GestureDetector(
+                            onTap: () =>
+                                setStateDialog(() => selectedIcon = icon),
+                            child: Container(
+                              width: 50,
+                              height: 50,
+                              margin: const EdgeInsets.only(right: 12),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppColors.primary.withOpacity(0.2)
+                                    : Colors.grey.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: isSelected
+                                    ? Border.all(
+                                        color: AppColors.primary, width: 2)
+                                    : null,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  icon,
+                                  style: const TextStyle(fontSize: 24),
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    TextField(
-                      controller: customColorController,
-                      decoration: const InputDecoration(
-                        labelText: 'Kode Warna (#RRGGBB)',
-                        hintText: '#FFAA00',
+                          );
+                        },
                       ),
-                      onChanged: (value) {
-                        final hex = value.replaceAll('#', '');
-                        if (hex.length == 6) {
-                          final parsed = int.tryParse(hex, radix: 16);
-                          if (parsed != null) {
-                            setStateDialog(() {
-                              selectedColor = Color(0xFF000000 | parsed);
-                            });
-                          }
-                        }
-                      },
                     ),
+                    const SizedBox(height: 24),
+                    const Text('Pilih Warna', style: AppTextStyle.h3),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 50,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: PastelColors.palette.length,
+                        itemBuilder: (context, index) {
+                          final color = PastelColors.palette[index];
+                          final isSelected = index == selectedColorIndex;
+                          return GestureDetector(
+                            onTap: () => setStateDialog(
+                                () => selectedColorIndex = index),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              margin: const EdgeInsets.only(right: 12),
+                              decoration: BoxDecoration(
+                                color: color,
+                                shape: BoxShape.circle,
+                                border: isSelected
+                                    ? Border.all(
+                                        color: AppColors.primary, width: 2)
+                                    : null,
+                                boxShadow: [
+                                  if (isSelected)
+                                    BoxShadow(
+                                      color: color.withOpacity(0.5),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                ],
+                              ),
+                              child: isSelected
+                                  ? const Icon(Icons.check,
+                                      color: Colors.black54, size: 20)
+                                  : null,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          if (nameController.text.isEmpty) {
+                            ScaffoldMessenger.of(widgetContext).showSnackBar(
+                              const SnackBar(
+                                content: Text('Mohon masukkan nama kategori'),
+                                backgroundColor: AppColors.expense,
+                              ),
+                            );
+                            return;
+                          }
+
+                          try {
+                            final categoryProvider =
+                                widgetContext.read<CategoryProvider>();
+                            await categoryProvider.addCategory(
+                              name: nameController.text,
+                              emoji: selectedIcon,
+                              color: PastelColors.palette[selectedColorIndex],
+                              type: _selectedType,
+                            );
+
+                            debugPrint('🐱 Category added successfully');
+
+                            if (widgetContext.mounted) {
+                              ScaffoldMessenger.of(widgetContext).showSnackBar(
+                                const SnackBar(
+                                  content:
+                                      Text('Kategori berhasil ditambahkan! 🎉'),
+                                  backgroundColor: AppColors.income,
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            }
+
+                            Navigator.pop(context);
+                          } catch (e) {
+                            debugPrint('🐱 Error adding category: $e');
+                            if (widgetContext.mounted) {
+                              ScaffoldMessenger.of(widgetContext).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error: $e'),
+                                  backgroundColor: AppColors.expense,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text('Simpan Kategori'),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
                   ],
                 ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text('Batal'),
-                ),
-                TextButton(
-                  onPressed: () async {
-                    if (nameController.text.isEmpty) return;
-                    if (!mounted) return;
-                    // Use the stored widget context to access provider
-                    final categoryProvider = widgetContext.read<CategoryProvider>();
-                    await categoryProvider.addCategory(
-                          name: nameController.text,
-                          emoji: emojiController.text.isEmpty
-                              ? '🐱'
-                              : emojiController.text,
-                          color: selectedColor,
-                          type: _selectedType,
-                        );
-                    if (mounted && dialogContext.mounted) {
-                      Navigator.pop(dialogContext);
-                    }
-                  },
-                  child: const Text('Simpan'),
-                ),
-              ],
-            );
-          },
+              );
+            },
+          );
+        },
+      );
+    } catch (e) {
+      debugPrint('🐱 Error showing category dialog: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error membuka dialog: $e'),
+            backgroundColor: AppColors.expense,
+          ),
         );
-      },
-    );
+      }
+    }
   }
 
   @override
@@ -223,19 +331,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         source: ImageSource.gallery,
         imageQuality: 80,
       );
-      
+
       if (image != null) {
-        // For web, use base64 or direct path
-        // For mobile, save to app directory
         if (kIsWeb) {
-          // Web: store as base64 or use the path directly
           final bytes = await image.readAsBytes();
           final base64String = base64Encode(bytes);
           setState(() {
             _photoPath = 'data:image/jpeg;base64,$base64String';
           });
         } else {
-          // Mobile: save to app directory
           final appDir = await getApplicationDocumentsDirectory();
           final fileName = path.basename(image.path);
           final savedImage = await File(image.path).copy(
@@ -259,6 +363,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Future<void> _addNewAccount() async {
+    // Reuse existing logic but maybe update UI later if needed
+    // For now keeping it simple as user focused on transaction page redesign
     if (_accountNameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -273,6 +379,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: _accountNameController.text,
       icon: '💼',
+      color: 0xFFFFB3BA, // Pastel Pink
     );
 
     await context.read<AccountProvider>().addAccount(newAccount);
@@ -288,7 +395,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       return;
     }
 
-    if (_selectedType != TransactionType.transfer && _selectedCategoryId == null) {
+    if (_selectedType != TransactionType.transfer &&
+        _selectedCategoryId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Mohon pilih kategori'),
@@ -332,7 +440,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     );
 
     final transaction = Transaction(
-      id: _editingTransaction?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      id: _editingTransaction?.id ??
+          DateTime.now().millisecondsSinceEpoch.toString(),
       type: _selectedType,
       amount: double.parse(_amountController.text),
       category: _selectedType == TransactionType.transfer
@@ -340,9 +449,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           : category?.name ?? 'Kategori',
       description: _descriptionController.text,
       date: combinedDate,
-      catEmoji: _selectedType == TransactionType.transfer
-          ? '🔁'
-          : category?.emoji,
+      catEmoji:
+          _selectedType == TransactionType.transfer ? '🔁' : category?.emoji,
       accountId: _selectedAccountId!,
       notes: _notesController.text.isEmpty ? null : _notesController.text,
       photoPath: _photoPath,
@@ -351,11 +459,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
     try {
       if (_isEditing) {
-        await context.read<TransactionProvider>().updateTransaction(transaction);
+        await context
+            .read<TransactionProvider>()
+            .updateTransaction(transaction);
       } else {
         await context.read<TransactionProvider>().addTransaction(transaction);
       }
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -365,8 +475,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             backgroundColor: AppColors.income,
           ),
         );
-        
-        // Reset form
+
         _amountController.clear();
         _descriptionController.clear();
         _notesController.clear();
@@ -375,8 +484,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           _selectedDate = DateTime.now();
           _photoPath = null;
         });
-        
-        // Navigate back
+
         Navigator.of(context).pop();
       }
     } catch (e) {
@@ -391,17 +499,69 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     }
   }
 
+  Widget _buildTypeButton(String label, TransactionType type) {
+    final isSelected = _selectedType == type;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedType = type;
+          _selectedCategoryId = null; // Reset category when type changes
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.border,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  )
+                ]
+              : null,
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.white : AppColors.text,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final categoryProvider = context.watch<CategoryProvider>();
     final categories = categoryProvider.getCategoriesByType(_selectedType);
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(_isEditing ? 'Edit Transaksi 🐱' : 'Tambah Transaksi 🐱'),
+        title: Text(
+          _isEditing ? 'Edit Transaksi' : 'Tambah Transaksi',
+          style: AppTextStyle.h2.copyWith(fontSize: 20),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: AppColors.text),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: const EdgeInsets.all(24),
         child: Form(
           key: _formKey,
           child: Column(
@@ -411,327 +571,323 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: _buildTypeButton(
-                      '📉 Pengeluaran',
-                      TransactionType.expense,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
+                      child: _buildTypeButton(
+                          'Pengeluaran', TransactionType.expense)),
+                  const SizedBox(width: 12),
                   Expanded(
-                    child: _buildTypeButton(
-                      '📈 Pemasukan',
-                      TransactionType.income,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: _buildTypeButton(
-                      '🔁 Transfer',
-                      TransactionType.transfer,
-                    ),
-                  ),
+                      child: _buildTypeButton(
+                          'Pemasukan', TransactionType.income)),
                 ],
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: 12),
+              _buildTypeButton('Transfer', TransactionType.transfer),
 
-              // Date Picker
-              InkWell(
-                onTap: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate: _selectedDate,
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime(2030),
-                  );
-                  if (picked != null) {
-                    setState(() {
-                      _selectedDate = picked;
-                    });
-                  }
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.calendar_today),
-                      const SizedBox(width: AppSpacing.md),
-                      Text(
-                        Formatters.formatDate(_selectedDate),
-                        style: AppTextStyle.body,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-
-              // Time Picker
-              InkWell(
-                onTap: () async {
-                  final picked = await showTimePicker(
-                    context: context,
-                    initialTime: _selectedTime,
-                  );
-                  if (picked != null) {
-                    setState(() {
-                      _selectedTime = picked;
-                    });
-                  }
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                    border: Border.all(color: AppColors.border),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.schedule),
-                      const SizedBox(width: AppSpacing.md),
-                      Text(
-                        _selectedTime.format(context),
-                        style: AppTextStyle.body,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-
-              // Account Selection
-              const Text(
-                'Akun',
-                style: AppTextStyle.body,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Consumer<AccountProvider>(
-                builder: (context, accountProvider, child) {
-                  final accounts = accountProvider.accounts;
-                  
-                  return Column(
-                    children: [
-                      Wrap(
-                        spacing: AppSpacing.sm,
-                        runSpacing: AppSpacing.sm,
-                        children: [
-                          ...accounts.map((account) {
-                            final isSelected = _selectedAccountId == account.id;
-                            return InkWell(
-                              onTap: () {
-                                setState(() {
-                                  _selectedAccountId = account.id;
-                                });
-                              },
-                              borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.md,
-                                  vertical: AppSpacing.sm,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? AppColors.primary
-                                      : AppColors.surface,
-                                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? AppColors.primary
-                                        : AppColors.border,
-                                    width: 2,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      account.icon,
-                                      style: const TextStyle(fontSize: 20),
-                                    ),
-                                    const SizedBox(width: AppSpacing.xs),
-                                    Text(
-                                      account.name,
-                                      style: AppTextStyle.body.copyWith(
-                                        color: isSelected
-                                            ? Colors.white
-                                            : AppColors.text,
-                                        fontWeight: isSelected
-                                            ? FontWeight.w600
-                                            : FontWeight.normal,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }),
-                          if (!_showAddAccount)
-                            InkWell(
-                              onTap: () {
-                                setState(() {
-                                  _showAddAccount = true;
-                                });
-                              },
-                              borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.md,
-                                  vertical: AppSpacing.sm,
-                                ),
-                                decoration: const BoxDecoration(
-                                  color: AppColors.surface,
-                                  borderRadius: BorderRadius.all(Radius.circular(AppBorderRadius.md)),
-                                  border: Border.fromBorderSide(BorderSide(
-                                    color: AppColors.border,
-                                    width: 2,
-                                  )),
-                                  ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.add, size: 20),
-                                    SizedBox(width: AppSpacing.xs),
-                                    Text(
-                                      'Tambah',
-                                      style: AppTextStyle.body,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                      if (_showAddAccount) ...[
-                        const SizedBox(height: AppSpacing.sm),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                controller: _accountNameController,
-                                decoration: const InputDecoration(
-                                  labelText: 'Nama Akun',
-                                  hintText: 'Contoh: E-Wallet',
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                            IconButton(
-                              onPressed: _addNewAccount,
-                              icon: const Icon(Icons.check),
-                              color: AppColors.income,
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  _showAddAccount = false;
-                                  _accountNameController.clear();
-                                });
-                              },
-                              icon: const Icon(Icons.close),
-                              color: AppColors.expense,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ],
-                  );
-                },
-              ),
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: 32),
 
               // Amount Input
               TextFormField(
                 controller: _amountController,
-                decoration: const InputDecoration(
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                decoration: InputDecoration(
                   labelText: 'Jumlah (Rp)',
                   hintText: '0',
-                  prefixIcon: Icon(Icons.attach_money),
+                  prefixIcon: const Icon(Icons.attach_money),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  filled: true,
+                  fillColor: AppColors.surface,
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
-                  if (value == null || value.isEmpty) {
+                  if (value == null || value.isEmpty)
                     return 'Mohon masukkan jumlah';
-                  }
-                  if (double.tryParse(value) == null) {
+                  if (double.tryParse(value) == null)
                     return 'Jumlah harus berupa angka';
-                  }
-                  if (double.parse(value) <= 0) {
+                  if (double.parse(value) <= 0)
                     return 'Jumlah harus lebih dari 0';
-                  }
                   return null;
                 },
               ),
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: 24),
 
-              // Description Input
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Deskripsi',
-                  hintText: 'Contoh: Beli makanan kucing',
-                  prefixIcon: Icon(Icons.description),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Mohon masukkan deskripsi';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: AppSpacing.md),
-
-              if (_selectedType != TransactionType.transfer) ...[
-                const Text(
-                  'Kategori',
-                  style: AppTextStyle.body,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
-                  children: categories.map((category) {
-                    final isSelected = _selectedCategoryId == category.id;
-                    return InkWell(
-                      onTap: () {
-                        setState(() {
-                          _selectedCategoryId = category.id;
-                        });
+              // Date & Time
+              Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: _selectedDate,
+                          firstDate: DateTime(2020),
+                          lastDate: DateTime(2030),
+                        );
+                        if (picked != null)
+                          setState(() => _selectedDate = picked);
                       },
-                      borderRadius: BorderRadius.circular(AppBorderRadius.md),
                       child: Container(
-                        width: (MediaQuery.of(context).size.width - 
-                                AppSpacing.md * 2 - AppSpacing.sm * 2) / 3,
-                        padding: const EdgeInsets.all(AppSpacing.md),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 16),
                         decoration: BoxDecoration(
-                          color: isSelected ? category.color : AppColors.surface,
-                          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                          border: Border.all(
-                            color: isSelected 
-                                ? category.color 
-                                : AppColors.border,
-                            width: 2,
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.calendar_today, size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  Formatters.formatDate(_selectedDate),
+                                  style: const TextStyle(fontSize: 13),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () async {
+                        final picked = await showTimePicker(
+                          context: context,
+                          initialTime: _selectedTime,
+                        );
+                        if (picked != null)
+                          setState(() => _selectedTime = picked);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 16),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.schedule, size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  _selectedTime.format(context),
+                                  style: const TextStyle(fontSize: 13),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Account Selection
+              const Text('Akun', style: AppTextStyle.h3),
+              const SizedBox(height: 12),
+              Consumer<AccountProvider>(
+                builder: (context, accountProvider, child) {
+                  final accounts = accountProvider.accounts;
+                  return SizedBox(
+                    height: 80,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: accounts.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index == accounts.length) {
+                          // Add Account Button
+                          return GestureDetector(
+                            onTap: () => setState(() => _showAddAccount = true),
+                            child: Container(
+                              width: 70,
+                              margin: const EdgeInsets.only(right: 12),
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                    color: AppColors.border,
+                                    style: BorderStyle.solid),
+                              ),
+                              child: const Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.add,
+                                      color: AppColors.textSecondary),
+                                  SizedBox(height: 4),
+                                  Text('Tambah',
+                                      style: TextStyle(fontSize: 12)),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+
+                        final account = accounts[index];
+                        final isSelected = _selectedAccountId == account.id;
+                        return GestureDetector(
+                          onTap: () =>
+                              setState(() => _selectedAccountId = account.id),
+                          child: Container(
+                            width: 70,
+                            margin: const EdgeInsets.only(right: 12),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.primary.withOpacity(0.1)
+                                  : AppColors.surface,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : AppColors.border,
+                                width: isSelected ? 2 : 1,
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(account.icon,
+                                    style: const TextStyle(fontSize: 24)),
+                                const SizedBox(height: 4),
+                                Text(
+                                  account.name,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+
+              // Add Account Inline Form
+              if (_showAddAccount) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _accountNameController,
+                          decoration: const InputDecoration(
+                            hintText: 'Nama Akun Baru',
+                            border: InputBorder.none,
                           ),
                         ),
-                        child: Column(
-                          children: [
-                            Text(
-                              category.emoji,
-                              style: const TextStyle(fontSize: 24),
+                      ),
+                      IconButton(
+                        onPressed: _addNewAccount,
+                        icon: const Icon(Icons.check_circle,
+                            color: AppColors.primary),
+                      ),
+                      IconButton(
+                        onPressed: () =>
+                            setState(() => _showAddAccount = false),
+                        icon: const Icon(Icons.cancel, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 24),
+
+              // Category Selection
+              if (_selectedType != TransactionType.transfer) ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Text('Kategori', style: AppTextStyle.h3),
+                    ElevatedButton.icon(
+                      onPressed: _showAddCategoryDialog,
+                      icon: const Icon(Icons.add_circle, size: 18),
+                      label: const Text('Tambah Kategori'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 2,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: categories.map((category) {
+                    final isSelected = _selectedCategoryId == category.id;
+                    return GestureDetector(
+                      onTap: () =>
+                          setState(() => _selectedCategoryId = category.id),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: category.color,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color:
+                                isSelected ? Colors.black : Colors.transparent,
+                            width: isSelected ? 2 : 0,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
                             ),
-                            const SizedBox(height: AppSpacing.xs),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(category.emoji,
+                                style: const TextStyle(fontSize: 18)),
+                            const SizedBox(width: 8),
                             Text(
                               category.name,
-                              style: AppTextStyle.caption.copyWith(
-                                fontWeight: isSelected 
-                                    ? FontWeight.w600 
+                              style: TextStyle(
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
                                     : FontWeight.normal,
+                                color: Colors.black87,
                               ),
-                              textAlign: TextAlign.center,
                             ),
                           ],
                         ),
@@ -739,158 +895,129 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: AppSpacing.md),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: () => _showAddCategoryDialog(),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Tambah Kategori'),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
               ] else ...[
                 Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                    border: Border.all(color: AppColors.border),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Text(
-                    'Transfer tidak membutuhkan kategori tertentu.',
-                    style: AppTextStyle.caption,
+                  child: const Center(
+                    child: Text(
+                      'Transfer tidak membutuhkan kategori.',
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
                   ),
                 ),
-                const SizedBox(height: AppSpacing.md),
               ],
+
+              const SizedBox(height: 24),
+
+              // Description Input
+              TextFormField(
+                controller: _descriptionController,
+                decoration: InputDecoration(
+                  labelText: 'Deskripsi',
+                  hintText: 'Contoh: Beli makanan',
+                  prefixIcon: const Icon(Icons.description),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                validator: (value) =>
+                    value == null || value.isEmpty ? 'Wajib diisi' : null,
+              ),
+              const SizedBox(height: 16),
 
               // Notes Input
               TextFormField(
                 controller: _notesController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Catatan (Opsional)',
-                  hintText: 'Tambahkan catatan untuk transaksi ini',
-                  prefixIcon: Icon(Icons.note),
+                  prefixIcon: const Icon(Icons.note),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
-                maxLines: 3,
+                maxLines: 2,
               ),
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: 16),
 
               // Photo Upload
-              const Text(
-                'Foto (Opsional)',
-                style: AppTextStyle.body,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              InkWell(
+              GestureDetector(
                 onTap: _pickImage,
                 child: Container(
-                  height: 150,
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: AppColors.border),
                   ),
-                  child: _photoPath != null
-                      ? Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(AppBorderRadius.md),
-                              child: kIsWeb
-                                  ? Image.memory(
-                                      base64Decode(_photoPath!.split(',')[1]),
-                                      width: double.infinity,
-                                      height: 150,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Image.file(
-                                      File(_photoPath!),
-                                      width: double.infinity,
-                                      height: 150,
-                                      fit: BoxFit.cover,
-                                    ),
-                            ),
-                            Positioned(
-                              top: 8,
-                              right: 8,
-                              child: CircleAvatar(
-                                backgroundColor: Colors.black54,
-                                child: IconButton(
-                                  icon: const Icon(Icons.close, color: Colors.white),
-                                  onPressed: () {
-                                    setState(() {
-                                      _photoPath = null;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      : const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add_photo_alternate, size: 48),
-                            SizedBox(height: AppSpacing.sm),
-                            Text(
-                              'Tap untuk upload foto',
-                              style: AppTextStyle.caption,
-                            ),
-                          ],
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        _photoPath != null
+                            ? Icons.check_circle
+                            : Icons.camera_alt,
+                        color: _photoPath != null
+                            ? AppColors.primary
+                            : AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _photoPath != null ? 'Foto Terlampir' : 'Tambah Foto',
+                        style: TextStyle(
+                          color: _photoPath != null
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
+                          fontWeight: FontWeight.w600,
                         ),
+                      ),
+                      if (_photoPath != null) ...[
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () => setState(() => _photoPath = null),
+                          child: const Icon(Icons.close,
+                              size: 18, color: Colors.grey),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: AppSpacing.lg),
+
+              const SizedBox(height: 32),
 
               // Save Button
-              CatButton(
-                title: 'Simpan Transaksi',
-                onPressed: _saveTransaction,
-                emoji: '💾',
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _saveTransaction,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 4,
+                    shadowColor: AppColors.primary.withOpacity(0.4),
+                  ),
+                  child: Text(
+                    _isEditing ? 'Simpan Perubahan' : 'Simpan Transaksi',
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),
       ),
     );
   }
-
-  Widget _buildTypeButton(String label, TransactionType type) {
-    final isSelected = _selectedType == type;
-    
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _selectedType = type;
-          _selectedCategoryId = null;
-        });
-      },
-      borderRadius: BorderRadius.circular(AppBorderRadius.md),
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.surface,
-          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
-            width: 2,
-          ),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: AppTextStyle.body.copyWith(
-              fontWeight: FontWeight.w600,
-              color: isSelected ? Colors.white : AppColors.text,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
-
-
-
-

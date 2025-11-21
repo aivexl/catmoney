@@ -14,8 +14,7 @@ class MoreScreen extends StatefulWidget {
   State<MoreScreen> createState() => _MoreScreenState();
 }
 
-class _MoreScreenState extends State<MoreScreen>
-    with TickerProviderStateMixin {
+class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
   late final TabController _tabController;
 
   @override
@@ -34,7 +33,6 @@ class _MoreScreenState extends State<MoreScreen>
     _tabController.dispose();
     super.dispose();
   }
-
 
   /// Build panel header (tabs only - drag handle is built-in)
   Widget _buildPanelHeader() {
@@ -67,22 +65,15 @@ class _MoreScreenState extends State<MoreScreen>
   }
 
   /// Build panel content (tab views)
-  Widget _buildPanelContent() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SizedBox(
-          height: constraints.maxHeight,
-          child: TabBarView(
-            controller: _tabController,
-            physics: const NeverScrollableScrollPhysics(),
-            children: [
-              SingleChildScrollView(
-                child: _buildSettingsView(),
-              ),
-            ],
-          ),
-        );
-      },
+  Widget _buildPanelContent(ScrollController scrollController) {
+    return TabBarView(
+      controller: _tabController,
+      children: [
+        SingleChildScrollView(
+          controller: scrollController,
+          child: _buildSettingsView(),
+        ),
+      ],
     );
   }
 
@@ -110,7 +101,8 @@ class _MoreScreenState extends State<MoreScreen>
               subtitle: 'Kelola kategori transaksi',
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Fitur kategori akan segera hadir! 🐱')),
+                  const SnackBar(
+                      content: Text('Fitur kategori akan segera hadir! 🐱')),
                 );
               },
             ),
@@ -121,7 +113,8 @@ class _MoreScreenState extends State<MoreScreen>
               subtitle: 'Lihat laporan keuangan',
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Fitur laporan akan segera hadir! 🐱')),
+                  const SnackBar(
+                      content: Text('Fitur laporan akan segera hadir! 🐱')),
                 );
               },
             ),
@@ -136,17 +129,6 @@ class _MoreScreenState extends State<MoreScreen>
                   MaterialPageRoute(
                     builder: (_) => const DataManagementScreen(),
                   ),
-                );
-              },
-            ),
-            _buildMenuItem(
-              context,
-              icon: Icons.backup,
-              title: 'Backup & Restore',
-              subtitle: 'Cadangkan data kamu',
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Fitur backup akan segera hadir! 🐱')),
                 );
               },
             ),
@@ -210,13 +192,6 @@ class _MoreScreenState extends State<MoreScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: AppSpacing.md),
-                    // Settings title
-                    Center(
-                      child: Text(
-                        'Pengaturan',
-                        style: AppTextStyle.h2,
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -228,25 +203,23 @@ class _MoreScreenState extends State<MoreScreen>
           ),
         ),
       ),
-          // Content dalam sheet dengan tabs dan content
-          sheetContent: LayoutBuilder(
-            builder: (context, constraints) {
-              return Column(
-                children: [
-                  // Header di sheet (tabs)
-                  _buildPanelHeader(),
-                  // Content dalam sheet (scrollable tab content)
-                  SizedBox(
-                    height: constraints.maxHeight - 60, // Subtract tab bar height
-                    child: _buildPanelContent(),
-                  ),
-                ],
-              );
-            },
-          ),
-          sheetColor: AppColors.tabBackground,
-          initialSize: 0.85,
-          minSize: 0.7,
+      // Content dalam sheet dengan tabs dan content
+      sheetBuilder: (context, scrollController) {
+        return Column(
+          children: [
+            // Header di sheet (tabs)
+            _buildPanelHeader(),
+            // Content dalam sheet (scrollable tab content)
+            Expanded(
+              child: _buildPanelContent(scrollController),
+            ),
+          ],
+        );
+      },
+      sheetColor: AppColors.tabBackground,
+      initialSize: 0.9,
+      minSize: 0.7,
+      maxSize: 1.0,
     );
   }
 
@@ -292,7 +265,8 @@ class _MoreScreenState extends State<MoreScreen>
         ),
         title: Text(title, style: AppTextStyle.body),
         subtitle: Text(subtitle, style: AppTextStyle.caption),
-        trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+        trailing:
+            const Icon(Icons.chevron_right, color: AppColors.textSecondary),
         onTap: onTap,
       ),
     );
@@ -302,7 +276,8 @@ class _MoreScreenState extends State<MoreScreen>
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.lg)),
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppBorderRadius.lg)),
       ),
       builder: (ctx) {
         final settings = context.read<SettingsProvider>();
@@ -314,10 +289,13 @@ class _MoreScreenState extends State<MoreScreen>
               final currency = CurrencyData.currencies[index];
               final isSelected = currency.symbol == settings.currencySymbol;
               return ListTile(
-                leading: Text(currency.symbol, style: const TextStyle(fontSize: 20)),
+                leading:
+                    Text(currency.symbol, style: const TextStyle(fontSize: 20)),
                 title: Text(currency.name),
                 subtitle: Text(currency.code),
-                trailing: isSelected ? const Icon(Icons.check, color: AppColors.primary) : null,
+                trailing: isSelected
+                    ? const Icon(Icons.check, color: AppColors.primary)
+                    : null,
                 onTap: () {
                   settings.setCurrency(currency);
                   Navigator.pop(context);
@@ -330,4 +308,3 @@ class _MoreScreenState extends State<MoreScreen>
     );
   }
 }
-

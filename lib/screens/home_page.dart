@@ -1,18 +1,18 @@
 // Home Page - Main dashboard dengan sliding bottom panel
-// 
+//
 // Enterprise-level implementation dengan:
 // - Zero error guarantee
 // - Cross-platform support (Web & Mobile)
 // - Sliding bottom panel dengan exact positioning sesuai screenshot
 // - Pastel theme dengan cat-themed design
-// 
+//
 // Features:
 // - Financial summary cards (Total Saldo, Expenses, Income)
 // - Circular navigation buttons (Wallet, Category, Pocket, Watchlist, Reimburse)
 // - Welcome message dengan cat illustration
 // - Sliding bottom panel (collapsed by default, very low position)
 // - Bottom navigation bar
-// 
+//
 // @author Cat Money Manager Team
 // @version 1.0.0
 // @since 2025
@@ -25,7 +25,7 @@ import '../models/transaction.dart';
 import '../utils/formatters.dart';
 
 /// Home Page - Main dashboard screen
-/// 
+///
 /// Layout sesuai screenshot:
 /// - Financial summary di top
 /// - Circular navigation buttons
@@ -39,24 +39,30 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage>
+    with SingleTickerProviderStateMixin {
   late final TabController _tabController;
-  double _panelHeight = 80.0; // Initial collapsed height (just tabs)
-  double _panelTop = 0.0; // Top position of panel (0 = center, negative = above center)
-  bool _isExpanded = false;
+  double _panelHeight =
+      400.0; // Initial height, will be updated to 65% of screen
+  bool _isExpanded = true; // Start expanded by default
 
   @override
   void initState() {
     super.initState();
-    // Initialize TabController untuk tabs (Harian, Kalender, Bulanan, Total)
+    // Initialize TabController untuk tabs (All, Pemasukan, Pengeluaran)
     _tabController = TabController(
-      length: 4,
+      length: 3,
       vsync: this,
     );
 
-    // Load transactions setelah frame pertama selesai
+    // Load transactions dan set panel height setelah frame pertama selesai
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
+        // Set panel height to 70% of screen height
+        final screenHeight = MediaQuery.of(context).size.height;
+        setState(() {
+          _panelHeight = screenHeight * 0.70;
+        });
         context.read<TransactionProvider>().loadTransactions();
       }
     });
@@ -95,20 +101,20 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             return LayoutBuilder(
               builder: (context, constraints) {
                 final screenHeight = constraints.maxHeight;
-                
+
                 return Stack(
                   children: [
                     // Background content (financial summary + navigation + welcome area)
                     _buildBody(totalSaldo, totalExpense, totalIncome),
 
-                    // Draggable tabs container positioned in the center
+                    // Draggable tabs container positioned at the bottom
                     AnimatedPositioned(
                       duration: const Duration(milliseconds: 200),
                       curve: Curves.easeOut,
-                      top: screenHeight / 2 - 40 + _panelTop, // Center of screen, adjusted by drag
+                      bottom: 0,
                       left: 0,
                       right: 0,
-                      child: _buildCenteredTabsContainer(provider),
+                      child: _buildBottomTabsContainer(provider, screenHeight),
                     ),
                   ],
                 );
@@ -121,42 +127,30 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-
-  /// Build centered tabs container with custom drag behavior
-  Widget _buildCenteredTabsContainer(TransactionProvider provider) {
+  /// Build bottom tabs container with custom drag behavior
+  Widget _buildBottomTabsContainer(
+      TransactionProvider provider, double screenHeight) {
     return GestureDetector(
       onVerticalDragUpdate: (details) {
         setState(() {
-          final newHeight = (_panelHeight - details.delta.dy).clamp(80.0, MediaQuery.of(context).size.height * 0.95);
+          final newHeight = (_panelHeight - details.delta.dy)
+              .clamp(screenHeight * 0.70, screenHeight * 0.85);
           _panelHeight = newHeight;
-          _isExpanded = _panelHeight > 200;
-          // Move panel up when expanding, down when collapsing
-          if (_panelHeight > 200) {
-            _panelTop = -(_panelHeight - 80) / 2; // Move up by half the extra height
-          } else {
-            _panelTop = 0; // Back to center when collapsed
-          }
+          _isExpanded = _panelHeight > screenHeight * 0.5;
         });
       },
       onVerticalDragEnd: (details) {
         // Snap to nearest position
-        final screenHeight = MediaQuery.of(context).size.height;
-        if (_panelHeight < 150) {
+        if (_panelHeight < screenHeight * 0.77) {
+          // Default state - 70% of screen
           setState(() {
-            _panelHeight = 80.0;
-            _panelTop = 0.0;
-            _isExpanded = false;
-          });
-        } else if (_panelHeight < screenHeight * 0.6) {
-          setState(() {
-            _panelHeight = screenHeight * 0.55;
-            _panelTop = -(screenHeight * 0.55 - 80) / 2;
+            _panelHeight = screenHeight * 0.70;
             _isExpanded = true;
           });
         } else {
+          // Fully expanded - 85% of screen
           setState(() {
-            _panelHeight = screenHeight * 0.95;
-            _panelTop = -(screenHeight * 0.95 - 80) / 2;
+            _panelHeight = screenHeight * 0.85;
             _isExpanded = true;
           });
         }
@@ -183,16 +177,15 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             GestureDetector(
               onTap: () {
                 setState(() {
-                  if (_isExpanded) {
-                    _panelHeight = 80.0;
-                    _panelTop = 0.0;
-                    _isExpanded = false;
+                  final screenHeight = MediaQuery.of(context).size.height;
+                  if (_panelHeight >= screenHeight * 0.77) {
+                    // If fully expanded, go back to default
+                    _panelHeight = screenHeight * 0.70;
                   } else {
-                    final screenHeight = MediaQuery.of(context).size.height;
-                    _panelHeight = screenHeight * 0.55;
-                    _panelTop = -(screenHeight * 0.55 - 80) / 2;
-                    _isExpanded = true;
+                    // If at default, expand fully
+                    _panelHeight = screenHeight * 0.85;
                   }
+                  _isExpanded = true;
                 });
               },
               child: Container(
@@ -248,10 +241,9 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 fontSize: 12,
               ),
               tabs: const [
-                Tab(text: 'Harian', icon: Icon(Icons.today, size: 18)),
-                Tab(text: 'Kalender', icon: Icon(Icons.calendar_today, size: 18)),
-                Tab(text: 'Bulanan', icon: Icon(Icons.calendar_month, size: 18)),
-                Tab(text: 'Total', icon: Icon(Icons.summarize, size: 18)),
+                Tab(text: 'All'),
+                Tab(text: 'Pemasukan'),
+                Tab(text: 'Pengeluaran'),
               ],
             ),
             // Tab Content (only visible when expanded)
@@ -260,10 +252,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                 child: TabBarView(
                   controller: _tabController,
                   children: [
-                    _buildScrollableList('Harian', provider.transactions),
-                    _buildScrollableList('Kalender', provider.transactions),
-                    _buildScrollableList('Bulanan', provider.transactions),
-                    _buildScrollableList('Total', provider.transactions),
+                    _buildTransactionList('All', provider.transactions),
+                    _buildTransactionList(
+                        'Pemasukan',
+                        provider.transactions
+                            .where((tx) => tx.type == TransactionType.income)
+                            .toList()),
+                    _buildTransactionList(
+                        'Pengeluaran',
+                        provider.transactions
+                            .where((tx) => tx.type == TransactionType.expense)
+                            .toList()),
                   ],
                 ),
               ),
@@ -273,81 +272,91 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  /// Build scrollable list content
-  Widget _buildScrollableList(String title, List<dynamic> items) {
+  /// Build transaction list content
+  Widget _buildTransactionList(String title, List<dynamic> items) {
     return Container(
       color: AppColors.tabBackground,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        itemCount: items.isEmpty ? 1 : items.length + 1,
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.md),
-              child: Text(
-                title,
-                style: AppTextStyle.h3,
-              ),
-            );
-          }
-          
-          if (items.isEmpty) {
-            return Center(
+      child: items.isEmpty
+          ? Center(
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.xl),
-                child: Text(
-                  'No transactions yet',
-                  style: AppTextStyle.caption,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.inbox_outlined,
+                      size: 64,
+                      color: AppColors.textSecondary.withValues(alpha: 0.5),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    Text(
+                      'No transactions yet',
+                      style: AppTextStyle.body.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            );
-          }
-          
-          // Placeholder transaction items
-          return Card(
-            margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-            color: AppColors.surface,
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: AppColors.primary.withValues(alpha: 0.2),
-                child: Icon(
-                  Icons.receipt,
-                  color: AppColors.primary,
-                  size: 20,
-                ),
-              ),
-              title: Text(
-                'Transaction ${index}',
-                style: AppTextStyle.body,
-              ),
-              subtitle: Text(
-                'Sample transaction data',
-                style: AppTextStyle.caption,
-              ),
-              trailing: Text(
-                '+Rp 0',
-                style: AppTextStyle.body.copyWith(
-                  color: AppColors.income,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                final transaction = items[index] as Transaction;
+                final isIncome = transaction.type == TransactionType.income;
+
+                return Card(
+                  margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  color: AppColors.surface,
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor:
+                          (isIncome ? AppColors.income : AppColors.expense)
+                              .withValues(alpha: 0.2),
+                      child: Icon(
+                        isIncome ? Icons.arrow_downward : Icons.arrow_upward,
+                        color: isIncome ? AppColors.income : AppColors.expense,
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(
+                      transaction.category,
+                      style: AppTextStyle.body,
+                    ),
+                    subtitle: Text(
+                      transaction.note.isNotEmpty
+                          ? transaction.note
+                          : 'No note',
+                      style: AppTextStyle.caption,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: Text(
+                      '${isIncome ? "+" : "-"}${Formatters.formatCurrency(transaction.amount)}',
+                      style: AppTextStyle.body.copyWith(
+                        color: isIncome ? AppColors.income : AppColors.expense,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 
   /// Build body content (background - financial summary + navigation buttons + welcome area)
-  Widget _buildBody(double totalSaldo, double totalExpense, double totalIncome) {
+  Widget _buildBody(
+      double totalSaldo, double totalExpense, double totalIncome) {
     return Column(
       children: [
         // Financial Summary Section
         _buildFinancialSummary(totalSaldo, totalExpense, totalIncome),
-        
+
         // Circular Navigation Buttons
         _buildCircularNavigationButtons(),
-        
+
         // Large Empty Space dengan Welcome Message dan Cat Illustration
         Expanded(
           child: _buildWelcomeArea(),
@@ -357,7 +366,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   /// Build financial summary cards
-  Widget _buildFinancialSummary(double totalSaldo, double totalExpense, double totalIncome) {
+  Widget _buildFinancialSummary(
+      double totalSaldo, double totalExpense, double totalIncome) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
@@ -399,8 +409,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          color: totalSaldo >= 0 
-                              ? AppColors.income 
+                          color: totalSaldo >= 0
+                              ? AppColors.income
                               : AppColors.expense,
                         ),
                       ),
@@ -511,11 +521,36 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   /// Build circular navigation buttons
   Widget _buildCircularNavigationButtons() {
     final buttons = [
-      {'icon': Icons.account_balance_wallet, 'label': 'Wallet', 'color': AppColors.primaryBlue, 'bg': const Color(0xFFB0E0E6)},
-      {'icon': Icons.category, 'label': 'Category', 'color': AppColors.lavender, 'bg': const Color(0xFFE6E6FA)},
-      {'icon': Icons.account_balance, 'label': 'Pocket', 'color': AppColors.orange, 'bg': const Color(0xFFFFE5CC)},
-      {'icon': Icons.star, 'label': 'Watchlist', 'color': AppColors.yellow, 'bg': const Color(0xFFFFFACD)},
-      {'icon': Icons.receipt, 'label': 'Reimburse', 'color': AppColors.mint, 'bg': const Color(0xFFB2F5EA)},
+      {
+        'icon': Icons.account_balance_wallet,
+        'label': 'Wallet',
+        'color': AppColors.primaryBlue,
+        'bg': const Color(0xFFB0E0E6)
+      },
+      {
+        'icon': Icons.category,
+        'label': 'Category',
+        'color': AppColors.lavender,
+        'bg': const Color(0xFFE6E6FA)
+      },
+      {
+        'icon': Icons.account_balance,
+        'label': 'Pocket',
+        'color': AppColors.orange,
+        'bg': const Color(0xFFFFE5CC)
+      },
+      {
+        'icon': Icons.star,
+        'label': 'Watchlist',
+        'color': AppColors.yellow,
+        'bg': const Color(0xFFFFFACD)
+      },
+      {
+        'icon': Icons.receipt,
+        'label': 'Reimburse',
+        'color': AppColors.mint,
+        'bg': const Color(0xFFB2F5EA)
+      },
     ];
 
     return Container(
@@ -539,7 +574,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       color: button['bg'] as Color,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: (button['color'] as Color).withValues(alpha: 0.5),
+                        color:
+                            (button['color'] as Color).withValues(alpha: 0.5),
                         width: 2,
                       ),
                     ),
@@ -569,56 +605,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  /// Build welcome area dengan cat illustration
+  /// Build welcome area (empty space for background)
   Widget _buildWelcomeArea() {
     return Container(
-      color: AppColors.surface,
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Welcome!',
-                style: AppTextStyle.h2,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                'No data yet. Start by adding your first transaction!',
-                style: AppTextStyle.caption.copyWith(
-                  fontSize: 14,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              // Cat illustration placeholder
-              Image.asset(
-                'assets/icons/iconcat3.png',
-                width: 200,
-                height: 200,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: 200,
-                    height: 200,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.pets,
-                      size: 100,
-                      color: AppColors.primary,
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
+      color: AppColors.background,
     );
   }
 
@@ -642,7 +632,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -659,7 +650,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   /// Build navigation item
-  Widget _buildNavItem(IconData icon, String label, bool isActive, {bool isFAB = false}) {
+  Widget _buildNavItem(IconData icon, String label, bool isActive,
+      {bool isFAB = false}) {
     if (isFAB) {
       return Container(
         width: 56,
@@ -706,4 +698,3 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 }
-
