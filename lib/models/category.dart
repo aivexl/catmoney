@@ -38,14 +38,14 @@ class Category {
     if (id == null || id.isEmpty) {
       throw ArgumentError('Category id is required and cannot be empty');
     }
-    
+
     final name = map['name'] as String?;
     if (name == null || name.isEmpty) {
       throw ArgumentError('Category name is required');
     }
-    
+
     final emoji = map['emoji'] as String? ?? '🐱';
-    
+
     // Validate color dengan fallback
     Color color;
     try {
@@ -58,7 +58,7 @@ class Category {
     } catch (e) {
       color = AppColors.primary; // Safe fallback
     }
-    
+
     // Parse transaction type dengan fallback
     TransactionType type;
     try {
@@ -70,7 +70,7 @@ class Category {
     } catch (e) {
       type = TransactionType.expense; // Safe fallback
     }
-    
+
     return Category(
       id: id,
       name: name,
@@ -87,49 +87,49 @@ class CategoryData {
     // Expense categories
     Category(
       id: 'food',
-      name: 'Makanan',
+      name: 'Food',
       emoji: '🐱',
       color: AppColors.pink,
       type: TransactionType.expense,
     ),
     Category(
       id: 'transport',
-      name: 'Transportasi',
+      name: 'Transportation',
       emoji: '🚗',
       color: AppColors.primaryBlue,
       type: TransactionType.expense,
     ),
     Category(
       id: 'shopping',
-      name: 'Belanja',
+      name: 'Shopping',
       emoji: '🛍️',
       color: AppColors.lavender,
       type: TransactionType.expense,
     ),
     Category(
       id: 'entertainment',
-      name: 'Hiburan',
+      name: 'Entertainment',
       emoji: '🎮',
       color: AppColors.peach,
       type: TransactionType.expense,
     ),
     Category(
       id: 'bills',
-      name: 'Tagihan',
+      name: 'Bills',
       emoji: '📄',
       color: AppColors.mint,
       type: TransactionType.expense,
     ),
     Category(
       id: 'health',
-      name: 'Kesehatan',
+      name: 'Health',
       emoji: '💊',
       color: AppColors.yellow,
       type: TransactionType.expense,
     ),
     Category(
       id: 'other',
-      name: 'Lainnya',
+      name: 'Others',
       emoji: '🐾',
       color: AppColors.cardPink,
       type: TransactionType.expense,
@@ -137,7 +137,7 @@ class CategoryData {
     // Income categories
     Category(
       id: 'salary',
-      name: 'Gaji',
+      name: 'Salary',
       emoji: '💰',
       color: AppColors.mint,
       type: TransactionType.income,
@@ -151,14 +151,14 @@ class CategoryData {
     ),
     Category(
       id: 'investment',
-      name: 'Investasi',
+      name: 'Investment',
       emoji: '📈',
       color: AppColors.primaryBlue,
       type: TransactionType.income,
     ),
     Category(
       id: 'other-income',
-      name: 'Lainnya',
+      name: 'Others',
       emoji: '💵',
       color: AppColors.peach,
       type: TransactionType.income,
@@ -177,7 +177,3 @@ class CategoryData {
     return categories.where((cat) => cat.type == type).toList();
   }
 }
-
-
-
-

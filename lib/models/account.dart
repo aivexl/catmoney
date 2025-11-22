@@ -40,7 +40,7 @@ class Account {
       throw ArgumentError('Account name is required');
     }
 
-    final icon = map['icon'] as String? ?? '💳';
+    final icon = map['icon'] as String? ?? 'assets/icons/cardicon.png';
 
     // Get color from map, or use default based on name
     final int color = map['color'] as int? ?? _getDefaultColor(name);
@@ -72,14 +72,14 @@ class Account {
       Account(
         id: 'cash',
         name: 'Cash',
-        icon: '💵',
+        icon: 'assets/icons/cashicon.png',
         isDefault: true,
         color: 0xFFBAFFC9, // Pastel Mint
       ),
       Account(
         id: 'card',
         name: 'Card',
-        icon: '💳',
+        icon: 'assets/icons/cardicon.png',
         isDefault: true,
         color: 0xFFBAE1FF, // Pastel Blue
       ),

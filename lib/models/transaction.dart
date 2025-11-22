@@ -11,6 +11,11 @@ class Transaction {
   final String? photoPath;
   final bool isWatchlisted;
 
+  // New fields for integration
+  final String? wishlistId;
+  final String? budgetId;
+  final String? billId;
+
   Transaction({
     required this.id,
     required this.type,
@@ -23,6 +28,9 @@ class Transaction {
     this.notes,
     this.photoPath,
     this.isWatchlisted = false,
+    this.wishlistId,
+    this.budgetId,
+    this.billId,
   });
 
   // Convert to Map for storage
@@ -39,6 +47,9 @@ class Transaction {
       'notes': notes,
       'photoPath': photoPath,
       'isWatchlisted': isWatchlisted,
+      'wishlistId': wishlistId,
+      'budgetId': budgetId,
+      'billId': billId,
     };
   }
 
@@ -50,7 +61,7 @@ class Transaction {
     if (id == null || id.isEmpty) {
       throw ArgumentError('Transaction id is required and cannot be empty');
     }
-    
+
     final amountValue = map['amount'];
     if (amountValue == null) {
       throw ArgumentError('Transaction amount is required');
@@ -59,26 +70,26 @@ class Transaction {
     if (amount.isNaN || amount.isInfinite) {
       throw ArgumentError('Transaction amount must be a valid number');
     }
-    
+
     final category = map['category'] as String?;
     if (category == null || category.isEmpty) {
       throw ArgumentError('Transaction category is required');
     }
-    
+
     final description = map['description'] as String? ?? '';
-    
+
     final dateString = map['date'] as String?;
     if (dateString == null || dateString.isEmpty) {
       throw ArgumentError('Transaction date is required');
     }
-    
+
     DateTime date;
     try {
       date = DateTime.parse(dateString);
     } catch (e) {
       throw ArgumentError('Invalid date format: $dateString');
     }
-    
+
     // Parse transaction type dengan fallback
     TransactionType type;
     try {
@@ -90,7 +101,7 @@ class Transaction {
     } catch (e) {
       type = TransactionType.expense; // Safe fallback
     }
-    
+
     return Transaction(
       id: id,
       type: type,
@@ -103,6 +114,9 @@ class Transaction {
       notes: map['notes'] as String?,
       photoPath: map['photoPath'] as String?,
       isWatchlisted: map['isWatchlisted'] as bool? ?? false,
+      wishlistId: map['wishlistId'] as String?,
+      budgetId: map['budgetId'] as String?,
+      billId: map['billId'] as String?,
     );
   }
 
@@ -119,6 +133,9 @@ class Transaction {
     String? notes,
     String? photoPath,
     bool? isWatchlisted,
+    String? wishlistId,
+    String? budgetId,
+    String? billId,
   }) {
     return Transaction(
       id: id ?? this.id,
@@ -132,6 +149,9 @@ class Transaction {
       notes: notes ?? this.notes,
       photoPath: photoPath ?? this.photoPath,
       isWatchlisted: isWatchlisted ?? this.isWatchlisted,
+      wishlistId: wishlistId ?? this.wishlistId,
+      budgetId: budgetId ?? this.budgetId,
+      billId: billId ?? this.billId,
     );
   }
 }
@@ -141,7 +161,3 @@ enum TransactionType {
   expense,
   transfer,
 }
-
-
-
-

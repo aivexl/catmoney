@@ -21,27 +21,33 @@ class Formatters {
     return formatter.format(amount);
   }
 
+  /// Format compact currency for charts (e.g., 1.5K, 2.3M)
+  static String formatCompactCurrency(double amount) {
+    if (amount >= 1000000) {
+      return '${(amount / 1000000).toStringAsFixed(1)}M';
+    } else if (amount >= 1000) {
+      return '${(amount / 1000).toStringAsFixed(1)}K';
+    }
+    return amount.toStringAsFixed(0);
+  }
+
   /// Format date (long format)
   static String formatDate(DateTime date) {
-    return DateFormat('d MMMM yyyy', 'id_ID').format(date);
+    return DateFormat('d MMMM yyyy', 'en_US').format(date);
   }
 
   /// Format date (short format)
   static String formatDateShort(DateTime date) {
-    return DateFormat('d MMM', 'id_ID').format(date);
+    return DateFormat('d MMM', 'en_US').format(date);
   }
 
   /// Format month and year
   static String formatMonthYear(DateTime date) {
-    return DateFormat('MMMM yyyy', 'id_ID').format(date);
+    return DateFormat('MMMM yyyy', 'en_US').format(date);
   }
 
   /// Format time
   static String formatTime(DateTime date) {
-    return DateFormat('HH:mm', 'id_ID').format(date);
+    return DateFormat('HH:mm', 'en_US').format(date);
   }
 }
-
-
-
-

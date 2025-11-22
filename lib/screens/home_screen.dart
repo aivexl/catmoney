@@ -23,13 +23,14 @@ import 'package:vector_math/vector_math_64.dart' show Vector3;
 import 'package:provider/provider.dart';
 import '../providers/transaction_provider.dart';
 import '../theme/app_colors.dart';
-import '../widgets/category_pie_chart.dart';
-import '../widgets/meow_draggable_sheet.dart';
 import '../utils/formatters.dart';
 import '../models/transaction.dart';
 import '../screens/add_transaction_screen.dart';
 import '../screens/watchlist_screen.dart';
 import '../screens/accounts_screen.dart';
+import '../screens/wishlist_screen.dart';
+import '../screens/spend_tracker_screen.dart';
+import '../screens/bills_screen.dart';
 
 /// HomeScreen - Main dashboard screen
 ///
@@ -45,22 +46,14 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-/// HomeScreen State dengan multiple tickers (TabController dan AnimationController)
-/// Menggunakan TickerProviderStateMixin untuk mendukung multiple AnimationControllers
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  late final TabController _tabController;
-
+/// HomeScreen State - Simple scrollable layout
+class _HomeScreenState extends State<HomeScreen> {
   final DateTime _currentMonth =
       DateTime(DateTime.now().year, DateTime.now().month);
 
   @override
   void initState() {
     super.initState();
-    // Initialize TabController untuk tabs (All, Pemasukan, Pengeluaran)
-    _tabController = TabController(
-      length: 3,
-      vsync: this,
-    );
 
     // Load transactions setelah frame pertama selesai
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -75,40 +68,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   @override
-  void dispose() {
-    // Properly dispose semua controllers untuk mencegah memory leaks
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  /// Calculate sheet size based on screen height to ensure menu icons are visible
-  double _calculateSheetSize(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    // Nest Hub Max and similar large displays with short height
-    if (screenWidth > 1000 && screenHeight < 700) return 0.30;
-    // Very small screens (< 700px height): 35%
-    if (screenHeight < 700) return 0.35;
-    // Medium screens (700-800px): 45%
-    if (screenHeight < 800) return 0.45;
-    // Large screens (>= 800px): 57% - iPhone 12 Pro, 14 Pro Max, Galaxy S20 Ultra, etc.
-    return 0.57;
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Consumer<TransactionProvider>(
       builder: (context, provider, child) {
         final allTransactions = provider.transactions
-            .where((t) => _isSameMonth(t.date, _currentMonth))
-            .toList();
-        final incomeTransactions = provider
-            .getTransactionsByType(TransactionType.income)
-            .where((t) => _isSameMonth(t.date, _currentMonth))
-            .toList();
-        final expenseTransactions = provider
-            .getTransactionsByType(TransactionType.expense)
             .where((t) => _isSameMonth(t.date, _currentMonth))
             .toList();
 
@@ -123,133 +86,166 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           }
         }
 
-        return MeowPageWithSheet(
-          // Background content (tertutup oleh sheet)
-          background: Container(
-            color: AppColors.background,
-            child: SafeArea(
-              bottom: false,
+        return Scaffold(
+          backgroundColor:
+              const Color(0xFFF5F0FF), // Pastel lavender background
+          body: SafeArea(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
               child: Column(
                 children: [
                   // Header Section
                   _buildHeader(monthlyExpense, monthlyIncome),
                   // Category Icons Row
                   _buildCategoryIcons(),
-                  // Spacing di bawah label button
-                  const SizedBox(height: AppSpacing.sm),
-                  // Expanded space untuk background content dengan icon di tepi atas
-                  Expanded(
-                    child: Container(),
+                  const SizedBox(height: AppSpacing.md),
+                  // Transactions Section
+                  _buildTransactionsSection(
+                    allTransactions,
+                    monthlyIncome,
+                    monthlyExpense,
                   ),
                 ],
               ),
             ),
           ),
-          // Content dalam sheet dengan tabs dan content
-          sheetBuilder: (context, scrollController) {
-            return Column(
-              children: [
-                // Header di sheet (tabs)
-                _buildPanelHeader(),
-                // Content dalam sheet (scrollable tab content)
-                Expanded(
-                  child: _buildPanelContent(
-                    provider,
-                    allTransactions,
-                    incomeTransactions,
-                    expenseTransactions,
-                    monthlyIncome,
-                    monthlyExpense,
-                    scrollController,
-                  ),
-                ),
-              ],
-            );
-          },
-          sheetColor: AppColors.tabBackground,
-          initialSize: _calculateSheetSize(context),
-          minSize: _calculateSheetSize(context),
         );
       },
     );
   }
 
-  /// Build panel header (tabs only - drag handle is built-in)
-  Widget _buildPanelHeader() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 4, bottom: 8),
-      child: TabBar(
-        controller: _tabController,
-        isScrollable: false,
-        labelColor: AppColors.primary,
-        unselectedLabelColor: AppColors.textSecondary,
-        indicatorColor: AppColors.primary,
-        indicatorSize: TabBarIndicatorSize.tab,
-        indicator: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(AppBorderRadius.md),
-        ),
-        labelStyle: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 14,
-        ),
-        unselectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.normal,
-          fontSize: 14,
-        ),
-        tabs: const [
-          Tab(text: 'All'),
-          Tab(text: 'Pemasukan'),
-          Tab(text: 'Pengeluaran'),
-        ],
-      ),
-    );
-  }
-
-  /// Build panel content (tab views)
-  Widget _buildPanelContent(
-    TransactionProvider provider,
-    List<Transaction> allTransactions,
-    List<Transaction> incomeTransactions,
-    List<Transaction> expenseTransactions,
-    double monthlyIncome,
-    double monthlyExpense,
-    ScrollController scrollController,
+  /// Build transactions section with pastel design
+  Widget _buildTransactionsSection(
+    List<Transaction> transactions,
+    double income,
+    double expense,
   ) {
-    return TabBarView(
-      controller: _tabController,
-      children: [
-        SingleChildScrollView(
-          controller: scrollController,
-          child: _buildTabContent(
-            allTransactions,
-            monthlyIncome,
-            monthlyExpense,
-            null,
-            null,
-          ),
+    // Sort transactions by date (newest first)
+    final sortedTransactions = List<Transaction>.from(transactions)
+      ..sort((a, b) => b.date.compareTo(a.date));
+
+    // Group transactions by date
+    final groupedTransactions = <String, List<Transaction>>{};
+    for (var transaction in sortedTransactions) {
+      final dateKey = Formatters.formatDate(transaction.date);
+      groupedTransactions.putIfAbsent(dateKey, () => []).add(transaction);
+    }
+
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(32),
+          topRight: Radius.circular(32),
         ),
-        SingleChildScrollView(
-          controller: scrollController,
-          child: _buildTabContent(
-            incomeTransactions,
-            monthlyIncome,
-            0,
-            TransactionType.income,
-            null,
-          ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(
+          left: AppSpacing.lg,
+          right: AppSpacing.lg,
+          top: AppSpacing.md,
+          bottom: 100, // Extra padding to clear bottom navigation bar
         ),
-        SingleChildScrollView(
-          controller: scrollController,
-          child: _buildTabContent(
-            expenseTransactions,
-            0,
-            monthlyExpense,
-            TransactionType.expense,
-            null,
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Section header with icon
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE6E6FA).withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.receipt_long,
+                    color: AppColors.primary,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                const Text(
+                  'Transactions',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.text,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.md),
+            // Transactions list
+            if (sortedTransactions.isEmpty)
+              _buildEmptyState()
+            else
+              ...groupedTransactions.entries.map((entry) {
+                // Calculate daily totals
+                double dailyIncome = 0;
+                double dailyExpense = 0;
+                for (var tx in entry.value) {
+                  if (tx.type == TransactionType.income) {
+                    dailyIncome += tx.amount;
+                  } else if (tx.type == TransactionType.expense) {
+                    dailyExpense += tx.amount;
+                  }
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        bottom: AppSpacing.xs,
+                        top: AppSpacing.sm,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            entry.key,
+                            style: AppTextStyle.caption.copyWith(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              if (dailyIncome > 0)
+                                Text(
+                                  '+${Formatters.formatCurrency(dailyIncome)}',
+                                  style: AppTextStyle.caption.copyWith(
+                                    color: AppColors.income,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              if (dailyIncome > 0 && dailyExpense > 0)
+                                const SizedBox(width: 8),
+                              if (dailyExpense > 0)
+                                Text(
+                                  '-${Formatters.formatCurrency(dailyExpense)}',
+                                  style: AppTextStyle.caption.copyWith(
+                                    color: AppColors.expense,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    _buildTransactionTimeline(entry.value),
+                  ],
+                );
+              }),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -261,9 +257,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         right: AppSpacing.md,
         bottom: AppSpacing.md,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFF5F0FF), // Pastel lavender
+            Color(0xFFFFE5F0), // Pastel pink
+          ],
+        ),
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(AppBorderRadius.xl),
           bottomRight: Radius.circular(AppBorderRadius.xl),
         ),
@@ -276,13 +279,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withValues(alpha: 0.9),
+                  Colors.white.withValues(alpha: 0.7),
+                ],
+              ),
               borderRadius: BorderRadius.circular(AppBorderRadius.lg),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
@@ -294,7 +304,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Total Saldo',
+                        'Total Balance',
                         style: TextStyle(
                           fontSize: 14,
                           color: AppColors.textSecondary,
@@ -331,11 +341,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 child: Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        const Color(0xFFFFE5E5)
+                            .withValues(alpha: 0.8), // Light red pastel
+                        Colors.white.withValues(alpha: 0.7),
+                      ],
+                    ),
                     borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
+                        color: AppColors.expense.withValues(alpha: 0.15),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -375,11 +393,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 child: Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        const Color(0xFFE5F5E5)
+                            .withValues(alpha: 0.8), // Light green pastel
+                        Colors.white.withValues(alpha: 0.7),
+                      ],
+                    ),
                     borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
+                        color: AppColors.income.withValues(alpha: 0.15),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -426,39 +452,39 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // Menu items dengan proper typing dan functionality
     final menuItems = [
       {
-        'icon': Icons.account_balance_wallet,
+        'icon': 'assets/icons/walleticon.webp',
         'label': 'Wallet',
         'color': AppColors.primaryBlue,
         'backgroundColor': const Color(0xFFB0E0E6), // Light teal/cyan pastel
         'onTap': _navigateToAccounts,
       },
       {
-        'icon': Icons.category,
-        'label': 'Category',
+        'icon': 'assets/icons/moneytrackericon.png',
+        'label': 'Spend Tracker',
         'color': AppColors.lavender,
         'backgroundColor': const Color(0xFFE6E6FA), // Light pink/purple pastel
-        'onTap': _showCategoryManagement,
+        'onTap': _navigateToSpendTracker,
       },
       {
-        'icon': Icons.account_balance,
-        'label': 'Pocket',
+        'icon': 'assets/icons/wishlisticon.png',
+        'label': 'Wishlist',
         'color': AppColors.orange,
         'backgroundColor': const Color(0xFFFFE5CC), // Light orange pastel
-        'onTap': _showPocketFeature,
+        'onTap': _navigateToWishlist,
       },
       {
-        'icon': Icons.star,
+        'icon': 'assets/icons/watchlisticon.webp',
         'label': 'Watchlist',
         'color': AppColors.yellow,
         'backgroundColor': const Color(0xFFFFFACD), // Light yellow pastel
-        'onTap': _navigateToWatchlist,
+        'onTap': _navigateToWatchlistScreen,
       },
       {
-        'icon': Icons.receipt,
-        'label': 'Reimburse',
+        'icon': 'assets/icons/billsicon.png',
+        'label': 'Bills',
         'color': AppColors.mint,
         'backgroundColor': const Color(0xFFB2F5EA), // Light green/mint pastel
-        'onTap': _showReimburseFeature,
+        'onTap': _navigateToBills,
       },
     ];
 
@@ -477,7 +503,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         children: menuItems.asMap().entries.map((entry) {
           final index = entry.key;
           final item = entry.value;
-          final icon = item['icon'] as IconData;
+          final icon = item['icon']; // Dynamic type (IconData or String)
           final label = item['label'] as String;
           final color = item['color'] as Color;
           final onTap = item['onTap'] as VoidCallback;
@@ -504,7 +530,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   /// Build individual menu button dengan enhanced visibility dan hover effect hanya di icon
   Widget _buildMenuButton({
-    required IconData icon,
+    required dynamic icon,
     required String label,
     required Color color,
     required Color backgroundColor,
@@ -534,7 +560,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Gagal membuka halaman Wallet'),
+            content: Text('Failed to open Wallet page'),
             duration: Duration(seconds: 2),
           ),
         );
@@ -542,20 +568,54 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  /// Show category management
-  void _showCategoryManagement() {
+  /// Navigate to Spend Tracker Screen
+  void _navigateToSpendTracker() {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('📁 Manajemen Kategori akan segera hadir! 🐱'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-    // TODO: Implement category management screen
+    try {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const SpendTrackerScreen(),
+        ),
+      );
+    } catch (e) {
+      debugPrint('Navigation to SpendTrackerScreen failed: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to open Spend Tracker page'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
-  /// Navigate to Watchlist Screen
-  void _navigateToWatchlist() {
+  /// Navigate to Wishlist Screen (new feature)
+  void _navigateToWishlist() {
+    if (!mounted) return;
+    try {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const WishlistScreen(),
+        ),
+      );
+    } catch (e) {
+      debugPrint('Navigation to WishlistScreen failed: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to open Wishlist page'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  /// Navigate to Watchlist Screen (existing feature)
+  void _navigateToWatchlistScreen() {
     if (!mounted) return;
     try {
       final provider = context.read<TransactionProvider>();
@@ -574,7 +634,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Gagal membuka halaman Watchlist'),
+            content: Text('Failed to open Watchlist page'),
             duration: Duration(seconds: 2),
           ),
         );
@@ -582,145 +642,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  /// Show pocket feature
-  void _showPocketFeature() {
+  /// Navigate to Bills Screen
+  void _navigateToBills() {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('👛 Fitur Pocket akan segera hadir! 🐱'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-    // TODO: Implement pocket feature
-  }
-
-  /// Show reimburse feature
-  void _showReimburseFeature() {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('🧾 Fitur Reimburse akan segera hadir! 🐱'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-    // TODO: Implement reimburse feature
-  }
-
-  Widget _buildTabContent(
-    List<Transaction> transactions,
-    double income,
-    double expense,
-    TransactionType? filterType,
-    ScrollController? scrollController,
-  ) {
-    // Sort transactions by date (newest first)
-    final sortedTransactions = List<Transaction>.from(transactions)
-      ..sort((a, b) => b.date.compareTo(a.date));
-
-    final categoryTotals = <String, double>{};
-    if (filterType != null) {
-      for (var transaction in transactions) {
-        final key = transaction.category;
-        categoryTotals[key] = (categoryTotals[key] ?? 0) + transaction.amount;
+    try {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const BillsScreen(),
+        ),
+      );
+    } catch (e) {
+      debugPrint('Navigation to BillsScreen failed: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to open Bills page'),
+            duration: Duration(seconds: 2),
+          ),
+        );
       }
     }
-
-    // Group transactions by date
-    final groupedTransactions = <String, List<Transaction>>{};
-    for (var transaction in sortedTransactions) {
-      final dateKey = Formatters.formatDate(transaction.date);
-      groupedTransactions.putIfAbsent(dateKey, () => []).add(transaction);
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Pie Chart by Category (only show for Pemasukan dan Pengeluaran tabs)
-        if (filterType != null && categoryTotals.isNotEmpty) ...[
-          CategoryPieChart(
-            categoryTotals: categoryTotals,
-            filterType: filterType,
-          ),
-          const SizedBox(height: AppSpacing.md),
-        ],
-        // Transactions grouped by date
-        if (sortedTransactions.isEmpty)
-          Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height * 0.4,
-              ),
-              child: _buildEmptyState(),
-            ),
-          )
-        else
-          ...groupedTransactions.entries.map((entry) {
-            // Calculate daily totals
-            double dailyIncome = 0;
-            double dailyExpense = 0;
-            for (var tx in entry.value) {
-              if (tx.type == TransactionType.income) {
-                dailyIncome += tx.amount;
-              } else if (tx.type == TransactionType.expense) {
-                dailyExpense += tx.amount;
-              }
-            }
-
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      bottom: AppSpacing.xs,
-                      top: AppSpacing.sm,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          entry.key,
-                          style: AppTextStyle.caption.copyWith(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            if (dailyIncome > 0)
-                              Text(
-                                '+${Formatters.formatCurrency(dailyIncome)}',
-                                style: AppTextStyle.caption.copyWith(
-                                  color: AppColors.income,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            if (dailyIncome > 0 && dailyExpense > 0)
-                              const SizedBox(width: 8),
-                            if (dailyExpense > 0)
-                              Text(
-                                '-${Formatters.formatCurrency(dailyExpense)}',
-                                style: AppTextStyle.caption.copyWith(
-                                  color: AppColors.expense,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  _buildTransactionTimeline(entry.value),
-                ],
-              ),
-            );
-          }),
-      ],
-    );
   }
 
   Widget _buildTransactionTimeline(List<Transaction> transactions) {
@@ -982,42 +924,45 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildEmptyState() {
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'Welcome',
-            style: AppTextStyle.h2,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Image.asset(
-            'assets/icons/iconcat3.png',
-            width: 200,
-            height: 200,
-            fit: BoxFit.contain,
-            filterQuality: FilterQuality.high,
-            isAntiAlias: true,
-            errorBuilder: (context, error, stackTrace) {
-              return const Icon(
-                Icons.pets,
-                size: 100,
-                color: AppColors.primary,
-              );
-            },
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            'Start managing your finances by adding your first transaction',
-            style: AppTextStyle.caption.copyWith(
-              fontSize: 14,
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Welcome',
+              style: AppTextStyle.h2,
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+            const SizedBox(height: AppSpacing.md),
+            Image.asset(
+              'assets/icons/iconcat3.png',
+              width: 200,
+              height: 200,
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.high,
+              isAntiAlias: true,
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(
+                  Icons.pets,
+                  size: 100,
+                  color: AppColors.primary,
+                );
+              },
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Start managing your finances by adding your first transaction',
+              style: AppTextStyle.caption.copyWith(
+                fontSize: 14,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1026,7 +971,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 /// Menu Icon Button dengan hover effect hanya di icon
 /// Enterprise-level: Enhanced visibility dengan interactive hover
 class _MenuIconButton extends StatefulWidget {
-  final IconData icon;
+  final dynamic icon; // IconData or String (asset path)
   final String label;
   final Color color;
   final Color backgroundColor;
@@ -1055,8 +1000,8 @@ class _MenuIconButtonState extends State<_MenuIconButton> {
         ? 40.0
         : (screenWidth < 400 ? 50.0 : (screenWidth < 600 ? 60.0 : 72.0));
     final iconInnerSize = screenWidth < 360
-        ? 20.0
-        : (screenWidth < 400 ? 24.0 : (screenWidth < 600 ? 28.0 : 36.0));
+        ? 28.0
+        : (screenWidth < 400 ? 35.0 : (screenWidth < 600 ? 42.0 : 52.0));
     final fontSize = screenWidth < 360
         ? 9.0
         : (screenWidth < 400 ? 10.0 : (screenWidth < 600 ? 11.0 : 13.0));
@@ -1102,11 +1047,27 @@ class _MenuIconButtonState extends State<_MenuIconButton> {
                     ? 1.05
                     : 1.0)), // Smaller scale on hover for small screens
               child: Center(
-                child: Icon(
-                  widget.icon,
-                  size: iconInnerSize,
-                  color: widget.color,
-                ),
+                child: widget.icon is String
+                    ? Image.asset(
+                        widget.icon,
+                        width: iconInnerSize,
+                        height: iconInnerSize,
+                        filterQuality: FilterQuality.high,
+                        fit: BoxFit.contain,
+                        // color: widget.color, // Removed to show original asset colors
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(
+                            Icons.broken_image,
+                            size: iconInnerSize,
+                            color: Colors.red,
+                          );
+                        },
+                      )
+                    : Icon(
+                        widget.icon,
+                        size: iconInnerSize,
+                        color: widget.color,
+                      ),
               ),
             ),
           ),

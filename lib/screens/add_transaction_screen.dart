@@ -9,12 +9,19 @@ import 'package:path/path.dart' as path;
 import '../providers/transaction_provider.dart';
 import '../providers/account_provider.dart';
 import '../providers/category_provider.dart';
+import '../providers/wishlist_provider.dart';
+import '../providers/budget_provider.dart';
+import '../providers/bill_provider.dart';
 import '../theme/app_colors.dart';
 import '../models/transaction.dart';
 import '../models/category.dart';
 import '../models/account.dart';
 import '../utils/formatters.dart';
 import '../utils/pastel_colors.dart';
+import '../screens/wishlist_screen.dart';
+import '../screens/spend_tracker_screen.dart';
+import '../screens/bills_screen.dart';
+import '../widgets/top_notification.dart' as notification;
 
 class AddTransactionScreen extends StatefulWidget {
   final TransactionType? initialType;
@@ -45,6 +52,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   String? _selectedAccountId;
   String? _photoPath;
   bool _showAddAccount = false;
+
+  // New fields for integration
+  String? _selectedWishlistId;
+  String? _selectedBudgetId;
+  String? _selectedBillId;
+
   bool get _isEditing => widget.transaction != null;
   Transaction? get _editingTransaction => widget.transaction;
 
@@ -62,12 +75,23 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       _selectedDate = tx.date;
       _selectedTime = TimeOfDay.fromDateTime(tx.date);
       _photoPath = tx.photoPath;
+      _selectedWishlistId = tx.wishlistId;
+      _selectedBudgetId = tx.budgetId;
+      _selectedBillId = tx.billId;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final accountProvider = context.read<AccountProvider>();
       final categoryProvider = context.read<CategoryProvider>();
+      final wishlistProvider = context.read<WishlistProvider>();
+      final budgetProvider = context.read<BudgetProvider>();
+      final billProvider = context.read<BillProvider>();
+
       await accountProvider.loadAccounts();
       await categoryProvider.loadCustomCategories();
+      await wishlistProvider.loadWishlists();
+      await budgetProvider.loadBudgets();
+      await billProvider.loadBills();
+
       final accounts = accountProvider.accounts;
       if (_editingTransaction != null) {
         setState(() {
@@ -137,14 +161,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Tambah Kategori',
+                      'Add Category',
                       style: AppTextStyle.h2,
                     ),
                     const SizedBox(height: 24),
                     TextField(
                       controller: nameController,
                       decoration: InputDecoration(
-                        labelText: 'Nama Kategori',
+                        labelText: 'Category Name',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -152,7 +176,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const Text('Pilih Icon', style: AppTextStyle.h3),
+                    const Text('Select Icon', style: AppTextStyle.h3),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 60,
@@ -191,7 +215,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const Text('Pilih Warna', style: AppTextStyle.h3),
+                    const Text('Select Color', style: AppTextStyle.h3),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 50,
@@ -242,7 +266,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                           if (nameController.text.isEmpty) {
                             ScaffoldMessenger.of(widgetContext).showSnackBar(
                               const SnackBar(
-                                content: Text('Mohon masukkan nama kategori'),
+                                content: Text('Please enter category name'),
                                 backgroundColor: AppColors.expense,
                               ),
                             );
@@ -265,7 +289,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                               ScaffoldMessenger.of(widgetContext).showSnackBar(
                                 const SnackBar(
                                   content:
-                                      Text('Kategori berhasil ditambahkan! 🎉'),
+                                      Text('Category added successfully! 🎉'),
                                   backgroundColor: AppColors.income,
                                   duration: Duration(seconds: 2),
                                 ),
@@ -292,7 +316,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('Simpan Kategori'),
+                        child: const Text('Save Category'),
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -308,7 +332,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error membuka dialog: $e'),
+            content: Text('Error opening dialog: $e'),
             backgroundColor: AppColors.expense,
           ),
         );
@@ -354,7 +378,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error mengambil foto: $e'),
+            content: Text('Error taking photo: $e'),
             backgroundColor: AppColors.expense,
           ),
         );
@@ -368,7 +392,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     if (_accountNameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Mohon masukkan nama akun'),
+          content: Text('Please enter account name'),
           backgroundColor: AppColors.expense,
         ),
       );
@@ -399,7 +423,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         _selectedCategoryId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Mohon pilih kategori'),
+          content: Text('Please select category'),
           backgroundColor: AppColors.expense,
         ),
       );
@@ -413,7 +437,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       if (category == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Kategori tidak ditemukan'),
+            content: Text('Category not found'),
             backgroundColor: AppColors.expense,
           ),
         );
@@ -424,7 +448,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     if (_selectedAccountId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Mohon pilih akun'),
+          content: Text('Please select account'),
           backgroundColor: AppColors.expense,
         ),
       );
@@ -446,7 +470,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       amount: double.parse(_amountController.text),
       category: _selectedType == TransactionType.transfer
           ? 'Transfer'
-          : category?.name ?? 'Kategori',
+          : category?.name ?? 'Category',
       description: _descriptionController.text,
       date: combinedDate,
       catEmoji:
@@ -455,6 +479,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       notes: _notesController.text.isEmpty ? null : _notesController.text,
       photoPath: _photoPath,
       isWatchlisted: _editingTransaction?.isWatchlisted ?? false,
+      wishlistId: _selectedWishlistId,
+      budgetId: _selectedBudgetId,
+      billId: _selectedBillId,
     );
 
     try {
@@ -466,12 +493,85 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         await context.read<TransactionProvider>().addTransaction(transaction);
       }
 
+      // Update wishlist/budget/bill progress if linked
+      if (_selectedWishlistId != null &&
+          _selectedType == TransactionType.expense) {
+        final wishlistProvider = context.read<WishlistProvider>();
+        final wishlist = wishlistProvider.getWishlistById(_selectedWishlistId!);
+        final result = await wishlistProvider.addToWishlist(
+          _selectedWishlistId!,
+          double.parse(_amountController.text),
+        );
+
+        // Show notification for milestone if provider triggered it
+        if (result['success'] == true && mounted && wishlist != null) {
+          final notifications = result['notifications'] as List?;
+          final progress = result['progress'] as double;
+
+          if (notifications != null && notifications.isNotEmpty) {
+            // Determine which milestone was reached
+            int percentage = 50;
+            if (progress >= 100) {
+              percentage = 100;
+            } else if (progress >= 75) {
+              percentage = 75;
+            }
+
+            notification.FloatingNotification.showWishlistMilestone(
+              context,
+              percentage: percentage,
+              wishlistName: wishlist.name,
+            );
+          }
+        }
+      }
+
+      if (_selectedBudgetId != null &&
+          _selectedType == TransactionType.expense) {
+        final budgetProvider = context.read<BudgetProvider>();
+        final budget = budgetProvider.getBudgetById(_selectedBudgetId!);
+        final result = await budgetProvider.addSpending(
+          _selectedBudgetId!,
+          double.parse(_amountController.text),
+        );
+
+        // Show top notification for budget warning
+        if (result['success'] == true && mounted && budget != null) {
+          final percentage = (result['percentage'] as double).toInt();
+          final isExceeded = result['isExceeded'] as bool;
+
+          if (percentage >= 50) {
+            notification.FloatingNotification.showBudgetWarning(
+              context,
+              percentage: percentage,
+              budgetName: budget.category,
+              isExceeded: isExceeded,
+            );
+          }
+        }
+      }
+
+      if (_selectedBillId != null && _selectedType == TransactionType.expense) {
+        final billProvider = context.read<BillProvider>();
+        final bill = billProvider.getBillById(_selectedBillId!);
+        await billProvider.markAsPaid(_selectedBillId!);
+
+        // Show top notification for bill paid
+        if (mounted && bill != null) {
+          notification.FloatingNotification.showBillPaid(
+            context,
+            billName: bill.name,
+            hasRecurring: bill.isRecurring,
+          );
+        }
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(_isEditing
-                ? 'Transaksi berhasil diperbarui! 🎉'
-                : 'Transaksi berhasil ditambahkan! 🎉'),
+                ? 'Transaction updated successfully! 🎉'
+                : 'Transaction added successfully! 🎉'),
             backgroundColor: AppColors.income,
           ),
         );
@@ -483,9 +583,194 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           _selectedCategoryId = null;
           _selectedDate = DateTime.now();
           _photoPath = null;
+          _selectedWishlistId = null;
+          _selectedBudgetId = null;
+          _selectedBillId = null;
         });
 
         Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: AppColors.expense,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _saveAndStay() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    if (_selectedType != TransactionType.transfer &&
+        _selectedCategoryId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select category'),
+          backgroundColor: AppColors.expense,
+        ),
+      );
+      return;
+    }
+
+    Category? category;
+    if (_selectedType != TransactionType.transfer) {
+      final categoryProvider = context.read<CategoryProvider>();
+      category = categoryProvider.getCategoryById(_selectedCategoryId!);
+      if (category == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Category not found'),
+            backgroundColor: AppColors.expense,
+          ),
+        );
+        return;
+      }
+    }
+
+    if (_selectedAccountId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select account'),
+          backgroundColor: AppColors.expense,
+        ),
+      );
+      return;
+    }
+
+    final combinedDate = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+      _selectedTime.hour,
+      _selectedTime.minute,
+    );
+
+    final transaction = Transaction(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      type: _selectedType,
+      amount: double.parse(_amountController.text),
+      category: _selectedType == TransactionType.transfer
+          ? 'Transfer'
+          : category?.name ?? 'Category',
+      description: _descriptionController.text,
+      date: combinedDate,
+      catEmoji:
+          _selectedType == TransactionType.transfer ? '🔁' : category?.emoji,
+      accountId: _selectedAccountId!,
+      notes: _notesController.text.isEmpty ? null : _notesController.text,
+      photoPath: _photoPath,
+      isWatchlisted: false,
+      wishlistId: _selectedWishlistId,
+      budgetId: _selectedBudgetId,
+      billId: _selectedBillId,
+    );
+
+    try {
+      await context.read<TransactionProvider>().addTransaction(transaction);
+
+      // Update wishlist/budget/bill progress if linked
+      if (_selectedWishlistId != null &&
+          _selectedType == TransactionType.expense) {
+        final wishlistProvider = context.read<WishlistProvider>();
+        final wishlist = wishlistProvider.getWishlistById(_selectedWishlistId!);
+        final result = await wishlistProvider.addToWishlist(
+          _selectedWishlistId!,
+          double.parse(_amountController.text),
+        );
+
+        // Show notification for milestone if provider triggered it
+        if (result['success'] == true && mounted && wishlist != null) {
+          final notifications = result['notifications'] as List?;
+          final progress = result['progress'] as double;
+
+          if (notifications != null && notifications.isNotEmpty) {
+            // Determine which milestone was reached
+            int percentage = 50;
+            if (progress >= 100) {
+              percentage = 100;
+            } else if (progress >= 75) {
+              percentage = 75;
+            }
+
+            notification.FloatingNotification.showWishlistMilestone(
+              context,
+              percentage: percentage,
+              wishlistName: wishlist.name,
+            );
+          }
+        }
+      }
+
+      if (_selectedBudgetId != null &&
+          _selectedType == TransactionType.expense) {
+        final budgetProvider = context.read<BudgetProvider>();
+        final budget = budgetProvider.getBudgetById(_selectedBudgetId!);
+        final result = await budgetProvider.addSpending(
+          _selectedBudgetId!,
+          double.parse(_amountController.text),
+        );
+
+        // Show top notification for budget warning
+        if (result['success'] == true && mounted && budget != null) {
+          final percentage = (result['percentage'] as double).toInt();
+          final isExceeded = result['isExceeded'] as bool;
+
+          if (percentage >= 50) {
+            notification.FloatingNotification.showBudgetWarning(
+              context,
+              percentage: percentage,
+              budgetName: budget.category,
+              isExceeded: isExceeded,
+            );
+          }
+        }
+      }
+
+      if (_selectedBillId != null && _selectedType == TransactionType.expense) {
+        final billProvider = context.read<BillProvider>();
+        final bill = billProvider.getBillById(_selectedBillId!);
+        await billProvider.markAsPaid(_selectedBillId!);
+
+        // Show top notification for bill paid
+        if (mounted && bill != null) {
+          notification.FloatingNotification.showBillPaid(
+            context,
+            billName: bill.name,
+            hasRecurring: bill.isRecurring,
+          );
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Transaction added successfully! 🎉'),
+            backgroundColor: AppColors.income,
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        // Clear form but stay on page
+        _amountController.clear();
+        _descriptionController.clear();
+        _notesController.clear();
+        setState(() {
+          _selectedCategoryId = null;
+          _selectedDate = DateTime.now();
+          _selectedTime = TimeOfDay.now();
+          _photoPath = null;
+          _selectedWishlistId = null;
+          _selectedBudgetId = null;
+          _selectedBillId = null;
+        });
+
+        // Don't navigate back - stay on page
       }
     } catch (e) {
       if (mounted) {
@@ -548,7 +833,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          _isEditing ? 'Edit Transaksi' : 'Tambah Transaksi',
+          _isEditing ? 'Edit Transaction' : 'Add Transaction',
           style: AppTextStyle.h2.copyWith(fontSize: 20),
         ),
         backgroundColor: Colors.transparent,
@@ -571,12 +856,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               Row(
                 children: [
                   Expanded(
-                      child: _buildTypeButton(
-                          'Pengeluaran', TransactionType.expense)),
+                      child:
+                          _buildTypeButton('Expense', TransactionType.expense)),
                   const SizedBox(width: 12),
                   Expanded(
-                      child: _buildTypeButton(
-                          'Pemasukan', TransactionType.income)),
+                      child:
+                          _buildTypeButton('Income', TransactionType.income)),
                 ],
               ),
               const SizedBox(height: 12),
@@ -590,7 +875,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 style:
                     const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 decoration: InputDecoration(
-                  labelText: 'Jumlah (Rp)',
+                  labelText: 'Amount (Rp)',
                   hintText: '0',
                   prefixIcon: const Icon(Icons.attach_money),
                   border: OutlineInputBorder(
@@ -602,11 +887,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty)
-                    return 'Mohon masukkan jumlah';
+                    return 'Please enter amount';
                   if (double.tryParse(value) == null)
-                    return 'Jumlah harus berupa angka';
+                    return 'Amount must be a number';
                   if (double.parse(value) <= 0)
-                    return 'Jumlah harus lebih dari 0';
+                    return 'Amount must be greater than 0';
                   return null;
                 },
               ),
@@ -697,7 +982,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               const SizedBox(height: 24),
 
               // Account Selection
-              const Text('Akun', style: AppTextStyle.h3),
+              const Text('Account', style: AppTextStyle.h3),
               const SizedBox(height: 12),
               Consumer<AccountProvider>(
                 builder: (context, accountProvider, child) {
@@ -728,8 +1013,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                   Icon(Icons.add,
                                       color: AppColors.textSecondary),
                                   SizedBox(height: 4),
-                                  Text('Tambah',
-                                      style: TextStyle(fontSize: 12)),
+                                  Text('Add', style: TextStyle(fontSize: 12)),
                                 ],
                               ),
                             ),
@@ -759,8 +1043,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(account.icon,
-                                    style: const TextStyle(fontSize: 24)),
+                                account.icon.contains('assets/')
+                                    ? Image.asset(
+                                        account.icon,
+                                        width: 32,
+                                        height: 32,
+                                        errorBuilder: (context, error,
+                                                stackTrace) =>
+                                            const Text('💰',
+                                                style: TextStyle(fontSize: 24)),
+                                      )
+                                    : Text(account.icon,
+                                        style: const TextStyle(fontSize: 24)),
                                 const SizedBox(height: 4),
                                 Text(
                                   account.name,
@@ -798,7 +1092,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         child: TextField(
                           controller: _accountNameController,
                           decoration: const InputDecoration(
-                            hintText: 'Nama Akun Baru',
+                            hintText: 'New Account Name',
                             border: InputBorder.none,
                           ),
                         ),
@@ -820,17 +1114,362 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
               const SizedBox(height: 24),
 
+              // Wishlist Section (only for expense)
+              if (_selectedType == TransactionType.expense) ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Wishlist (Optional)', style: AppTextStyle.h3),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Consumer<WishlistProvider>(
+                  builder: (context, wishlistProvider, child) {
+                    final wishlists = wishlistProvider.activeWishlists;
+                    return SizedBox(
+                      height: 80,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: wishlists.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index == wishlists.length) {
+                            // Add Wishlist Button
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const WishlistScreen(),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                width: 70,
+                                margin: const EdgeInsets.only(right: 12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: AppColors.border,
+                                    style: BorderStyle.solid,
+                                  ),
+                                ),
+                                child: const Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.add,
+                                        color: AppColors.textSecondary),
+                                    SizedBox(height: 4),
+                                    Text('Create',
+                                        style: TextStyle(fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
+
+                          final wishlist = wishlists[index];
+                          final isSelected = _selectedWishlistId == wishlist.id;
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                // Toggle: if already selected, deselect; otherwise select
+                                _selectedWishlistId =
+                                    isSelected ? null : wishlist.id;
+                              });
+                            },
+                            child: Container(
+                              width: 70,
+                              margin: const EdgeInsets.only(right: 12),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppColors.primary.withOpacity(0.1)
+                                    : AppColors.surface,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : AppColors.border,
+                                  width: isSelected ? 2 : 1,
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  wishlist.emoji.contains('assets/')
+                                      ? Image.asset(
+                                          wishlist.emoji,
+                                          width: 32,
+                                          height: 32,
+                                          errorBuilder: (context, error,
+                                                  stackTrace) =>
+                                              const Text('🎯',
+                                                  style:
+                                                      TextStyle(fontSize: 24)),
+                                        )
+                                      : Text(wishlist.emoji,
+                                          style: const TextStyle(fontSize: 24)),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    wishlist.name,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 24),
+              ],
+
+              // Spend Tracker Section (only for expense)
+              if (_selectedType == TransactionType.expense) ...[
+                const Text('Spend Tracker (Optional)', style: AppTextStyle.h3),
+                const SizedBox(height: 12),
+                Consumer<BudgetProvider>(
+                  builder: (context, budgetProvider, child) {
+                    final budgets = budgetProvider.activeBudgets;
+                    return SizedBox(
+                      height: 80,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: budgets.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index == budgets.length) {
+                            // Add Budget Button
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const SpendTrackerScreen(),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                width: 70,
+                                margin: const EdgeInsets.only(right: 12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: AppColors.border,
+                                    style: BorderStyle.solid,
+                                  ),
+                                ),
+                                child: const Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.add,
+                                        color: AppColors.textSecondary),
+                                    SizedBox(height: 4),
+                                    Text('Create',
+                                        style: TextStyle(fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
+
+                          final budget = budgets[index];
+                          final isSelected = _selectedBudgetId == budget.id;
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                // Toggle: if already selected, deselect; otherwise select
+                                _selectedBudgetId =
+                                    isSelected ? null : budget.id;
+                              });
+                            },
+                            child: Container(
+                              width: 70,
+                              margin: const EdgeInsets.only(right: 12),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppColors.primary.withOpacity(0.1)
+                                    : AppColors.surface,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : AppColors.border,
+                                  width: isSelected ? 2 : 1,
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  budget.emoji.contains('assets/')
+                                      ? Image.asset(
+                                          budget.emoji,
+                                          width: 32,
+                                          height: 32,
+                                          errorBuilder: (context, error,
+                                                  stackTrace) =>
+                                              const Text('💰',
+                                                  style:
+                                                      TextStyle(fontSize: 24)),
+                                        )
+                                      : Text(budget.emoji,
+                                          style: const TextStyle(fontSize: 24)),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    budget.category,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 24),
+              ],
+
+              // Bills Section (only for expense)
+              if (_selectedType == TransactionType.expense) ...[
+                const Text('Bills (Optional)', style: AppTextStyle.h3),
+                const SizedBox(height: 12),
+                Consumer<BillProvider>(
+                  builder: (context, billProvider, child) {
+                    final bills = billProvider.unpaidBills;
+                    return SizedBox(
+                      height: 80,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: bills.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index == bills.length) {
+                            // Add Bill Button
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const BillsScreen(),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                width: 70,
+                                margin: const EdgeInsets.only(right: 12),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: AppColors.border,
+                                    style: BorderStyle.solid,
+                                  ),
+                                ),
+                                child: const Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.add,
+                                        color: AppColors.textSecondary),
+                                    SizedBox(height: 4),
+                                    Text('Buat',
+                                        style: TextStyle(fontSize: 12)),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }
+
+                          final bill = bills[index];
+                          final isSelected = _selectedBillId == bill.id;
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                // Toggle: if already selected, deselect; otherwise select
+                                _selectedBillId = isSelected ? null : bill.id;
+                              });
+                            },
+                            child: Container(
+                              width: 70,
+                              margin: const EdgeInsets.only(right: 12),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppColors.primary.withOpacity(0.1)
+                                    : AppColors.surface,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : AppColors.border,
+                                  width: isSelected ? 2 : 1,
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  bill.emoji.contains('assets/')
+                                      ? Image.asset(
+                                          bill.emoji,
+                                          width: 32,
+                                          height: 32,
+                                          errorBuilder: (context, error,
+                                                  stackTrace) =>
+                                              const Text('📄',
+                                                  style:
+                                                      TextStyle(fontSize: 24)),
+                                        )
+                                      : Text(bill.emoji,
+                                          style: const TextStyle(fontSize: 24)),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    bill.name,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 24),
+              ],
+
               // Category Selection
               if (_selectedType != TransactionType.transfer) ...[
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Text('Kategori', style: AppTextStyle.h3),
+                    const Text('Category', style: AppTextStyle.h3),
                     ElevatedButton.icon(
                       onPressed: _showAddCategoryDialog,
                       icon: const Icon(Icons.add_circle, size: 18),
-                      label: const Text('Tambah Kategori'),
+                      label: const Text('Add Category'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
@@ -877,8 +1516,18 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(category.emoji,
-                                style: const TextStyle(fontSize: 18)),
+                            category.emoji.contains('assets/')
+                                ? Image.asset(
+                                    category.emoji,
+                                    width: 24,
+                                    height: 24,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Text('🏷️',
+                                                style: TextStyle(fontSize: 18)),
+                                  )
+                                : Text(category.emoji,
+                                    style: const TextStyle(fontSize: 18)),
                             const SizedBox(width: 8),
                             Text(
                               category.name,
@@ -905,7 +1554,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   ),
                   child: const Center(
                     child: Text(
-                      'Transfer tidak membutuhkan kategori.',
+                      'Transfer does not require a category.',
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
                   ),
@@ -918,15 +1567,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               TextFormField(
                 controller: _descriptionController,
                 decoration: InputDecoration(
-                  labelText: 'Deskripsi',
-                  hintText: 'Contoh: Beli makanan',
+                  labelText: 'Description',
+                  hintText: 'Example: Buy food',
                   prefixIcon: const Icon(Icons.description),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 validator: (value) =>
-                    value == null || value.isEmpty ? 'Wajib diisi' : null,
+                    value == null || value.isEmpty ? 'Required' : null,
               ),
               const SizedBox(height: 16),
 
@@ -934,7 +1583,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               TextFormField(
                 controller: _notesController,
                 decoration: InputDecoration(
-                  labelText: 'Catatan (Opsional)',
+                  labelText: 'Notes (Optional)',
                   prefixIcon: const Icon(Icons.note),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -968,7 +1617,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        _photoPath != null ? 'Foto Terlampir' : 'Tambah Foto',
+                        _photoPath != null ? 'Photo Attached' : 'Add Photo',
                         style: TextStyle(
                           color: _photoPath != null
                               ? AppColors.primary
@@ -991,6 +1640,32 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
               const SizedBox(height: 32),
 
+              // Save & Stay Button (only for new transactions)
+              if (!_isEditing) ...[
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton.icon(
+                    onPressed: _saveAndStay,
+                    icon: const Icon(Icons.add_circle_outline),
+                    label: const Text(
+                      'Save & Add More',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.secondary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 2,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+
               // Save Button
               SizedBox(
                 width: double.infinity,
@@ -1007,7 +1682,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     shadowColor: AppColors.primary.withOpacity(0.4),
                   ),
                   child: Text(
-                    _isEditing ? 'Simpan Perubahan' : 'Simpan Transaksi',
+                    _isEditing ? 'Save Changes' : 'Save Transaction',
                     style: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold),
                   ),

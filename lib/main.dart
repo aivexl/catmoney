@@ -20,16 +20,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'theme/app_theme.dart';
-import 'theme/app_colors.dart';
 import 'providers/transaction_provider.dart';
 import 'providers/account_provider.dart';
 import 'providers/category_provider.dart';
 import 'providers/settings_provider.dart';
+import 'providers/wishlist_provider.dart';
+import 'providers/budget_provider.dart';
+import 'providers/bill_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/transactions_screen.dart';
 import 'screens/accounts_screen.dart';
 import 'screens/more_screen.dart';
-import 'screens/add_transaction_screen.dart';
+import 'widgets/shared_bottom_nav_bar.dart';
 
 /// Main entry point dengan comprehensive error handling
 /// Enterprise-level: Zero error guarantee dengan proper initialization
@@ -39,7 +41,7 @@ void main() async {
 
   // Initialize date formatting dengan error handling
   try {
-    await initializeDateFormatting('id_ID', null);
+    await initializeDateFormatting('en_US', null);
   } catch (e) {
     // Fallback: continue dengan default locale jika initialization gagal
     // Log error untuk debugging tapi tidak crash app
@@ -66,6 +68,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => AccountProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider(create: (_) => WishlistProvider()),
+        ChangeNotifierProvider(create: (_) => BudgetProvider()),
+        ChangeNotifierProvider(create: (_) => BillProvider()),
         ChangeNotifierProxyProvider<SettingsProvider, TransactionProvider>(
           create: (_) => TransactionProvider(),
           update: (_, settings, transaction) {
@@ -158,132 +163,14 @@ class _MainScreenState extends State<MainScreen> {
             onPageChanged: _onPageChanged,
             children: _screens,
           ),
-          // Bottom Navigation Bar di atas semua page
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: IgnorePointer(
-              ignoring: false,
-              child: SafeArea(
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 20,
-                            offset: const Offset(0, -5),
-                            spreadRadius: 0,
-                          ),
-                        ],
-                      ),
-                      child: Container(
-                        constraints: const BoxConstraints(minHeight: 70),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            _buildNavItem(Icons.home, 'Home', 0),
-                            _buildNavItem(Icons.bar_chart, 'Reports', 1),
-                            // Floating Action Button in the middle untuk add transaction dengan iconcat2 di atas
-                            Container(
-                              width: 56,
-                              height: 56,
-                              margin: const EdgeInsets.only(bottom: 4),
-                              child: Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  FloatingActionButton(
-                                    onPressed: () =>
-                                        _navigateToAddTransaction(context),
-                                    backgroundColor:
-                                        Theme.of(context).colorScheme.primary,
-                                    elevation: 4,
-                                    child: const Icon(Icons.add,
-                                        color: Colors.white),
-                                  ),
-                                  // Iconcat2 di atas tombol dengan kualitas HD
-                                  Positioned(
-                                    top: -60,
-                                    left: 0,
-                                    right: 0,
-                                    child: Center(
-                                      child: Image.asset(
-                                        'assets/icons/iconcat2.png',
-                                        width: 80,
-                                        height: 80,
-                                        fit: BoxFit.contain,
-                                        filterQuality: FilterQuality.high,
-                                        isAntiAlias: true,
-                                        cacheWidth: 160,
-                                        cacheHeight: 160,
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                          return SizedBox(
-                                            width: 80,
-                                            height: 80,
-                                            child: Icon(
-                                              Icons.pets,
-                                              size: 50,
-                                              color: AppColors.primary,
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            _buildNavItem(
-                                Icons.account_balance_wallet, 'Wallets', 2),
-                            _buildNavItem(Icons.settings, 'Settings', 3),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+          // Bottom Navigation Bar di atas semua page menggunakan SharedBottomNavBar
+          SharedBottomNavBar(
+            currentIndex: _currentIndex,
+            onTap: _onNavItemTapped,
           ),
         ],
       ),
     );
-  }
-
-  /// Navigate to AddTransactionScreen dengan error handling
-  void _navigateToAddTransaction(BuildContext context) {
-    if (!mounted) return;
-
-    try {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const AddTransactionScreen(),
-        ),
-      );
-    } catch (e) {
-      debugPrint('Navigation to AddTransactionScreen failed: $e');
-      // Show error message to user
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Gagal membuka halaman tambah transaksi'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    }
   }
 
   /// Navigate to page dengan smooth animation dan error handling
@@ -310,55 +197,5 @@ class _MainScreenState extends State<MainScreen> {
         _onPageChanged(index);
       }
     }
-  }
-
-  /// Build navigation item dengan proper state management
-  Widget _buildNavItem(IconData icon, String label, int index) {
-    if (index < 0 || index >= _navItemCount) {
-      debugPrint('Invalid nav item index: $index');
-      return const SizedBox.shrink();
-    }
-
-    final isSelected = _currentIndex == index;
-    final theme = Theme.of(context);
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          debugPrint('Nav item tapped: $label (index: $index)');
-          _onNavItemTapped(index);
-        },
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                color: isSelected ? theme.colorScheme.primary : Colors.grey,
-                size: 24,
-              ),
-              const SizedBox(height: 2),
-              Flexible(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: isSelected ? theme.colorScheme.primary : Colors.grey,
-                    fontWeight:
-                        isSelected ? FontWeight.w600 : FontWeight.normal,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

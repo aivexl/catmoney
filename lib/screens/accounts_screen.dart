@@ -5,7 +5,6 @@ import '../providers/account_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../models/transaction.dart';
 import '../utils/formatters.dart';
-import '../widgets/meow_draggable_sheet.dart';
 import '../utils/pastel_colors.dart';
 import '../models/account.dart';
 
@@ -16,21 +15,12 @@ class AccountsScreen extends StatefulWidget {
   State<AccountsScreen> createState() => _AccountsScreenState();
 }
 
-class _AccountsScreenState extends State<AccountsScreen>
-    with TickerProviderStateMixin {
-  late final TabController _tabController;
-
+class _AccountsScreenState extends State<AccountsScreen> {
   DateTime _currentMonth = DateTime(DateTime.now().year, DateTime.now().month);
 
   @override
   void initState() {
     super.initState();
-    // Initialize TabController untuk tabs (Akun)
-    _tabController = TabController(
-      length: 1,
-      vsync: this,
-    );
-
     // Load data setelah frame pertama selesai
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -38,254 +28,6 @@ class _AccountsScreenState extends State<AccountsScreen>
         context.read<TransactionProvider>().loadTransactions();
       }
     });
-  }
-
-  @override
-  void dispose() {
-    // Properly dispose semua controllers untuk mencegah memory leaks
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  /// Build panel header (tabs only - drag handle is built-in)
-  Widget _buildPanelHeader() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 4, bottom: 8),
-      child: TabBar(
-        controller: _tabController,
-        isScrollable: false,
-        labelColor: AppColors.primary,
-        unselectedLabelColor: AppColors.textSecondary,
-        indicatorColor: AppColors.primary,
-        indicatorSize: TabBarIndicatorSize.tab,
-        indicator: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(12.0),
-        ),
-        labelStyle: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 14,
-        ),
-        unselectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.normal,
-          fontSize: 14,
-        ),
-        tabs: const [
-          Tab(text: 'Wallets'),
-        ],
-      ),
-    );
-  }
-
-  /// Build panel content (tab views)
-  Widget _buildPanelContent(
-      AccountProvider accountProvider,
-      TransactionProvider transactionProvider,
-      ScrollController scrollController) {
-    final accounts = accountProvider.accounts;
-    final transactions = transactionProvider.transactions
-        .where((t) => _isSameMonth(t.date))
-        .toList();
-
-    return TabBarView(
-      controller: _tabController,
-      children: [
-        SingleChildScrollView(
-          controller: scrollController,
-          child: _buildAccountsView(accounts, transactions),
-        ),
-      ],
-    );
-  }
-
-  /// Build accounts view
-  Widget _buildAccountsView(List accounts, List<Transaction> transactions) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Add Wallet Button
-        Padding(
-          padding: const EdgeInsets.only(bottom: AppSpacing.md),
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () => _showAddWalletDialog(context),
-              icon: const Icon(Icons.add),
-              label: const Text('Tambah Wallet'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-        ),
-        // Accounts list
-        if (accounts.isEmpty)
-          _buildEmptyState()
-        else
-          ...accounts.map((account) {
-            // Calculate balance for this account
-            double balance = 0.0;
-            double income = 0.0;
-            double expense = 0.0;
-            int transactionCount = 0;
-
-            for (var transaction in transactions) {
-              if (transaction.accountId == account.id) {
-                transactionCount++;
-                if (transaction.type == TransactionType.income) {
-                  income += transaction.amount;
-                  balance += transaction.amount;
-                } else if (transaction.type == TransactionType.expense) {
-                  expense += transaction.amount;
-                  balance -= transaction.amount;
-                }
-              }
-            }
-
-            return Container(
-              margin: const EdgeInsets.only(bottom: AppSpacing.md),
-              padding: const EdgeInsets.all(AppSpacing.md),
-              decoration: BoxDecoration(
-                color: Color(account.color).withOpacity(0.15),
-                borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-                border: Border.all(
-                  color: Color(account.color).withOpacity(0.5),
-                  width: 2,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: Color(account.color).withOpacity(0.3),
-                          borderRadius:
-                              BorderRadius.circular(AppBorderRadius.md),
-                        ),
-                        child: Center(
-                          child: Text(
-                            account.icon,
-                            style: const TextStyle(fontSize: 24),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              account.name,
-                              style: AppTextStyle.h3,
-                            ),
-                            Text(
-                              '$transactionCount transaksi',
-                              style: AppTextStyle.caption,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Column(
-                        children: [
-                          const Text(
-                            'Saldo',
-                            style: AppTextStyle.caption,
-                          ),
-                          const SizedBox(height: AppSpacing.xs / 2),
-                          Text(
-                            Formatters.formatCurrency(balance),
-                            style: AppTextStyle.body.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: balance >= 0
-                                  ? AppColors.income
-                                  : AppColors.expense,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          const Text(
-                            'Pemasukan',
-                            style: AppTextStyle.caption,
-                          ),
-                          const SizedBox(height: AppSpacing.xs / 2),
-                          Text(
-                            Formatters.formatCurrency(income),
-                            style: AppTextStyle.body.copyWith(
-                              color: AppColors.income,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          const Text(
-                            'Pengeluaran',
-                            style: AppTextStyle.caption,
-                          ),
-                          const SizedBox(height: AppSpacing.xs / 2),
-                          Text(
-                            Formatters.formatCurrency(expense),
-                            style: AppTextStyle.body.copyWith(
-                              color: AppColors.expense,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          }),
-      ],
-    );
-  }
-
-  /// Build empty state
-  Widget _buildEmptyState() {
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const SizedBox(height: AppSpacing.xl),
-          const Text(
-            'Welcome',
-            style: AppTextStyle.h2,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Start managing your finances by adding your first account',
-            style: AppTextStyle.caption.copyWith(
-              fontSize: 14,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppSpacing.xl),
-        ],
-      ),
-    );
   }
 
   void _changeMonth(int delta) {
@@ -302,81 +44,348 @@ class _AccountsScreenState extends State<AccountsScreen>
   Widget build(BuildContext context) {
     return Consumer2<AccountProvider, TransactionProvider>(
       builder: (context, accountProvider, transactionProvider, child) {
-        return MeowPageWithSheet(
-          // Background content (tertutup oleh sheet)
-          background: Container(
-            color: AppColors.background,
-            child: SafeArea(
-              bottom: false,
+        final accounts = accountProvider.accounts;
+        final transactions = transactionProvider.transactions
+            .where((t) => _isSameMonth(t.date))
+            .toList();
+
+        return Scaffold(
+          backgroundColor:
+              const Color(0xFFF5F0FF), // Pastel lavender background
+          body: SafeArea(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
               child: Column(
                 children: [
-                  // Header Section dengan month selector
-                  Container(
-                    padding: const EdgeInsets.only(
-                      top: AppSpacing.sm,
-                      left: AppSpacing.md,
-                      right: AppSpacing.md,
-                      bottom: AppSpacing.md,
-                    ),
-                    decoration: const BoxDecoration(
-                      color: AppColors.background,
-                      borderRadius: BorderRadius.only(
-                        bottomLeft: Radius.circular(24),
-                        bottomRight: Radius.circular(24),
-                      ),
-                    ),
+                  // Header Section
+                  _buildHeader(),
+
+                  // Content
+                  Padding(
+                    padding: const EdgeInsets.all(AppSpacing.md),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: AppSpacing.md),
-                        // Month selector
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            IconButton(
-                              onPressed: () => _changeMonth(-1),
-                              icon: const Icon(Icons.chevron_left),
+                        // Add Wallet Button
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showAddWalletDialog(context),
+                            icon: const Icon(Icons.add),
+                            label: const Text('Add Wallet'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 2,
                             ),
-                            Text(
-                              Formatters.formatMonthYear(_currentMonth),
-                              style: AppTextStyle.h3,
-                            ),
-                            IconButton(
-                              onPressed: () => _changeMonth(1),
-                              icon: const Icon(Icons.chevron_right),
-                            ),
-                          ],
+                          ),
                         ),
+                        const SizedBox(height: AppSpacing.md),
+
+                        // Accounts list
+                        if (accounts.isEmpty)
+                          _buildEmptyState()
+                        else
+                          ...accounts.map((account) =>
+                              _buildAccountCard(account, transactions)),
+
+                        // Bottom padding for navbar
+                        const SizedBox(height: 100),
                       ],
                     ),
-                  ),
-                  // Expanded space untuk background content
-                  Expanded(
-                    child: Container(),
                   ),
                 ],
               ),
             ),
           ),
-          // Content dalam sheet dengan tabs dan content
-          sheetBuilder: (context, scrollController) {
-            return Column(
-              children: [
-                // Header di sheet (tabs)
-                _buildPanelHeader(),
-                // Content dalam sheet (scrollable tab content)
-                Expanded(
-                  child: _buildPanelContent(
-                      accountProvider, transactionProvider, scrollController),
-                ),
-              ],
-            );
-          },
-          sheetColor: AppColors.tabBackground,
-          initialSize: 0.85,
-          minSize: 0.7,
         );
       },
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.lg),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFF5F0FF), // Pastel lavender
+            Color(0xFFFFE5F0), // Pastel pink
+          ],
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Title
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back),
+                      color: AppColors.text,
+                    ),
+                    const SizedBox(width: 4),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.account_balance_wallet,
+                        color: AppColors.primary,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    const Text(
+                      'Wallets',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.text,
+                      ),
+                    ),
+                  ],
+                ),
+                // Month selector
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      InkWell(
+                        onTap: () => _changeMonth(-1),
+                        borderRadius: BorderRadius.circular(12),
+                        child: const Padding(
+                          padding: EdgeInsets.all(4.0),
+                          child: Icon(Icons.chevron_left, size: 20),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        Formatters.formatMonthYear(_currentMonth),
+                        style: AppTextStyle.body.copyWith(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      InkWell(
+                        onTap: () => _changeMonth(1),
+                        borderRadius: BorderRadius.circular(12),
+                        child: const Padding(
+                          padding: EdgeInsets.all(4.0),
+                          child: Icon(Icons.chevron_right, size: 20),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAccountCard(Account account, List<Transaction> transactions) {
+    // Calculate balance for this account
+    double balance = 0.0;
+    double income = 0.0;
+    double expense = 0.0;
+    int transactionCount = 0;
+
+    for (var transaction in transactions) {
+      if (transaction.accountId == account.id) {
+        transactionCount++;
+        if (transaction.type == TransactionType.income) {
+          income += transaction.amount;
+          balance += transaction.amount;
+        } else if (transaction.type == TransactionType.expense) {
+          expense += transaction.amount;
+          balance -= transaction.amount;
+        }
+      }
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+        boxShadow: [
+          BoxShadow(
+            color: Color(account.color).withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(
+          color: Color(account.color).withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Color(account.color).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(AppBorderRadius.md),
+                ),
+                child: Center(
+                  child: account.icon.contains('assets/')
+                      ? Image.asset(
+                          account.icon,
+                          width: 40, // Increased from 24
+                          height: 40, // Increased from 24
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Text('💰',
+                                  style: TextStyle(
+                                      fontSize: 40)), // Increased from 24
+                        )
+                      : Text(
+                          account.icon,
+                          style: const TextStyle(
+                              fontSize: 40), // Increased from 24
+                        ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      account.name,
+                      style: AppTextStyle.h3,
+                    ),
+                    Text(
+                      '$transactionCount transactions this month',
+                      style: AppTextStyle.caption,
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  // TODO: Edit/Delete wallet
+                },
+                icon:
+                    const Icon(Icons.more_vert, color: AppColors.textSecondary),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          const Divider(),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildStatItem('Balance', balance,
+                  balance >= 0 ? AppColors.income : AppColors.expense),
+              _buildStatItem('Income', income, AppColors.income),
+              _buildStatItem('Expense', expense, AppColors.expense),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem(String label, double amount, Color color) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: AppTextStyle.caption.copyWith(fontSize: 12),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          Formatters.formatCurrency(amount),
+          style: AppTextStyle.body.copyWith(
+            fontWeight: FontWeight.bold,
+            color: color,
+            fontSize: 13,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: AppSpacing.xl),
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.account_balance_wallet_outlined,
+              size: 64,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          const Text(
+            'No Wallets Yet',
+            style: AppTextStyle.h2,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            'Add your first wallet to start tracking finances!',
+            style: AppTextStyle.caption.copyWith(
+              fontSize: 14,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.xl),
+        ],
+      ),
     );
   }
 
@@ -384,7 +393,18 @@ class _AccountsScreenState extends State<AccountsScreen>
     final nameController = TextEditingController();
     int selectedColorIndex = 0;
     String selectedIcon = '💰';
-    final icons = ['💰', '💳', '🏦', '💵', '🐖', '💎', '🏠', '🚗'];
+    final icons = [
+      'assets/icons/cashicon.png',
+      'assets/icons/cardicon.png',
+      '💰',
+      '💳',
+      '🏦',
+      '💵',
+      '🐖',
+      '💎',
+      '🏠',
+      '🚗'
+    ];
 
     showModalBottomSheet(
       context: context,
@@ -407,14 +427,14 @@ class _AccountsScreenState extends State<AccountsScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Tambah Wallet Baru',
+                    'Add New Wallet',
                     style: AppTextStyle.h2,
                   ),
                   const SizedBox(height: 24),
                   TextField(
                     controller: nameController,
                     decoration: InputDecoration(
-                      labelText: 'Nama Wallet',
+                      labelText: 'Wallet Name',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -422,7 +442,7 @@ class _AccountsScreenState extends State<AccountsScreen>
                     ),
                   ),
                   const SizedBox(height: 24),
-                  const Text('Pilih Icon', style: AppTextStyle.h3),
+                  const Text('Select Icon', style: AppTextStyle.h3),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 60,
@@ -449,10 +469,17 @@ class _AccountsScreenState extends State<AccountsScreen>
                                   : null,
                             ),
                             child: Center(
-                              child: Text(
-                                icon,
-                                style: const TextStyle(fontSize: 24),
-                              ),
+                              child: icon.contains('assets/')
+                                  ? Image.asset(
+                                      icon,
+                                      width: 24,
+                                      height: 24,
+                                      fit: BoxFit.contain,
+                                    )
+                                  : Text(
+                                      icon,
+                                      style: const TextStyle(fontSize: 24),
+                                    ),
                             ),
                           ),
                         );
@@ -460,7 +487,7 @@ class _AccountsScreenState extends State<AccountsScreen>
                     ),
                   ),
                   const SizedBox(height: 24),
-                  const Text('Pilih Warna', style: AppTextStyle.h3),
+                  const Text('Select Color', style: AppTextStyle.h3),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 50,
@@ -527,7 +554,7 @@ class _AccountsScreenState extends State<AccountsScreen>
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('Simpan Wallet'),
+                      child: const Text('Save Wallet'),
                     ),
                   ),
                   const SizedBox(height: 32),

@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../data/currencies.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_colors.dart';
-import '../widgets/meow_draggable_sheet.dart';
 import 'data_management_screen.dart';
 
 class MoreScreen extends StatefulWidget {
@@ -14,212 +13,163 @@ class MoreScreen extends StatefulWidget {
   State<MoreScreen> createState() => _MoreScreenState();
 }
 
-class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
-  late final TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    // Initialize TabController untuk tabs (Pengaturan)
-    _tabController = TabController(
-      length: 1,
-      vsync: this,
-    );
-  }
-
-  @override
-  void dispose() {
-    // Properly dispose semua controllers untuk mencegah memory leaks
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  /// Build panel header (tabs only - drag handle is built-in)
-  Widget _buildPanelHeader() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 4, bottom: 8),
-      child: TabBar(
-        controller: _tabController,
-        isScrollable: false,
-        labelColor: AppColors.primary,
-        unselectedLabelColor: AppColors.textSecondary,
-        indicatorColor: AppColors.primary,
-        indicatorSize: TabBarIndicatorSize.tab,
-        indicator: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.2),
-          borderRadius: BorderRadius.circular(12.0),
-        ),
-        labelStyle: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 14,
-        ),
-        unselectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.normal,
-          fontSize: 14,
-        ),
-        tabs: const [
-          Tab(text: 'Pengaturan'),
-        ],
-      ),
-    );
-  }
-
-  /// Build panel content (tab views)
-  Widget _buildPanelContent(ScrollController scrollController) {
-    return TabBarView(
-      controller: _tabController,
-      children: [
-        SingleChildScrollView(
-          controller: scrollController,
-          child: _buildSettingsView(),
-        ),
-      ],
-    );
-  }
-
-  /// Build settings view
-  Widget _buildSettingsView() {
-    return Container(
-      color: AppColors.tabBackground, // Background konsisten
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.sm), // Padding lebih kecil
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionTitle('Pengaturan'),
-            _buildMenuItem(
-              context,
-              icon: Icons.currency_exchange,
-              title: 'Mata Uang',
-              subtitle: 'IDR (Rupiah Indonesia)',
-              onTap: () => _showCurrencySelector(context),
-            ),
-            _buildMenuItem(
-              context,
-              icon: Icons.category,
-              title: 'Kategori',
-              subtitle: 'Kelola kategori transaksi',
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('Fitur kategori akan segera hadir! 🐱')),
-                );
-              },
-            ),
-            _buildMenuItem(
-              context,
-              icon: Icons.analytics,
-              title: 'Laporan',
-              subtitle: 'Lihat laporan keuangan',
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text('Fitur laporan akan segera hadir! 🐱')),
-                );
-              },
-            ),
-            _buildMenuItem(
-              context,
-              icon: Icons.storage,
-              title: 'Manajemen Data',
-              subtitle: 'Backup, restore, ekspor/impor',
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const DataManagementScreen(),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            _buildSectionTitle('Tentang'),
-            _buildMenuItem(
-              context,
-              icon: Icons.info,
-              title: 'Tentang Aplikasi',
-              subtitle: 'Cat Money Manager v1.0.0',
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('🐱 Cat Money Manager'),
-                    content: const Text(
-                      'Aplikasi manajemen keuangan yang lucu dengan tema pastel dan kucing.\n\nVersi: 1.0.0',
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Tutup'),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
+class _MoreScreenState extends State<MoreScreen> {
   @override
   Widget build(BuildContext context) {
-    return MeowPageWithSheet(
-      // Background content (tertutup oleh sheet)
-      background: Container(
-        color: AppColors.background,
-        child: SafeArea(
-          bottom: false,
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F0FF), // Pastel lavender background
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
           child: Column(
             children: [
-              // Header Section - minimal untuk settings
-              Container(
-                padding: const EdgeInsets.only(
-                  top: AppSpacing.sm,
-                  left: AppSpacing.md,
-                  right: AppSpacing.md,
-                  bottom: AppSpacing.md,
-                ),
-                decoration: const BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(24),
-                    bottomRight: Radius.circular(24),
-                  ),
-                ),
+              // Header Section
+              _buildHeader(),
+
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: AppSpacing.md),
+                    _buildSectionTitle('Settings'),
+                    _buildMenuItem(
+                      context,
+                      icon: Icons.currency_exchange,
+                      title: 'Currency',
+                      subtitle: 'IDR (Indonesian Rupiah)',
+                      color: const Color(0xFFBAE1FF), // Pastel Blue
+                      onTap: () => _showCurrencySelector(context),
+                    ),
+                    _buildMenuItem(
+                      context,
+                      icon: Icons.category,
+                      title: 'Categories',
+                      subtitle: 'Manage transaction categories',
+                      color: const Color(0xFFFFB3BA), // Pastel Pink
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content:
+                                  Text('Category feature coming soon! 🐱')),
+                        );
+                      },
+                    ),
+                    _buildMenuItem(
+                      context,
+                      icon: Icons.analytics,
+                      title: 'Reports',
+                      subtitle: 'View financial reports',
+                      color: const Color(0xFFBAFFC9), // Pastel Mint
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Reports feature coming soon! 🐱')),
+                        );
+                      },
+                    ),
+                    _buildMenuItem(
+                      context,
+                      icon: Icons.storage,
+                      title: 'Data Management',
+                      subtitle: 'Backup, restore, export/import',
+                      color: const Color(0xFFFFDFBA), // Pastel Peach
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const DataManagementScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    _buildSectionTitle('About'),
+                    _buildMenuItem(
+                      context,
+                      icon: Icons.info,
+                      title: 'About App',
+                      subtitle: 'Cat Money Manager v1.0.0',
+                      color: const Color(0xFFE0BBE4), // Pastel Lavender
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('🐱 Cat Money Manager'),
+                            content: const Text(
+                              'Cute money management app with pastel theme and cats.\n\nVersion: 1.0.0',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('Close'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+
+                    // Bottom padding for navbar
+                    const SizedBox(height: 100),
                   ],
                 ),
-              ),
-              // Expanded space untuk background content
-              Expanded(
-                child: Container(),
               ),
             ],
           ),
         ),
       ),
-      // Content dalam sheet dengan tabs dan content
-      sheetBuilder: (context, scrollController) {
-        return Column(
-          children: [
-            // Header di sheet (tabs)
-            _buildPanelHeader(),
-            // Content dalam sheet (scrollable tab content)
-            Expanded(
-              child: _buildPanelContent(scrollController),
-            ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFF5F0FF), // Pastel lavender
+            Color(0xFFFFE5F0), // Pastel pink
           ],
-        );
-      },
-      sheetColor: AppColors.tabBackground,
-      initialSize: 0.9,
-      minSize: 0.7,
-      maxSize: 1.0,
+        ),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
+        ),
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: AppSpacing.sm),
+          // Title
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.settings,
+                  color: AppColors.primary,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              const Text(
+                'Settings',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.text,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -245,23 +195,31 @@ class _MoreScreenState extends State<MoreScreen> with TickerProviderStateMixin {
     required IconData icon,
     required String title,
     required String subtitle,
+    required Color color,
     required VoidCallback onTap,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: ListTile(
         leading: Container(
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
+            color: color.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(AppBorderRadius.sm),
           ),
-          child: Icon(icon, color: AppColors.primary),
+          child: Icon(icon, color: color),
         ),
         title: Text(title, style: AppTextStyle.body),
         subtitle: Text(subtitle, style: AppTextStyle.caption),
