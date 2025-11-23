@@ -39,7 +39,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           SafeArea(
@@ -90,15 +90,8 @@ class _WishlistScreenState extends State<WishlistScreen> {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFFFF5E1),
-            Color(0xFFFFE5CC),
-          ],
-        ),
+      decoration: const BoxDecoration(
+        color: Color(0xFFffcc02),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(24),
           bottomRight: Radius.circular(24),
@@ -111,7 +104,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
             children: [
               IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back),
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
               ),
               const SizedBox(width: 8),
               Row(
@@ -129,6 +122,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                 ],
@@ -139,10 +133,10 @@ class _WishlistScreenState extends State<WishlistScreen> {
           const Padding(
             padding: EdgeInsets.only(left: 56),
             child: Text(
-              'Target keinginan Anda',
+              'Your wishlist targets',
               style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textSecondary,
+                color: Colors.white,
               ),
             ),
           ),

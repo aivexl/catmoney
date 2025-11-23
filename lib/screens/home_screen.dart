@@ -87,8 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         return Scaffold(
-          backgroundColor:
-              const Color(0xFFF5F0FF), // Pastel lavender background
+          backgroundColor: Colors.white,
           body: SafeArea(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -258,14 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
         bottom: AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFF5F0FF), // Pastel lavender
-            Color(0xFFFFE5F0), // Pastel pink
-          ],
-        ),
+        color: Color(0xFFffcc02),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(AppBorderRadius.xl),
           bottomRight: Radius.circular(AppBorderRadius.xl),

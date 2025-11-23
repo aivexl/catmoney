@@ -35,7 +35,7 @@ class SharedBottomNavBar extends StatelessWidget {
       bottom: 0,
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
           child: Material(
             color: Colors.transparent,
             child: Container(
@@ -53,22 +53,28 @@ class SharedBottomNavBar extends StatelessWidget {
               ),
               child: Container(
                 constraints: const BoxConstraints(minHeight: 70),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    _buildNavItem(
-                      context,
-                      'assets/icons/transactionsicon.png',
-                      'Home',
-                      0,
+                    Expanded(
+                      flex: currentIndex == 0 ? 2 : 1,
+                      child: _buildNavItem(
+                        context,
+                        'assets/icons/transactionsicon.png',
+                        'Home',
+                        0,
+                      ),
                     ),
-                    _buildNavItem(
-                      context,
-                      'assets/icons/reportsicon.png',
-                      'Reports',
-                      1,
+                    Expanded(
+                      flex: currentIndex == 1 ? 2 : 1,
+                      child: _buildNavItem(
+                        context,
+                        'assets/icons/reportsicon.png',
+                        'Reports',
+                        1,
+                      ),
                     ),
                     // Floating Action Button in the middle
                     Container(
@@ -120,17 +126,23 @@ class SharedBottomNavBar extends StatelessWidget {
                         ],
                       ),
                     ),
-                    _buildNavItem(
-                      context,
-                      'assets/icons/walletsicon.png',
-                      'Wallets',
-                      2,
+                    Expanded(
+                      flex: currentIndex == 2 ? 2 : 1,
+                      child: _buildNavItem(
+                        context,
+                        'assets/icons/walletsicon.png',
+                        'Wallets',
+                        2,
+                      ),
                     ),
-                    _buildNavItem(
-                      context,
-                      'assets/icons/settingsicon.png',
-                      'Settings',
-                      3,
+                    Expanded(
+                      flex: currentIndex == 3 ? 2 : 1,
+                      child: _buildNavItem(
+                        context,
+                        'assets/icons/settingsicon.png',
+                        'Settings',
+                        3,
+                      ),
                     ),
                   ],
                 ),
@@ -193,8 +205,8 @@ class SharedBottomNavBar extends StatelessWidget {
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
           padding: isSelected
-              ? const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
-              : const EdgeInsets.all(8),
+              ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
+              : const EdgeInsets.all(4),
           decoration: BoxDecoration(
             color: isSelected
                 ? theme.colorScheme.primary.withOpacity(0.15)
@@ -205,26 +217,30 @@ class SharedBottomNavBar extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               // Custom Asset Icon dengan ColorFilter (ALL PLATFORMS)
-              SizedBox(
-                width: 28,
-                height: 28,
-                child: Image.asset(
-                  assetPath,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: SizedBox(
                   width: 28,
                   height: 28,
-                  fit: BoxFit.contain,
-                  isAntiAlias: true,
-                  cacheWidth: 56,
-                  cacheHeight: 56,
-                  errorBuilder: (context, error, stackTrace) {
-                    debugPrint('Error loading nav icon $assetPath: $error');
-                    return Icon(
-                      _getFallbackIcon(index),
-                      color:
-                          isSelected ? theme.colorScheme.primary : Colors.grey,
-                      size: 28,
-                    );
-                  },
+                  child: Image.asset(
+                    assetPath,
+                    width: 28,
+                    height: 28,
+                    fit: BoxFit.contain,
+                    isAntiAlias: true,
+                    cacheWidth: 56,
+                    cacheHeight: 56,
+                    errorBuilder: (context, error, stackTrace) {
+                      debugPrint('Error loading nav icon $assetPath: $error');
+                      return Icon(
+                        _getFallbackIcon(index),
+                        color: isSelected
+                            ? theme.colorScheme.primary
+                            : Colors.grey,
+                        size: 28,
+                      );
+                    },
+                  ),
                 ),
               ),
               if (isSelected) ...[

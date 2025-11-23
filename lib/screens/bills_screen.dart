@@ -39,7 +39,7 @@ class _BillsScreenState extends State<BillsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           SafeArea(
@@ -88,15 +88,8 @@ class _BillsScreenState extends State<BillsScreen> {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFB2F5EA),
-            Color(0xFFE0F7F4),
-          ],
-        ),
+      decoration: const BoxDecoration(
+        color: Color(0xFFffcc02),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(24),
           bottomRight: Radius.circular(24),
@@ -109,7 +102,7 @@ class _BillsScreenState extends State<BillsScreen> {
             children: [
               IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back),
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
               ),
               const SizedBox(width: 8),
               Row(
@@ -124,7 +117,10 @@ class _BillsScreenState extends State<BillsScreen> {
                   const SizedBox(width: 8),
                   const Text(
                     'Bills',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
                   ),
                 ],
               ),
@@ -134,8 +130,8 @@ class _BillsScreenState extends State<BillsScreen> {
           const Padding(
             padding: EdgeInsets.only(left: 56),
             child: Text(
-              'Kelola tagihan & cicilan Anda',
-              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+              'Manage your bills & installments',
+              style: TextStyle(fontSize: 14, color: Colors.white),
             ),
           ),
         ],
@@ -152,11 +148,11 @@ class _BillsScreenState extends State<BillsScreen> {
           children: [
             const Text('📋', style: TextStyle(fontSize: 64)),
             const SizedBox(height: AppSpacing.md),
-            const Text('Belum ada bills',
+            const Text('No bills yet',
                 style: AppTextStyle.h2, textAlign: TextAlign.center),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Tambahkan tagihan untuk reminder otomatis!',
+              'Add bills for automatic reminders!',
               style: AppTextStyle.caption.copyWith(fontSize: 14),
               textAlign: TextAlign.center,
             ),
@@ -174,13 +170,13 @@ class _BillsScreenState extends State<BillsScreen> {
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
         if (unpaid.isNotEmpty) ...[
-          const Text('Belum Dibayar', style: AppTextStyle.h3),
+          const Text('Unpaid', style: AppTextStyle.h3),
           const SizedBox(height: AppSpacing.sm),
           ...unpaid.map((bill) => _buildBillCard(bill, provider)),
         ],
         if (paid.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.md),
-          const Text('Sudah Dibayar', style: AppTextStyle.h3),
+          const Text('Paid', style: AppTextStyle.h3),
           const SizedBox(height: AppSpacing.sm),
           ...paid.map((bill) => _buildBillCard(bill, provider)),
         ],
@@ -233,7 +229,7 @@ class _BillsScreenState extends State<BillsScreen> {
                     await provider.markAsPaid(bill.id);
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('✅ Bill ditandai lunas')),
+                        const SnackBar(content: Text('✅ Bill marked as paid')),
                       );
                     }
                   },
@@ -278,10 +274,8 @@ class _BillsScreenState extends State<BillsScreen> {
               ),
               const SizedBox(height: 24),
               _buildDetailRow('Amount', Formatters.formatCurrency(bill.amount)),
-              _buildDetailRow(
-                  'Jatuh Tempo', Formatters.formatDate(bill.dueDate)),
-              _buildDetailRow(
-                  'Status', bill.isPaid ? 'Lunas' : 'Belum Dibayar'),
+              _buildDetailRow('Due Date', Formatters.formatDate(bill.dueDate)),
+              _buildDetailRow('Status', bill.isPaid ? 'Paid' : 'Unpaid'),
               if (bill.isRecurring)
                 _buildDetailRow(
                     'Recurring', bill.recurringPeriod?.displayName ?? '-'),
@@ -297,12 +291,12 @@ class _BillsScreenState extends State<BillsScreen> {
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                  content: Text('✅ Bill ditandai lunas')),
+                                  content: Text('✅ Bill marked as paid')),
                             );
                           }
                         },
                         icon: const Icon(Icons.check),
-                        label: const Text('Tandai Lunas'),
+                        label: const Text('Mark as Paid'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.income,
                           foregroundColor: Colors.white,
@@ -328,12 +322,12 @@ class _BillsScreenState extends State<BillsScreen> {
                         await provider.deleteBill(bill.id);
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Bill dihapus')),
+                            const SnackBar(content: Text('Bill deleted')),
                           );
                         }
                       },
                       icon: const Icon(Icons.delete),
-                      label: const Text('Hapus'),
+                      label: const Text('Delete'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.expense,
                         foregroundColor: Colors.white,

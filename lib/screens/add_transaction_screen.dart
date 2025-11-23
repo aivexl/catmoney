@@ -834,14 +834,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       appBar: AppBar(
         title: Text(
           _isEditing ? 'Edit Transaction' : 'Add Transaction',
-          style: AppTextStyle.h2.copyWith(fontSize: 20),
+          style: AppTextStyle.h2.copyWith(fontSize: 20, color: Colors.white),
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color(0xFFffcc02),
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: AppColors.text),
+          icon:
+              const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),

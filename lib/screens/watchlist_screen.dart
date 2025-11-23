@@ -11,8 +11,11 @@ class WatchlistScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('⭐ Watchlist'),
+        title: const Text('⭐ Watchlist', style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFFffcc02),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: transactions.isEmpty
           ? const Center(
@@ -21,7 +24,7 @@ class WatchlistScreen extends StatelessWidget {
                 children: [
                   Text('🐾', style: TextStyle(fontSize: 64)),
                   SizedBox(height: AppSpacing.md),
-                  Text('Belum ada transaksi di watchlist'),
+                  Text('No transactions in watchlist'),
                 ],
               ),
             )
@@ -38,4 +41,3 @@ class WatchlistScreen extends StatelessWidget {
     );
   }
 }
-

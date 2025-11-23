@@ -482,8 +482,11 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
     final transactions = context.watch<TransactionProvider>().transactions;
     
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('📦 Manajemen Data'),
+        title: const Text('📦 Data Management', style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFFffcc02),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Stack(
         children: [

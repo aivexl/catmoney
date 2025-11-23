@@ -50,8 +50,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
             .toList();
 
         return Scaffold(
-          backgroundColor:
-              const Color(0xFFF5F0FF), // Pastel lavender background
+          backgroundColor: Colors.white, // White background
           body: SafeArea(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -112,14 +111,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
       padding: const EdgeInsets.fromLTRB(
           AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.lg),
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFF5F0FF), // Pastel lavender
-            Color(0xFFFFE5F0), // Pastel pink
-          ],
-        ),
+        color: Color(0xFFffcc02), // Solid yellow header
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(32),
           bottomRight: Radius.circular(32),
@@ -138,7 +130,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                     IconButton(
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.arrow_back),
-                      color: AppColors.text,
+                      color: Colors.white,
                     ),
                     const SizedBox(width: 4),
                     Container(
@@ -159,7 +151,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.text,
+                        color: Colors.white,
                       ),
                     ),
                   ],
@@ -235,7 +227,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Color(account.color).withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         boxShadow: [
           BoxShadow(

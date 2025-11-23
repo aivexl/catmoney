@@ -60,7 +60,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             provider.transactions.where((t) => _isSameMonth(t.date)).toList();
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF5F0FF), // Pastel lavender
+          backgroundColor: Colors.white,
           body: SafeArea(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -101,14 +101,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFF5F0FF), // Pastel lavender
-            Color(0xFFFFE5F0), // Pastel pink
-          ],
-        ),
+        color: Color(0xFFffcc02),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(24),
           bottomRight: Radius.circular(24),
@@ -129,7 +122,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               ),
               Text(
                 Formatters.formatMonthYear(_currentMonth),
-                style: AppTextStyle.h3,
+                style: AppTextStyle.h3.copyWith(color: Colors.white),
               ),
               IconButton(
                 onPressed: () => _changeMonth(1),

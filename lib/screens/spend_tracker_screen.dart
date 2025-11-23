@@ -39,7 +39,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           SafeArea(
@@ -88,15 +88,8 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFE6E6FA),
-            Color(0xFFF5F0FF),
-          ],
-        ),
+      decoration: const BoxDecoration(
+        color: Color(0xFFffcc02),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(24),
           bottomRight: Radius.circular(24),
@@ -109,7 +102,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
             children: [
               IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back),
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
               ),
               const SizedBox(width: 8),
               Row(
@@ -124,7 +117,10 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                   const SizedBox(width: 8),
                   const Text(
                     'Spend Tracker',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
                   ),
                 ],
               ),
@@ -134,8 +130,8 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
           const Padding(
             padding: EdgeInsets.only(left: 56),
             child: Text(
-              'Kelola budget pengeluaran Anda',
-              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+              'Manage your spending budget',
+              style: TextStyle(fontSize: 14, color: Colors.white),
             ),
           ),
         ],
@@ -152,11 +148,11 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
           children: [
             const Text('💰', style: TextStyle(fontSize: 64)),
             const SizedBox(height: AppSpacing.md),
-            const Text('Belum ada budget',
+            const Text('No budgets yet',
                 style: AppTextStyle.h2, textAlign: TextAlign.center),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Buat budget untuk kontrol pengeluaran Anda!',
+              'Create a budget to control your spending!',
               style: AppTextStyle.caption.copyWith(fontSize: 14),
               textAlign: TextAlign.center,
             ),
@@ -174,13 +170,13 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
         if (active.isNotEmpty) ...[
-          const Text('Aktif', style: AppTextStyle.h3),
+          const Text('Active', style: AppTextStyle.h3),
           const SizedBox(height: AppSpacing.sm),
           ...active.map((budget) => _buildBudgetCard(budget, provider)),
         ],
         if (inactive.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.md),
-          const Text('Tidak Aktif', style: AppTextStyle.h3),
+          const Text('Inactive', style: AppTextStyle.h3),
           const SizedBox(height: AppSpacing.sm),
           ...inactive.map((budget) => _buildBudgetCard(budget, provider)),
         ],
@@ -286,10 +282,10 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
               _buildDetailRow(
                   'Limit', Formatters.formatCurrency(budget.limitAmount)),
               _buildDetailRow(
-                  'Terpakai', Formatters.formatCurrency(budget.spentAmount)),
-              _buildDetailRow(
-                  'Sisa', Formatters.formatCurrency(budget.remainingAmount)),
-              _buildDetailRow('Persentase',
+                  'Spent', Formatters.formatCurrency(budget.spentAmount)),
+              _buildDetailRow('Remaining',
+                  Formatters.formatCurrency(budget.remainingAmount)),
+              _buildDetailRow('Percentage',
                   '${budget.spendingPercentage.toStringAsFixed(1)}%'),
               const SizedBox(height: 24),
               Row(
@@ -312,12 +308,12 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                         await provider.deleteBudget(budget.id);
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Budget dihapus')),
+                            const SnackBar(content: Text('Budget deleted')),
                           );
                         }
                       },
                       icon: const Icon(Icons.delete),
-                      label: const Text('Hapus'),
+                      label: const Text('Delete'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.expense,
                         foregroundColor: Colors.white,
@@ -376,12 +372,12 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Tambah Budget', style: AppTextStyle.h2),
+                    const Text('Add Budget', style: AppTextStyle.h2),
                     const SizedBox(height: 24),
                     TextField(
                       controller: categoryController,
                       decoration: InputDecoration(
-                        labelText: 'Kategori',
+                        labelText: 'Category',
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12)),
                         prefixIcon: const Icon(Icons.label),
@@ -399,7 +395,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text('Periode', style: AppTextStyle.h3),
+                    const Text('Period', style: AppTextStyle.h3),
                     const SizedBox(height: 8),
                     SegmentedButton<BudgetPeriod>(
                       segments: BudgetPeriod.values.map((period) {
