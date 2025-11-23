@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import '../widgets/category_icon.dart';
 
 class CatButton extends StatelessWidget {
   final String title;
@@ -50,12 +51,27 @@ class CatButton extends StatelessWidget {
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
           )
-        : Text(
-            emoji != null ? '$emoji $title' : title,
-            style: AppTextStyle.body.copyWith(
-              color: textColor,
-              fontWeight: FontWeight.w600,
-            ),
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (emoji != null) ...[
+                CategoryIcon(
+                  iconName: emoji!,
+                  size: 18,
+                  color: textColor,
+                  useYellowLines: false, // Use button text color
+                ),
+                const SizedBox(width: 8),
+              ],
+              Text(
+                title,
+                style: AppTextStyle.body.copyWith(
+                  color: textColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           );
 
     Widget button = ElevatedButton(
@@ -94,16 +110,3 @@ enum ButtonVariant {
   secondary,
   outline,
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

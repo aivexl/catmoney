@@ -254,22 +254,23 @@ class _AccountsScreenState extends State<AccountsScreen> {
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 child: Center(
-                  child: account.icon.contains('assets/')
-                      ? Image.asset(
-                          account.icon,
-                          width: 40, // Increased from 24
-                          height: 40, // Increased from 24
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Text('💰',
-                                  style: TextStyle(
-                                      fontSize: 40)), // Increased from 24
-                        )
-                      : Text(
-                          account.icon,
-                          style: const TextStyle(
-                              fontSize: 40), // Increased from 24
-                        ),
+                  child: account.icon == 'wallet'
+                      ? const Icon(Icons.account_balance_wallet,
+                          size: 32, color: AppColors.primary)
+                      : account.icon.contains('assets/')
+                          ? Image.asset(
+                              account.icon,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Text('💰',
+                                      style: TextStyle(fontSize: 40)),
+                            )
+                          : Text(
+                              account.icon,
+                              style: const TextStyle(fontSize: 40),
+                            ),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),

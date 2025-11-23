@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../utils/formatters.dart';
+import '../widgets/category_icon.dart';
 
 class CatCard extends StatelessWidget {
   final String title;
@@ -14,7 +15,7 @@ class CatCard extends StatelessWidget {
     super.key,
     required this.title,
     this.subtitle,
-    this.emoji = '🐱',
+    this.emoji = 'cat',
     this.amount,
     this.color,
     this.onTap,
@@ -23,7 +24,7 @@ class CatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cardColor = color ?? AppColors.surface;
-    
+
     Widget cardContent = Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -43,9 +44,10 @@ class CatCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                emoji,
-                style: const TextStyle(fontSize: 32),
+              CategoryIcon(
+                iconName: emoji,
+                size: 32,
+                useYellowLines: true,
               ),
               if (amount != null)
                 Text(
@@ -81,4 +83,3 @@ class CatCard extends StatelessWidget {
     return cardContent;
   }
 }
-

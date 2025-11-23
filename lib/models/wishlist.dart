@@ -21,6 +21,7 @@ class Wishlist {
   final double currentAmount;
   final DateTime createdAt;
   final DateTime? targetDate;
+  final Color? color;
 
   // Notification settings
   final bool notifyAt50;
@@ -40,6 +41,7 @@ class Wishlist {
     this.currentAmount = 0.0,
     required this.createdAt,
     this.targetDate,
+    this.color,
     this.notifyAt50 = true,
     this.notifyAt75 = true,
     this.notifyAt100 = true,
@@ -74,6 +76,7 @@ class Wishlist {
     double? currentAmount,
     DateTime? createdAt,
     DateTime? targetDate,
+    Color? color,
     bool? notifyAt50,
     bool? notifyAt75,
     bool? notifyAt100,
@@ -89,6 +92,7 @@ class Wishlist {
       currentAmount: currentAmount ?? this.currentAmount,
       createdAt: createdAt ?? this.createdAt,
       targetDate: targetDate ?? this.targetDate,
+      color: color ?? this.color,
       notifyAt50: notifyAt50 ?? this.notifyAt50,
       notifyAt75: notifyAt75 ?? this.notifyAt75,
       notifyAt100: notifyAt100 ?? this.notifyAt100,
@@ -108,6 +112,7 @@ class Wishlist {
       'currentAmount': currentAmount,
       'createdAt': createdAt.toIso8601String(),
       'targetDate': targetDate?.toIso8601String(),
+      'color': color?.value,
       'notifyAt50': notifyAt50,
       'notifyAt75': notifyAt75,
       'notifyAt100': notifyAt100,
@@ -129,6 +134,7 @@ class Wishlist {
       targetDate: json['targetDate'] != null
           ? DateTime.parse(json['targetDate'] as String)
           : null,
+      color: json['color'] != null ? Color(json['color'] as int) : null,
       notifyAt50: json['notifyAt50'] as bool? ?? true,
       notifyAt75: json['notifyAt75'] as bool? ?? true,
       notifyAt100: json['notifyAt100'] as bool? ?? true,

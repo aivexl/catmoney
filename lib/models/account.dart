@@ -72,14 +72,14 @@ class Account {
       Account(
         id: 'cash',
         name: 'Cash',
-        icon: 'assets/icons/cashicon.png',
+        icon: 'account_balance_wallet',
         isDefault: true,
         color: 0xFFBAFFC9, // Pastel Mint
       ),
       Account(
         id: 'card',
         name: 'Card',
-        icon: 'assets/icons/cardicon.png',
+        icon: 'credit_card',
         isDefault: true,
         color: 0xFFBAE1FF, // Pastel Blue
       ),

@@ -31,6 +31,7 @@ import '../screens/accounts_screen.dart';
 import '../screens/wishlist_screen.dart';
 import '../screens/spend_tracker_screen.dart';
 import '../screens/bills_screen.dart';
+import '../widgets/category_icon.dart';
 
 /// HomeScreen - Main dashboard screen
 ///
@@ -786,9 +787,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Center(
-                  child: Text(
-                    transaction.catEmoji ?? '🐱',
-                    style: const TextStyle(fontSize: 18), // Font lebih kecil
+                  child: CategoryIcon(
+                    iconName: transaction.catEmoji ?? 'cat',
+                    size: 18,
+                    useYellowLines: true,
                   ),
                 ),
               ),

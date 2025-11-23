@@ -10,6 +10,7 @@ import '../widgets/time_bar_chart.dart';
 import '../widgets/category_pie_chart.dart';
 import '../widgets/monthly_summary.dart';
 import '../screens/add_transaction_screen.dart';
+import '../widgets/category_icon.dart';
 
 /// Reports/Transactions Screen - Sequential scrollable layout
 /// Shows: Search bar, Calendar, Bar chart, Pie charts, Transactions
@@ -745,9 +746,10 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Center(
-                  child: Text(
-                    transaction.catEmoji ?? '🐱',
-                    style: const TextStyle(fontSize: 18),
+                  child: CategoryIcon(
+                    iconName: transaction.catEmoji ?? 'cat',
+                    size: 18,
+                    useYellowLines: true,
                   ),
                 ),
               ),

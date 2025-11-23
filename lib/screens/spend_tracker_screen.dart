@@ -17,6 +17,9 @@ import '../providers/budget_provider.dart';
 import '../models/budget.dart';
 import '../utils/formatters.dart';
 import '../widgets/shared_bottom_nav_bar.dart';
+import '../utils/app_icons.dart';
+import '../widgets/category_icon.dart';
+import '../utils/pastel_colors.dart';
 
 class SpendTrackerScreen extends StatefulWidget {
   const SpendTrackerScreen({super.key});
@@ -187,7 +190,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
   Widget _buildBudgetCard(Budget budget, BudgetProvider provider) {
     return Card(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      color: AppColors.surface,
+      color: budget.color ?? AppColors.surface,
       child: InkWell(
         onTap: () => _showBudgetDetails(budget, provider),
         borderRadius: BorderRadius.circular(12),
@@ -198,7 +201,12 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
             children: [
               Row(
                 children: [
-                  Text(budget.emoji, style: const TextStyle(fontSize: 32)),
+                  CategoryIcon(
+                    iconName: budget.emoji,
+                    size: 32,
+                    useYellowLines: true,
+                    withBackground: true,
+                  ),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Column(
@@ -264,7 +272,12 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
             children: [
               Row(
                 children: [
-                  Text(budget.emoji, style: const TextStyle(fontSize: 48)),
+                  CategoryIcon(
+                    iconName: budget.emoji,
+                    size: 48,
+                    useYellowLines: true,
+                    withBackground: true,
+                  ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -344,12 +357,82 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
     );
   }
 
+  Future<Color?> _showHexColorDialog(BuildContext context) async {
+    final hexController = TextEditingController();
+    Color? selectedColor;
+
+    return showDialog<Color>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Custom Color'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: hexController,
+                    decoration: const InputDecoration(
+                      labelText: 'Hex Code (e.g. #FF0000)',
+                      hintText: '#RRGGBB',
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (value) {
+                      if (value.length >= 6) {
+                        try {
+                          String hex = value.replaceAll('#', '');
+                          if (hex.length == 6) {
+                            hex = 'FF$hex';
+                          }
+                          setState(() {
+                            selectedColor = Color(int.parse('0x$hex'));
+                          });
+                        } catch (_) {
+                          setState(() {
+                            selectedColor = null;
+                          });
+                        }
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: selectedColor ?? Colors.grey,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.grey),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: selectedColor != null
+                      ? () => Navigator.pop(context, selectedColor)
+                      : null,
+                  child: const Text('Select'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   void _showAddBudgetDialog(BuildContext context) {
     final categoryController = TextEditingController();
     final limitController = TextEditingController();
-    String selectedEmoji = '💰';
+    String selectedEmoji = 'money'; // Default icon key
     BudgetPeriod selectedPeriod = BudgetPeriod.monthly;
-    final emojis = ['💰', '🍔', '🚗', '🏠', '🎮', '👕', '💊', '📚', '✈️', '🎬'];
+    Color selectedColor = PastelColors.palette[0];
 
     showModalBottomSheet(
       context: context,
@@ -410,22 +493,25 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    const Text('Pilih Emoji', style: AppTextStyle.h3),
+                    const Text('Pilih Icon', style: AppTextStyle.h3),
                     const SizedBox(height: 12),
                     SizedBox(
-                      height: 60,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: emojis.length,
+                      height: 200, // Increased height for grid
+                      child: GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 5,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                        ),
+                        itemCount: AppIcons.icons.length,
                         itemBuilder: (context, index) {
-                          final emoji = emojis[index];
-                          final isSelected = emoji == selectedEmoji;
+                          final iconKey = AppIcons.icons.keys.elementAt(index);
+                          final isSelected = iconKey == selectedEmoji;
                           return GestureDetector(
-                            onTap: () => setState(() => selectedEmoji = emoji),
+                            onTap: () =>
+                                setState(() => selectedEmoji = iconKey),
                             child: Container(
-                              width: 50,
-                              height: 50,
-                              margin: const EdgeInsets.only(right: 12),
                               decoration: BoxDecoration(
                                 color: isSelected
                                     ? AppColors.primary.withOpacity(0.2)
@@ -437,9 +523,96 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                                     : null,
                               ),
                               child: Center(
-                                child: Text(emoji,
-                                    style: const TextStyle(fontSize: 24)),
+                                child: CategoryIcon(
+                                  iconName: iconKey,
+                                  size: 24,
+                                  useYellowLines: true,
+                                  withBackground: true,
+                                ),
                               ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text('Pilih Warna', style: AppTextStyle.h3),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 50,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: PastelColors.palette.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index == 0) {
+                            // Custom Color Button
+                            return GestureDetector(
+                              onTap: () async {
+                                final Color? pickedColor =
+                                    await _showHexColorDialog(context);
+                                if (pickedColor != null) {
+                                  setState(() => selectedColor = pickedColor);
+                                }
+                              },
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                margin: const EdgeInsets.only(right: 12),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Colors.red,
+                                      Colors.orange,
+                                      Colors.yellow,
+                                      Colors.green,
+                                      Colors.blue,
+                                      Colors.indigo,
+                                      Colors.purple,
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.grey.withOpacity(0.3),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: const Icon(Icons.add,
+                                    color: Colors.white, size: 20),
+                              ),
+                            );
+                          }
+
+                          final colorIndex = index - 1;
+                          final color = PastelColors.palette[colorIndex];
+                          final isSelected = color.value == selectedColor.value;
+                          return GestureDetector(
+                            onTap: () => setState(() => selectedColor = color),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              margin: const EdgeInsets.only(right: 12),
+                              decoration: BoxDecoration(
+                                color: color,
+                                shape: BoxShape.circle,
+                                border: isSelected
+                                    ? Border.all(
+                                        color: AppColors.primary, width: 2)
+                                    : null,
+                                boxShadow: [
+                                  if (isSelected)
+                                    BoxShadow(
+                                      color: color.withOpacity(0.5),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                ],
+                              ),
+                              child: isSelected
+                                  ? const Icon(Icons.check,
+                                      color: Colors.black54, size: 20)
+                                  : null,
                             ),
                           );
                         },
@@ -468,6 +641,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                             startDate: now,
                             endDate:
                                 Budget.calculateEndDate(now, selectedPeriod),
+                            color: selectedColor,
                           );
 
                           await context
@@ -502,7 +676,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
         TextEditingController(text: budget.limitAmount.toString());
     String selectedEmoji = budget.emoji;
     BudgetPeriod selectedPeriod = budget.period;
-    final emojis = ['💰', '🍔', '🚗', '🏠', '🎮', '👕', '💊', '📚', '✈️', '🎬'];
+    Color selectedColor = budget.color ?? PastelColors.palette[0];
 
     showModalBottomSheet(
       context: context,
@@ -563,22 +737,25 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    const Text('Pilih Emoji', style: AppTextStyle.h3),
+                    const Text('Pilih Icon', style: AppTextStyle.h3),
                     const SizedBox(height: 12),
                     SizedBox(
-                      height: 60,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: emojis.length,
+                      height: 200, // Increased height for grid
+                      child: GridView.builder(
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 5,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                        ),
+                        itemCount: AppIcons.icons.length,
                         itemBuilder: (context, index) {
-                          final emoji = emojis[index];
-                          final isSelected = emoji == selectedEmoji;
+                          final iconKey = AppIcons.icons.keys.elementAt(index);
+                          final isSelected = iconKey == selectedEmoji;
                           return GestureDetector(
-                            onTap: () => setState(() => selectedEmoji = emoji),
+                            onTap: () =>
+                                setState(() => selectedEmoji = iconKey),
                             child: Container(
-                              width: 50,
-                              height: 50,
-                              margin: const EdgeInsets.only(right: 12),
                               decoration: BoxDecoration(
                                 color: isSelected
                                     ? AppColors.primary.withOpacity(0.2)
@@ -590,9 +767,96 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                                     : null,
                               ),
                               child: Center(
-                                child: Text(emoji,
-                                    style: const TextStyle(fontSize: 24)),
+                                child: CategoryIcon(
+                                  iconName: iconKey,
+                                  size: 24,
+                                  useYellowLines: true,
+                                  withBackground: true,
+                                ),
                               ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text('Pilih Warna', style: AppTextStyle.h3),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 50,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: PastelColors.palette.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index == 0) {
+                            // Custom Color Button
+                            return GestureDetector(
+                              onTap: () async {
+                                final Color? pickedColor =
+                                    await _showHexColorDialog(context);
+                                if (pickedColor != null) {
+                                  setState(() => selectedColor = pickedColor);
+                                }
+                              },
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                margin: const EdgeInsets.only(right: 12),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Colors.red,
+                                      Colors.orange,
+                                      Colors.yellow,
+                                      Colors.green,
+                                      Colors.blue,
+                                      Colors.indigo,
+                                      Colors.purple,
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.grey.withOpacity(0.3),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: const Icon(Icons.add,
+                                    color: Colors.white, size: 20),
+                              ),
+                            );
+                          }
+
+                          final colorIndex = index - 1;
+                          final color = PastelColors.palette[colorIndex];
+                          final isSelected = color.value == selectedColor.value;
+                          return GestureDetector(
+                            onTap: () => setState(() => selectedColor = color),
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              margin: const EdgeInsets.only(right: 12),
+                              decoration: BoxDecoration(
+                                color: color,
+                                shape: BoxShape.circle,
+                                border: isSelected
+                                    ? Border.all(
+                                        color: AppColors.primary, width: 2)
+                                    : null,
+                                boxShadow: [
+                                  if (isSelected)
+                                    BoxShadow(
+                                      color: color.withOpacity(0.5),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                ],
+                              ),
+                              child: isSelected
+                                  ? const Icon(Icons.check,
+                                      color: Colors.black54, size: 20)
+                                  : null,
                             ),
                           );
                         },
@@ -614,6 +878,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                             emoji: selectedEmoji,
                             limitAmount: double.parse(limitController.text),
                             period: selectedPeriod,
+                            color: selectedColor,
                           );
 
                           await context

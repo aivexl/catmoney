@@ -4,6 +4,7 @@ import '../theme/app_colors.dart';
 import '../utils/formatters.dart';
 import '../models/category.dart';
 import '../models/transaction.dart';
+import '../widgets/category_icon.dart';
 
 class CategoryPieChart extends StatelessWidget {
   final Map<String, double> categoryTotals;
@@ -169,7 +170,7 @@ class CategoryPieChart extends StatelessWidget {
     // Prepare chart data
     final sections = <PieChartSectionData>[];
     final colors = <Color>[];
-    final labels = <String>[];
+    final categoryItems = <Category>[];
     final values = <double>[];
 
     for (var entry in topCategories) {
@@ -186,7 +187,7 @@ class CategoryPieChart extends StatelessWidget {
         ),
       );
       colors.add(category.color);
-      labels.add('${category.emoji} ${category.name}');
+      categoryItems.add(category);
       values.add(entry.value);
     }
 
@@ -200,7 +201,14 @@ class CategoryPieChart extends StatelessWidget {
         ),
       );
       colors.add(AppColors.textSecondary);
-      labels.add('Lainnya');
+      // Placeholder category for "Others"
+      categoryItems.add(Category(
+        id: 'others_aggregated',
+        name: 'Lainnya',
+        emoji: 'more_horiz',
+        color: AppColors.textSecondary,
+        type: TransactionType.expense,
+      ));
       values.add(otherTotal);
     }
 
@@ -306,15 +314,15 @@ class CategoryPieChart extends StatelessWidget {
           // Legend
           Column(
             children: List.generate(
-              labels.length,
+              categoryItems.length,
               (index) {
                 // Calculate percentage with 1 decimal place for precision
                 double percentage = (values[index] / total * 100);
 
                 // For the last item, adjust to make total exactly 100%
-                if (index == labels.length - 1) {
+                if (index == categoryItems.length - 1) {
                   double sumSoFar = 0;
-                  for (int i = 0; i < labels.length - 1; i++) {
+                  for (int i = 0; i < categoryItems.length - 1; i++) {
                     sumSoFar += (values[i] / total * 100);
                   }
                   percentage = 100 - sumSoFar;
@@ -327,6 +335,8 @@ class CategoryPieChart extends StatelessWidget {
                 } else {
                   percentageStr = percentage.toStringAsFixed(1);
                 }
+
+                final category = categoryItems[index];
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: AppSpacing.xs),
@@ -349,9 +359,15 @@ class CategoryPieChart extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: AppSpacing.sm),
+                      CategoryIcon(
+                        iconName: category.emoji,
+                        size: 16,
+                        useYellowLines: true,
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
                       Expanded(
                         child: Text(
-                          labels[index],
+                          category.name,
                           style: AppTextStyle.body.copyWith(fontSize: 12),
                         ),
                       ),

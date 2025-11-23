@@ -10,6 +10,8 @@
 // @version 1.0.0
 // @since 2025
 
+import 'package:flutter/material.dart';
+
 /// Recurring period enum
 enum RecurringPeriod {
   monthly,
@@ -49,6 +51,7 @@ class Bill {
   final bool isRecurring;
   final RecurringPeriod? recurringPeriod;
   final bool isPaid;
+  final Color? color;
 
   // Notification settings
   final bool notifyH3; // H-3
@@ -69,6 +72,7 @@ class Bill {
     this.isRecurring = false,
     this.recurringPeriod,
     this.isPaid = false,
+    this.color,
     this.notifyH3 = true,
     this.notifyH2 = true,
     this.notifyH = true,
@@ -113,6 +117,7 @@ class Bill {
     bool? isRecurring,
     RecurringPeriod? recurringPeriod,
     bool? isPaid,
+    Color? color,
     bool? notifyH3,
     bool? notifyH2,
     bool? notifyH,
@@ -129,6 +134,7 @@ class Bill {
       isRecurring: isRecurring ?? this.isRecurring,
       recurringPeriod: recurringPeriod ?? this.recurringPeriod,
       isPaid: isPaid ?? this.isPaid,
+      color: color ?? this.color,
       notifyH3: notifyH3 ?? this.notifyH3,
       notifyH2: notifyH2 ?? this.notifyH2,
       notifyH: notifyH ?? this.notifyH,
@@ -149,6 +155,7 @@ class Bill {
       'isRecurring': isRecurring,
       'recurringPeriod': recurringPeriod?.name,
       'isPaid': isPaid,
+      'color': color?.value,
       'notifyH3': notifyH3,
       'notifyH2': notifyH2,
       'notifyH': notifyH,
@@ -174,6 +181,7 @@ class Bill {
             )
           : null,
       isPaid: json['isPaid'] as bool? ?? false,
+      color: json['color'] != null ? Color(json['color'] as int) : null,
       notifyH3: json['notifyH3'] as bool? ?? true,
       notifyH2: json['notifyH2'] as bool? ?? true,
       notifyH: json['notifyH'] as bool? ?? true,
@@ -204,6 +212,7 @@ class Bill {
       isRecurring: isRecurring,
       recurringPeriod: recurringPeriod,
       isPaid: false,
+      color: color,
       notifyH3: notifyH3,
       notifyH2: notifyH2,
       notifyH: notifyH,

@@ -40,6 +40,7 @@ class Budget {
   final double spentAmount;
   final DateTime startDate;
   final DateTime endDate;
+  final Color? color;
 
   // Notification settings
   final bool notifyAt50;
@@ -60,6 +61,7 @@ class Budget {
     this.spentAmount = 0.0,
     required this.startDate,
     required this.endDate,
+    this.color,
     this.notifyAt50 = true,
     this.notifyAt75 = true,
     this.notifyAt100 = true,
@@ -105,6 +107,7 @@ class Budget {
     double? spentAmount,
     DateTime? startDate,
     DateTime? endDate,
+    Color? color,
     bool? notifyAt50,
     bool? notifyAt75,
     bool? notifyAt100,
@@ -121,6 +124,7 @@ class Budget {
       spentAmount: spentAmount ?? this.spentAmount,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
+      color: color ?? this.color,
       notifyAt50: notifyAt50 ?? this.notifyAt50,
       notifyAt75: notifyAt75 ?? this.notifyAt75,
       notifyAt100: notifyAt100 ?? this.notifyAt100,
@@ -141,6 +145,7 @@ class Budget {
       'spentAmount': spentAmount,
       'startDate': startDate.toIso8601String(),
       'endDate': endDate.toIso8601String(),
+      'color': color?.value,
       'notifyAt50': notifyAt50,
       'notifyAt75': notifyAt75,
       'notifyAt100': notifyAt100,
@@ -164,6 +169,7 @@ class Budget {
       spentAmount: (json['spentAmount'] as num?)?.toDouble() ?? 0.0,
       startDate: DateTime.parse(json['startDate'] as String),
       endDate: DateTime.parse(json['endDate'] as String),
+      color: json['color'] != null ? Color(json['color'] as int) : null,
       notifyAt50: json['notifyAt50'] as bool? ?? true,
       notifyAt75: json['notifyAt75'] as bool? ?? true,
       notifyAt100: json['notifyAt100'] as bool? ?? true,

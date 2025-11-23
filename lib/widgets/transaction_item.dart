@@ -6,6 +6,8 @@ import '../theme/app_colors.dart';
 import '../utils/formatters.dart';
 import '../screens/add_transaction_screen.dart';
 
+import '../widgets/category_icon.dart';
+
 class TransactionItem extends StatelessWidget {
   final Transaction transaction;
   final bool showDate;
@@ -37,9 +39,10 @@ class TransactionItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Text(
-              transaction.catEmoji ?? '🐱',
-              style: const TextStyle(fontSize: 24),
+            CategoryIcon(
+              iconName: transaction.catEmoji ?? 'cat',
+              size: 24,
+              useYellowLines: true,
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
@@ -74,7 +77,8 @@ class TransactionItem extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (transaction.isWatchlisted)
-                      const Icon(Icons.star, color: AppColors.primary, size: 18),
+                      const Icon(Icons.star,
+                          color: AppColors.primary, size: 18),
                     if (transaction.isWatchlisted)
                       const SizedBox(width: AppSpacing.xs),
                     Text(
@@ -102,7 +106,8 @@ class TransactionItem extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppBorderRadius.lg)),
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppBorderRadius.lg)),
       ),
       builder: (ctx) {
         return SafeArea(
@@ -133,7 +138,9 @@ class TransactionItem extends StatelessWidget {
                     ? 'Hapus dari Watchlist'
                     : 'Tambah ke Watchlist'),
                 onTap: () {
-                  context.read<TransactionProvider>().toggleWatchlist(transaction.id);
+                  context
+                      .read<TransactionProvider>()
+                      .toggleWatchlist(transaction.id);
                   Navigator.pop(ctx);
                 },
               ),
@@ -146,7 +153,8 @@ class TransactionItem extends StatelessWidget {
                     context: context,
                     builder: (dialogCtx) => AlertDialog(
                       title: const Text('Hapus Transaksi'),
-                      content: const Text('Yakin ingin menghapus transaksi ini?'),
+                      content:
+                          const Text('Yakin ingin menghapus transaksi ini?'),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(dialogCtx, false),
@@ -160,7 +168,9 @@ class TransactionItem extends StatelessWidget {
                     ),
                   );
                   if (confirm == true && context.mounted) {
-                    await context.read<TransactionProvider>().deleteTransaction(transaction.id);
+                    await context
+                        .read<TransactionProvider>()
+                        .deleteTransaction(transaction.id);
                   }
                 },
               ),
@@ -171,4 +181,3 @@ class TransactionItem extends StatelessWidget {
     );
   }
 }
-
