@@ -61,7 +61,7 @@ class CategoryPieChart extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.text,
+                      color: Colors.black,
                     ),
                   ),
                 ],
@@ -104,7 +104,7 @@ class CategoryPieChart extends StatelessWidget {
                           'Total',
                           style: AppTextStyle.caption.copyWith(
                             fontSize: 11,
-                            color: AppColors.text,
+                            color: Colors.black,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -113,7 +113,7 @@ class CategoryPieChart extends StatelessWidget {
                           style: AppTextStyle.body.copyWith(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.text,
+                            color: Colors.black,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -146,7 +146,7 @@ class CategoryPieChart extends StatelessWidget {
                   Text(
                     'Belum ada data',
                     style: AppTextStyle.caption.copyWith(
-                      color: AppColors.textSecondary,
+                      color: Colors.black,
                     ),
                   ),
                 ],
@@ -256,7 +256,7 @@ class CategoryPieChart extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.text,
+                    color: Colors.black,
                   ),
                 ),
               ],
@@ -291,7 +291,7 @@ class CategoryPieChart extends StatelessWidget {
                         'Total',
                         style: AppTextStyle.caption.copyWith(
                           fontSize: 11,
-                          color: AppColors.text,
+                          color: Colors.black,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -300,7 +300,7 @@ class CategoryPieChart extends StatelessWidget {
                         style: AppTextStyle.body.copyWith(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.text,
+                          color: Colors.black,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -368,7 +368,7 @@ class CategoryPieChart extends StatelessWidget {
                       Expanded(
                         child: Text(
                           category.name,
-                          style: AppTextStyle.body.copyWith(fontSize: 12),
+                          style: AppTextStyle.body.copyWith(fontSize: 12, color: Colors.black),
                         ),
                       ),
                       Text(
@@ -376,6 +376,7 @@ class CategoryPieChart extends StatelessWidget {
                         style: AppTextStyle.body.copyWith(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
+                          color: Colors.black,
                         ),
                       ),
                     ],

@@ -160,15 +160,15 @@ class _WishlistScreenState extends State<WishlistScreen> {
               style: TextStyle(fontSize: 64),
             ),
             const SizedBox(height: AppSpacing.md),
-            const Text(
+            Text(
               'No wishlist yet',
-              style: AppTextStyle.h2,
+              style: AppTextStyle.h2.copyWith(color: Colors.black),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Create your wishlist targets and track their progress!',
-              style: AppTextStyle.caption.copyWith(fontSize: 14),
+              style: AppTextStyle.caption.copyWith(fontSize: 14, color: Colors.black),
               textAlign: TextAlign.center,
             ),
           ],
@@ -185,18 +185,18 @@ class _WishlistScreenState extends State<WishlistScreen> {
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
         if (active.isNotEmpty) ...[
-          const Text(
+          Text(
             'Aktif',
-            style: AppTextStyle.h3,
+            style: AppTextStyle.h3.copyWith(color: Colors.black),
           ),
           const SizedBox(height: AppSpacing.sm),
           ...active.map((wishlist) => _buildWishlistCard(wishlist, provider)),
         ],
         if (completed.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.md),
-          const Text(
+          Text(
             'Selesai',
-            style: AppTextStyle.h3,
+            style: AppTextStyle.h3.copyWith(color: Colors.black),
           ),
           const SizedBox(height: AppSpacing.sm),
           ...completed
@@ -233,11 +233,11 @@ class _WishlistScreenState extends State<WishlistScreen> {
                       children: [
                         Text(
                           wishlist.name,
-                          style: AppTextStyle.h3,
+                          style: AppTextStyle.h3.copyWith(color: Colors.black),
                         ),
                         Text(
                           '${Formatters.formatCurrency(wishlist.currentAmount)} / ${Formatters.formatCurrency(wishlist.targetAmount)}',
-                          style: AppTextStyle.caption,
+                          style: AppTextStyle.caption.copyWith(color: Colors.black),
                         ),
                       ],
                     ),
@@ -298,11 +298,11 @@ class _WishlistScreenState extends State<WishlistScreen> {
                       children: [
                         Text(
                           wishlist.name,
-                          style: AppTextStyle.h2,
+                          style: AppTextStyle.h2.copyWith(color: Colors.black),
                         ),
                         Text(
                           '${wishlist.progress.toStringAsFixed(1)}% achieved',
-                          style: AppTextStyle.caption,
+                          style: AppTextStyle.caption.copyWith(color: Colors.black),
                         ),
                       ],
                     ),
@@ -367,10 +367,10 @@ class _WishlistScreenState extends State<WishlistScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: AppTextStyle.body),
+          Text(label, style: AppTextStyle.body.copyWith(color: Colors.black)),
           Text(
             value,
-            style: AppTextStyle.body.copyWith(fontWeight: FontWeight.bold),
+            style: AppTextStyle.body.copyWith(fontWeight: FontWeight.bold, color: Colors.black),
           ),
         ],
       ),
@@ -473,7 +473,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Add Wishlist', style: AppTextStyle.h2),
+                  Text('Add Wishlist', style: AppTextStyle.h2.copyWith(color: Colors.black)),
                   const SizedBox(height: 24),
                   TextField(
                     controller: nameController,
@@ -498,7 +498,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text('Pilih Icon', style: AppTextStyle.h3),
+                  Text('Pilih Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 200, // Increased height for grid
@@ -540,7 +540,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  const Text('Pilih Warna', style: AppTextStyle.h3),
+                  Text('Pilih Warna', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 50,
@@ -694,7 +694,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Edit Wishlist', style: AppTextStyle.h2),
+                  Text('Edit Wishlist', style: AppTextStyle.h2.copyWith(color: Colors.black)),
                   const SizedBox(height: 24),
                   TextField(
                     controller: nameController,
@@ -719,7 +719,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text('Pilih Icon', style: AppTextStyle.h3),
+                  Text('Pilih Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 200, // Increased height for grid
@@ -761,7 +761,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  const Text('Pilih Warna', style: AppTextStyle.h3),
+                  Text('Pilih Warna', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 50,

@@ -280,18 +280,18 @@ class _AccountsScreenState extends State<AccountsScreen> {
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Color(account.color).withValues(alpha: 0.05),
+        color: Color(account.color).withValues(alpha: 0.3), // Increased from 0.05 to 0.3 for thicker color
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         boxShadow: [
           BoxShadow(
-            color: Color(account.color).withValues(alpha: 0.1),
+            color: Color(account.color).withValues(alpha: 0.3), // Increased from 0.1 to 0.3
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
         border: Border.all(
-          color: Color(account.color).withValues(alpha: 0.3),
-          width: 1,
+          color: Color(account.color).withValues(alpha: 0.6), // Increased from 0.3 to 0.6 for thicker border
+          width: 2, // Increased from 1 to 2
         ),
       ),
       child: Column(
@@ -303,7 +303,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: Color(account.color).withValues(alpha: 0.2),
+                  color: Color(account.color).withValues(alpha: 0.5), // Increased from 0.2 to 0.5 for thicker icon background
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 child: Center(
@@ -317,11 +317,11 @@ class _AccountsScreenState extends State<AccountsScreen> {
                   children: [
                     Text(
                       account.name,
-                      style: AppTextStyle.h3,
+                      style: AppTextStyle.h3.copyWith(color: Colors.black),
                     ),
                     Text(
                       '$transactionCount transactions this month',
-                      style: AppTextStyle.caption,
+                      style: AppTextStyle.caption.copyWith(color: Colors.black),
                     ),
                   ],
                 ),
@@ -331,7 +331,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                   // TODO: Edit/Delete wallet
                 },
                 icon:
-                    const Icon(Icons.more_vert, color: AppColors.textSecondary),
+                    const Icon(Icons.more_vert, color: Colors.black),
               ),
             ],
           ),
@@ -357,14 +357,14 @@ class _AccountsScreenState extends State<AccountsScreen> {
       children: [
         Text(
           label,
-          style: AppTextStyle.caption.copyWith(fontSize: 12),
+          style: AppTextStyle.caption.copyWith(fontSize: 12, color: Colors.black),
         ),
         const SizedBox(height: 4),
         Text(
           Formatters.formatCurrency(amount),
           style: AppTextStyle.body.copyWith(
             fontWeight: FontWeight.bold,
-            color: color,
+            color: Colors.black,
             fontSize: 13,
           ),
         ),

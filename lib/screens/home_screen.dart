@@ -170,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.text,
+                    color: Colors.black,
                   ),
                 ),
               ],
@@ -209,6 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: AppTextStyle.caption.copyWith(
                               fontWeight: FontWeight.w600,
                               fontSize: 12,
+                              color: Colors.black,
                             ),
                           ),
                           Row(
@@ -292,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         'Total Balance',
                         style: TextStyle(
                           fontSize: 14,
-                          color: AppColors.textSecondary,
+                          color: Colors.black,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -343,7 +344,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         'Total Expenses',
                         style: TextStyle(
                           fontSize: 14,
-                          color: AppColors.textSecondary,
+                          color: Colors.black,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -387,7 +388,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         'Total Income',
                         style: TextStyle(
                           fontSize: 14,
-                          color: AppColors.textSecondary,
+                          color: Colors.black,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -657,7 +658,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Formatters.formatTime(sorted[i].date),
                       style: AppTextStyle.caption.copyWith(
                         fontSize: 10, // Font lebih kecil
-                        color: AppColors.textSecondary,
+                        color: Colors.black,
                       ),
                     ),
                     const SizedBox(
@@ -724,7 +725,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ? AppColors.income
         : isExpense
             ? AppColors.expense
-            : AppColors.text;
+            : Colors.black;
 
     final cardColor = _getCardColor(transaction.category);
 
@@ -782,6 +783,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: AppTextStyle.body.copyWith(
                         fontWeight: FontWeight.w600,
                         fontSize: 14, // Font lebih kecil
+                        color: Colors.black,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -791,6 +793,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       transaction.category,
                       style: AppTextStyle.caption.copyWith(
                         fontSize: 12, // Font lebih kecil
+                        color: Colors.black,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -901,9 +904,9 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               'Welcome',
-              style: AppTextStyle.h2,
+              style: AppTextStyle.h2.copyWith(color: Colors.black),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.md),
@@ -927,6 +930,7 @@ class _HomeScreenState extends State<HomeScreen> {
               'Start managing your finances by adding your first transaction',
               style: AppTextStyle.caption.copyWith(
                 fontSize: 14,
+                color: Colors.black,
               ),
               textAlign: TextAlign.center,
             ),
@@ -1048,7 +1052,7 @@ class _MenuIconButtonState extends State<_MenuIconButton> {
           style: AppTextStyle.caption.copyWith(
             fontSize: fontSize,
             fontWeight: FontWeight.w700, // Lebih bold
-            color: AppColors.text,
+            color: Colors.black,
           ),
           textAlign: TextAlign.center,
           maxLines: 1,

@@ -208,7 +208,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.text,
+                  color: Colors.black,
                 ),
               ),
             ],
@@ -353,8 +353,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               fontSize: 11,
               fontWeight: FontWeight.w600,
               color: isOutside
-                  ? AppColors.textSecondary.withValues(alpha: 0.4)
-                  : AppColors.text,
+                  ? Colors.black.withValues(alpha: 0.4)
+                  : Colors.black,
             ),
           ),
           if (dayEvents.isNotEmpty) ...[
@@ -543,19 +543,19 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.text,
+                    color: Colors.black,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: AppSpacing.md),
             if (filteredTransactions.isEmpty)
-              const Center(
+              Center(
                 child: Padding(
-                  padding: EdgeInsets.all(AppSpacing.xl),
+                  padding: const EdgeInsets.all(AppSpacing.xl),
                   child: Text(
                     'No transactions',
-                    style: AppTextStyle.caption,
+                    style: AppTextStyle.caption.copyWith(color: Colors.black),
                   ),
                 ),
               )
@@ -648,7 +648,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       Formatters.formatTime(sorted[i].date),
                       style: AppTextStyle.caption.copyWith(
                         fontSize: 10,
-                        color: AppColors.textSecondary,
+                        color: Colors.black,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xs / 2),
@@ -711,7 +711,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         ? AppColors.income
         : isExpense
             ? AppColors.expense
-            : AppColors.text;
+            : Colors.black;
 
     final cardColor = _getCardColor(transaction.category);
 

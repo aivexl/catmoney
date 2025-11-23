@@ -197,7 +197,7 @@ class _HomePageState extends State<HomePage>
                       width: 50,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: AppColors.textSecondary.withValues(alpha: 0.4),
+                        color: Colors.black.withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(3),
                       ),
                     ),
@@ -212,7 +212,7 @@ class _HomePageState extends State<HomePage>
                       width: 50,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: AppColors.textSecondary.withValues(alpha: 0.4),
+                        color: Colors.black.withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(3),
                       ),
                     ),
@@ -225,7 +225,7 @@ class _HomePageState extends State<HomePage>
               controller: _tabController,
               isScrollable: false,
               labelColor: AppColors.primary,
-              unselectedLabelColor: AppColors.textSecondary,
+              unselectedLabelColor: Colors.black,
               indicatorColor: AppColors.primary,
               indicatorSize: TabBarIndicatorSize.tab,
               indicator: BoxDecoration(
@@ -286,13 +286,13 @@ class _HomePageState extends State<HomePage>
                     Icon(
                       Icons.inbox_outlined,
                       size: 64,
-                      color: AppColors.textSecondary.withValues(alpha: 0.5),
+                      color: Colors.black.withValues(alpha: 0.5),
                     ),
                     const SizedBox(height: AppSpacing.md),
                     Text(
                       'No transactions yet',
                       style: AppTextStyle.body.copyWith(
-                        color: AppColors.textSecondary,
+                        color: Colors.black,
                       ),
                     ),
                   ],
@@ -396,7 +396,7 @@ class _HomePageState extends State<HomePage>
                       'Total Saldo',
                       style: TextStyle(
                         fontSize: 14,
-                        color: AppColors.textSecondary,
+                        color: Colors.black,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -446,7 +446,7 @@ class _HomePageState extends State<HomePage>
                         'Total Expenses',
                         style: TextStyle(
                           fontSize: 14,
-                          color: AppColors.textSecondary,
+                          color: Colors.black,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -490,7 +490,7 @@ class _HomePageState extends State<HomePage>
                         'Total Income',
                         style: TextStyle(
                           fontSize: 14,
-                          color: AppColors.textSecondary,
+                          color: Colors.black,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -680,7 +680,7 @@ class _HomePageState extends State<HomePage>
       children: [
         Icon(
           icon,
-          color: isActive ? AppColors.primary : AppColors.textSecondary,
+          color: isActive ? AppColors.primary : Colors.black,
           size: 24,
         ),
         if (label.isNotEmpty) ...[
@@ -689,7 +689,7 @@ class _HomePageState extends State<HomePage>
             label,
             style: AppTextStyle.caption.copyWith(
               fontSize: 10,
-              color: isActive ? AppColors.primary : AppColors.textSecondary,
+              color: isActive ? AppColors.primary : Colors.black,
               fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
             ),
           ),

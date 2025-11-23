@@ -668,7 +668,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           child: Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.white : AppColors.text,
+              color: isSelected ? Colors.white : Colors.black,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -1133,7 +1133,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                       color: AppColors.border, width: 1),
                                 ),
                                 child: const Icon(Icons.add,
-                                    color: AppColors.textSecondary),
+                                    color: Colors.black),
                               ),
                             );
                           }
@@ -1179,7 +1179,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                           : FontWeight.normal,
                                       color: isSelected
                                           ? AppColors.primary
-                                          : AppColors.text,
+                                          : Colors.black,
                                     ),
                                   ),
                                 ],
@@ -1591,7 +1591,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     child: const Center(
                       child: Text(
                         'Transfer does not require a category.',
-                        style: TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(color: Colors.black),
                       ),
                     ),
                   ),
@@ -1654,12 +1654,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.camera_alt,
-                                  size: 40, color: AppColors.textSecondary),
+                                  size: 40, color: Colors.black),
                               SizedBox(height: 8),
                               Text(
                                 'Add Photo',
                                 style:
-                                    TextStyle(color: AppColors.textSecondary),
+                                    TextStyle(color: Colors.black),
                               ),
                             ],
                           )

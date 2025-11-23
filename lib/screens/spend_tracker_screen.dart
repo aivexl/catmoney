@@ -156,7 +156,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Create a budget to control your spending!',
-              style: AppTextStyle.caption.copyWith(fontSize: 14),
+              style: AppTextStyle.caption.copyWith(fontSize: 14, color: Colors.black),
               textAlign: TextAlign.center,
             ),
           ],
@@ -173,13 +173,13 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
         if (active.isNotEmpty) ...[
-          const Text('Active', style: AppTextStyle.h3),
+          Text('Active', style: AppTextStyle.h3.copyWith(color: Colors.black)),
           const SizedBox(height: AppSpacing.sm),
           ...active.map((budget) => _buildBudgetCard(budget, provider)),
         ],
         if (inactive.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.md),
-          const Text('Inactive', style: AppTextStyle.h3),
+          Text('Inactive', style: AppTextStyle.h3.copyWith(color: Colors.black)),
           const SizedBox(height: AppSpacing.sm),
           ...inactive.map((budget) => _buildBudgetCard(budget, provider)),
         ],
@@ -212,10 +212,10 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(budget.category, style: AppTextStyle.h3),
+                        Text(budget.category, style: AppTextStyle.h3.copyWith(color: Colors.black)),
                         Text(
                           '${budget.period.displayName} • ${Formatters.formatCurrency(budget.spentAmount)} / ${Formatters.formatCurrency(budget.limitAmount)}',
-                          style: AppTextStyle.caption,
+                          style: AppTextStyle.caption.copyWith(color: Colors.black),
                         ),
                       ],
                     ),
@@ -349,9 +349,9 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: AppTextStyle.body),
+          Text(label, style: AppTextStyle.body.copyWith(color: Colors.black)),
           Text(value,
-              style: AppTextStyle.body.copyWith(fontWeight: FontWeight.bold)),
+              style: AppTextStyle.body.copyWith(fontWeight: FontWeight.bold, color: Colors.black)),
         ],
       ),
     );
@@ -455,7 +455,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Add Budget', style: AppTextStyle.h2),
+                    Text('Add Budget', style: AppTextStyle.h2.copyWith(color: Colors.black)),
                     const SizedBox(height: 24),
                     TextField(
                       controller: categoryController,
@@ -478,7 +478,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text('Period', style: AppTextStyle.h3),
+                    Text('Period', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 8),
                     SegmentedButton<BudgetPeriod>(
                       segments: BudgetPeriod.values.map((period) {
@@ -493,7 +493,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    const Text('Pilih Icon', style: AppTextStyle.h3),
+                    Text('Pilih Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 200, // Increased height for grid
@@ -536,7 +536,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const Text('Pilih Warna', style: AppTextStyle.h3),
+                    Text('Pilih Warna', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 50,
@@ -699,7 +699,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Edit Budget', style: AppTextStyle.h2),
+                    Text('Edit Budget', style: AppTextStyle.h2.copyWith(color: Colors.black)),
                     const SizedBox(height: 24),
                     TextField(
                       controller: categoryController,
@@ -722,7 +722,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text('Periode', style: AppTextStyle.h3),
+                    Text('Periode', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 8),
                     SegmentedButton<BudgetPeriod>(
                       segments: BudgetPeriod.values.map((period) {
@@ -737,7 +737,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    const Text('Pilih Icon', style: AppTextStyle.h3),
+                    Text('Pilih Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 200, // Increased height for grid
@@ -780,7 +780,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const Text('Pilih Warna', style: AppTextStyle.h3),
+                    Text('Pilih Warna', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 50,

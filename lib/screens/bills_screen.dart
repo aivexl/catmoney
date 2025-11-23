@@ -151,12 +151,12 @@ class _BillsScreenState extends State<BillsScreen> {
           children: [
             const Text('📋', style: TextStyle(fontSize: 64)),
             const SizedBox(height: AppSpacing.md),
-            const Text('No bills yet',
-                style: AppTextStyle.h2, textAlign: TextAlign.center),
+            Text('No bills yet',
+                style: AppTextStyle.h2.copyWith(color: Colors.black), textAlign: TextAlign.center),
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Add bills for automatic reminders!',
-              style: AppTextStyle.caption.copyWith(fontSize: 14),
+              style: AppTextStyle.caption.copyWith(fontSize: 14, color: Colors.black),
               textAlign: TextAlign.center,
             ),
           ],
@@ -173,13 +173,13 @@ class _BillsScreenState extends State<BillsScreen> {
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
         if (unpaid.isNotEmpty) ...[
-          const Text('Unpaid', style: AppTextStyle.h3),
+          Text('Unpaid', style: AppTextStyle.h3.copyWith(color: Colors.black)),
           const SizedBox(height: AppSpacing.sm),
           ...unpaid.map((bill) => _buildBillCard(bill, provider)),
         ],
         if (paid.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.md),
-          const Text('Paid', style: AppTextStyle.h3),
+          Text('Paid', style: AppTextStyle.h3.copyWith(color: Colors.black)),
           const SizedBox(height: AppSpacing.sm),
           ...paid.map((bill) => _buildBillCard(bill, provider)),
         ],
@@ -218,10 +218,10 @@ class _BillsScreenState extends State<BillsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(bill.name, style: AppTextStyle.h3),
+                    Text(bill.name, style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     Text(
                       Formatters.formatCurrency(bill.amount),
-                      style: AppTextStyle.body
+                      style: AppTextStyle.body.copyWith(color: Colors.black)
                           .copyWith(fontWeight: FontWeight.bold),
                     ),
                     Text(
@@ -278,8 +278,8 @@ class _BillsScreenState extends State<BillsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(bill.name, style: AppTextStyle.h2),
-                        Text(bill.statusText, style: AppTextStyle.caption),
+                        Text(bill.name, style: AppTextStyle.h2.copyWith(color: Colors.black)),
+                        Text(bill.statusText, style: AppTextStyle.caption.copyWith(color: Colors.black)),
                       ],
                     ),
                   ),
@@ -363,9 +363,9 @@ class _BillsScreenState extends State<BillsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: AppTextStyle.body),
+          Text(label, style: AppTextStyle.body.copyWith(color: Colors.black)),
           Text(value,
-              style: AppTextStyle.body.copyWith(fontWeight: FontWeight.bold)),
+              style: AppTextStyle.body.copyWith(fontWeight: FontWeight.bold, color: Colors.black)),
         ],
       ),
     );
@@ -471,7 +471,7 @@ class _BillsScreenState extends State<BillsScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Add Bill', style: AppTextStyle.h2),
+                    Text('Add Bill', style: AppTextStyle.h2.copyWith(color: Colors.black)),
                     const SizedBox(height: 24),
                     TextField(
                       controller: nameController,
@@ -534,7 +534,7 @@ class _BillsScreenState extends State<BillsScreen> {
                       ),
                     ],
                     const SizedBox(height: 16),
-                    const Text('Pilih Icon', style: AppTextStyle.h3),
+                    Text('Pilih Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 200, // Increased height for grid
@@ -577,7 +577,7 @@ class _BillsScreenState extends State<BillsScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const Text('Pilih Warna', style: AppTextStyle.h3),
+                    Text('Pilih Warna', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 50,
@@ -740,7 +740,7 @@ class _BillsScreenState extends State<BillsScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Edit Bill', style: AppTextStyle.h2),
+                    Text('Edit Bill', style: AppTextStyle.h2.copyWith(color: Colors.black)),
                     const SizedBox(height: 24),
                     TextField(
                       controller: nameController,
@@ -803,7 +803,7 @@ class _BillsScreenState extends State<BillsScreen> {
                       ),
                     ],
                     const SizedBox(height: 16),
-                    const Text('Pilih Icon', style: AppTextStyle.h3),
+                    Text('Pilih Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 200, // Increased height for grid
@@ -846,7 +846,7 @@ class _BillsScreenState extends State<BillsScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const Text('Pilih Warna', style: AppTextStyle.h3),
+                    Text('Pilih Warna', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 50,

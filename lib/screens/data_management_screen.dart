@@ -586,7 +586,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                               : Icons.cloud_off,
                           color: isAuthenticated
                               ? AppColors.income
-                              : AppColors.textSecondary,
+                              : Colors.black,
                         ),
                         title: Text(
                           isAuthenticated
@@ -769,18 +769,18 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
         title: Text(
           title,
           style: AppTextStyle.body.copyWith(
-            color: enabled ? AppColors.text : Colors.grey,
+            color: enabled ? Colors.black : Colors.grey,
           ),
         ),
         subtitle: Text(
           subtitle,
           style: AppTextStyle.caption.copyWith(
-            color: enabled ? AppColors.textSecondary : Colors.grey,
+            color: enabled ? Colors.black : Colors.grey,
           ),
         ),
         trailing: Icon(
           Icons.chevron_right,
-          color: enabled ? AppColors.textSecondary : Colors.grey,
+          color: enabled ? Colors.black : Colors.grey,
         ),
         onTap: enabled ? onTap : null,
       ),

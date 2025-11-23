@@ -90,7 +90,7 @@ class MonthlySummary extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.text,
+                  color: Colors.black,
                 ),
               ),
             ],
@@ -132,7 +132,7 @@ class MonthlySummary extends StatelessWidget {
                               'Income',
                               style: AppTextStyle.caption.copyWith(
                                 fontSize: 11,
-                                color: AppColors.textSecondary,
+                                color: Colors.black,
                               ),
                             ),
                             Text(
@@ -154,7 +154,7 @@ class MonthlySummary extends StatelessWidget {
                               'Expenses',
                               style: AppTextStyle.caption.copyWith(
                                 fontSize: 11,
-                                color: AppColors.textSecondary,
+                                color: Colors.black,
                               ),
                             ),
                             Text(
@@ -176,7 +176,7 @@ class MonthlySummary extends StatelessWidget {
                               'Balance',
                               style: AppTextStyle.caption.copyWith(
                                 fontSize: 11,
-                                color: AppColors.textSecondary,
+                                color: Colors.black,
                               ),
                             ),
                             Text(
@@ -222,7 +222,7 @@ class MonthlySummary extends StatelessWidget {
                           'Total Income',
                           style: AppTextStyle.caption.copyWith(
                             fontSize: 12,
-                            color: AppColors.textSecondary,
+                            color: Colors.black,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -242,7 +242,7 @@ class MonthlySummary extends StatelessWidget {
                           'Total Expenses',
                           style: AppTextStyle.caption.copyWith(
                             fontSize: 12,
-                            color: AppColors.textSecondary,
+                            color: Colors.black,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -271,7 +271,7 @@ class MonthlySummary extends StatelessWidget {
                         'Total Balance',
                         style: AppTextStyle.caption.copyWith(
                           fontSize: 12,
-                          color: AppColors.textSecondary,
+                          color: Colors.black,
                         ),
                       ),
                       const SizedBox(height: 4),

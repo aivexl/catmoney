@@ -72,7 +72,7 @@ class _TimeBarChartState extends State<TimeBarChart> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.text,
+                      color: Colors.black,
                     ),
                   ),
                 ],
@@ -103,10 +103,10 @@ class _TimeBarChartState extends State<TimeBarChart> {
           SizedBox(
             height: 200,
             child: widget.timeLabels.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
                       'No data available',
-                      style: AppTextStyle.caption,
+                      style: AppTextStyle.caption.copyWith(color: Colors.black),
                     ),
                   )
                 : BarChart(
@@ -147,6 +147,7 @@ class _TimeBarChartState extends State<TimeBarChart> {
                                   widget.timeLabels[value.toInt()],
                                   style: AppTextStyle.caption.copyWith(
                                     fontSize: 10,
+                                    color: Colors.black,
                                   ),
                                 ),
                               );
@@ -162,6 +163,7 @@ class _TimeBarChartState extends State<TimeBarChart> {
                                 Formatters.formatCompactCurrency(value),
                                 style: AppTextStyle.caption.copyWith(
                                   fontSize: 10,
+                                  color: Colors.black,
                                 ),
                               );
                             },

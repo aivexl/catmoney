@@ -23,18 +23,18 @@ class BalancePieChart extends StatelessWidget {
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         ),
-        child: const Center(
+        child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
+              const Text(
                 '📊',
                 style: TextStyle(fontSize: 48),
               ),
-              SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.sm),
               Text(
                 'Belum ada data',
-                style: AppTextStyle.caption,
+                style: AppTextStyle.caption.copyWith(color: Colors.black),
               ),
             ],
           ),
@@ -82,7 +82,7 @@ class BalancePieChart extends StatelessWidget {
               children: [
                 Text(
                   'Perbandingan',
-                  style: AppTextStyle.caption.copyWith(fontSize: 11),
+                  style: AppTextStyle.caption.copyWith(fontSize: 11, color: Colors.black),
                 ),
                 const SizedBox(height: 2),
                 Row(
@@ -111,7 +111,7 @@ class BalancePieChart extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 6),
                       child: Text(
                         'vs',
-                        style: AppTextStyle.caption.copyWith(fontSize: 10),
+                        style: AppTextStyle.caption.copyWith(fontSize: 10, color: Colors.black),
                       ),
                     ),
                     Column(

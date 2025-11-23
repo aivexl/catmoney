@@ -177,7 +177,7 @@ class _MoreScreenState extends State<MoreScreen> {
         title,
         style: AppTextStyle.caption.copyWith(
           fontWeight: FontWeight.w600,
-          color: AppColors.textSecondary,
+          color: Colors.black,
         ),
       ),
     );
@@ -214,10 +214,10 @@ class _MoreScreenState extends State<MoreScreen> {
           ),
           child: Icon(icon, color: color),
         ),
-        title: Text(title, style: AppTextStyle.body),
-        subtitle: Text(subtitle, style: AppTextStyle.caption),
+        title: Text(title, style: AppTextStyle.body.copyWith(color: Colors.black)),
+        subtitle: Text(subtitle, style: AppTextStyle.caption.copyWith(color: Colors.black)),
         trailing:
-            const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+            const Icon(Icons.chevron_right, color: Colors.black),
         onTap: onTap,
       ),
     );
