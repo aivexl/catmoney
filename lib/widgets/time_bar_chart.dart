@@ -31,7 +31,7 @@ class _TimeBarChartState extends State<TimeBarChart> {
       padding: const EdgeInsets.all(AppSpacing.md),
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         boxShadow: [
           BoxShadow(

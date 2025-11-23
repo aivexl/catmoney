@@ -42,7 +42,7 @@ class _BillsScreenState extends State<BillsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       body: Stack(
         children: [
           SafeArea(
@@ -471,12 +471,12 @@ class _BillsScreenState extends State<BillsScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Tambah Bill', style: AppTextStyle.h2),
+                    const Text('Add Bill', style: AppTextStyle.h2),
                     const SizedBox(height: 24),
                     TextField(
                       controller: nameController,
                       decoration: InputDecoration(
-                        labelText: 'Nama Bill',
+                        labelText: 'Bill Name',
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12)),
                         prefixIcon: const Icon(Icons.label),
@@ -745,7 +745,7 @@ class _BillsScreenState extends State<BillsScreen> {
                     TextField(
                       controller: nameController,
                       decoration: InputDecoration(
-                        labelText: 'Nama Bill',
+                        labelText: 'Bill Name',
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12)),
                         prefixIcon: const Icon(Icons.label),

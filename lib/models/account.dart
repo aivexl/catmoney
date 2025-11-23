@@ -72,7 +72,7 @@ class Account {
       Account(
         id: 'cash',
         name: 'Cash',
-        icon: 'account_balance_wallet',
+        icon: 'wallet',
         isDefault: true,
         color: 0xFFBAFFC9, // Pastel Mint
       ),

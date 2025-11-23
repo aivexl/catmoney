@@ -42,7 +42,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       body: Stack(
         children: [
           SafeArea(
@@ -161,13 +161,13 @@ class _WishlistScreenState extends State<WishlistScreen> {
             ),
             const SizedBox(height: AppSpacing.md),
             const Text(
-              'Belum ada wishlist',
+              'No wishlist yet',
               style: AppTextStyle.h2,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Buat target keinginan Anda dan track progressnya!',
+              'Create your wishlist targets and track their progress!',
               style: AppTextStyle.caption.copyWith(fontSize: 14),
               textAlign: TextAlign.center,
             ),
@@ -301,7 +301,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                           style: AppTextStyle.h2,
                         ),
                         Text(
-                          '${wishlist.progress.toStringAsFixed(1)}% tercapai',
+                          '${wishlist.progress.toStringAsFixed(1)}% achieved',
                           style: AppTextStyle.caption,
                         ),
                       ],
@@ -339,12 +339,12 @@ class _WishlistScreenState extends State<WishlistScreen> {
                         await provider.deleteWishlist(wishlist.id);
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Wishlist dihapus')),
+                            const SnackBar(content: Text('Wishlist deleted')),
                           );
                         }
                       },
                       icon: const Icon(Icons.delete),
-                      label: const Text('Hapus'),
+                      label: const Text('Delete'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.expense,
                         foregroundColor: Colors.white,
@@ -473,12 +473,12 @@ class _WishlistScreenState extends State<WishlistScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Tambah Wishlist', style: AppTextStyle.h2),
+                  const Text('Add Wishlist', style: AppTextStyle.h2),
                   const SizedBox(height: 24),
                   TextField(
                     controller: nameController,
                     decoration: InputDecoration(
-                      labelText: 'Nama Target',
+                      labelText: 'Target Name',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -699,7 +699,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                   TextField(
                     controller: nameController,
                     decoration: InputDecoration(
-                      labelText: 'Nama Target',
+                      labelText: 'Target Name',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),

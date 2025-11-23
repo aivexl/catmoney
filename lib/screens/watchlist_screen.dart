@@ -11,7 +11,7 @@ class WatchlistScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('⭐ Watchlist', style: TextStyle(color: Colors.white)),
         backgroundColor: const Color(0xFFffcc02),

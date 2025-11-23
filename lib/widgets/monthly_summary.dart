@@ -56,7 +56,7 @@ class MonthlySummary extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         boxShadow: [
           BoxShadow(
@@ -207,14 +207,7 @@ class MonthlySummary extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFFF5F0FF),
-                  Color(0xFFFFE5F0),
-                ],
-              ),
+              color: AppColors.background,
               borderRadius: BorderRadius.circular(AppBorderRadius.md),
             ),
             child: Column(
@@ -269,7 +262,7 @@ class MonthlySummary extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.surface,
                     borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   ),
                   child: Column(

@@ -7,6 +7,7 @@ import '../models/transaction.dart';
 import '../utils/formatters.dart';
 import '../utils/pastel_colors.dart';
 import '../models/account.dart';
+import '../utils/app_icons.dart';
 
 class AccountsScreen extends StatefulWidget {
   const AccountsScreen({super.key});
@@ -50,7 +51,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
             .toList();
 
         return Scaffold(
-          backgroundColor: Colors.white, // White background
+          backgroundColor: AppColors.background, // Yellowish background
           body: SafeArea(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -203,6 +204,58 @@ class _AccountsScreenState extends State<AccountsScreen> {
     );
   }
 
+  Widget _buildAccountIcon(Account account) {
+    // Check for wallet icon
+    if (account.icon == 'wallet') {
+      return const Icon(
+        Icons.account_balance_wallet,
+        size: 32,
+        color: AppColors.primary,
+      );
+    }
+
+    // Check for asset image
+    if (account.icon.contains('assets/')) {
+      return Image.asset(
+        account.icon,
+        width: 40,
+        height: 40,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) =>
+            _buildFallbackIcon(account),
+      );
+    }
+
+    // Try to get icon from AppIcons
+    final iconData = AppIcons.getIcon(account.icon);
+    if (iconData != null) {
+      return Icon(
+        iconData,
+        size: 32,
+        color: Color(account.color),
+      );
+    }
+
+    // Fallback: show first two letters of account name
+    return _buildFallbackIcon(account);
+  }
+
+  Widget _buildFallbackIcon(Account account) {
+    // Get first two letters of account name, uppercase
+    final initials = account.name.length >= 2
+        ? account.name.substring(0, 2).toUpperCase()
+        : account.name.toUpperCase();
+    
+    return Text(
+      initials,
+      style: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        color: Color(account.color),
+      ),
+    );
+  }
+
   Widget _buildAccountCard(Account account, List<Transaction> transactions) {
     // Calculate balance for this account
     double balance = 0.0;
@@ -254,23 +307,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 child: Center(
-                  child: account.icon == 'wallet'
-                      ? const Icon(Icons.account_balance_wallet,
-                          size: 32, color: AppColors.primary)
-                      : account.icon.contains('assets/')
-                          ? Image.asset(
-                              account.icon,
-                              width: 40,
-                              height: 40,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Text('💰',
-                                      style: TextStyle(fontSize: 40)),
-                            )
-                          : Text(
-                              account.icon,
-                              style: const TextStyle(fontSize: 40),
-                            ),
+                  child: _buildAccountIcon(account),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),

@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'theme/app_theme.dart';
+import 'theme/app_colors.dart';
 import 'providers/transaction_provider.dart';
 import 'providers/account_provider.dart';
 import 'providers/category_provider.dart';
@@ -155,6 +156,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background, // CRITICAL: Set background color
       body: Stack(
         children: [
           // PageView untuk semua screens

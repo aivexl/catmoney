@@ -25,11 +25,14 @@ class AppColors {
   static const Color cardLavender = Color(0xFFF0E6FF); // Light Lavender
 
   // Warna untuk UI
-  static const Color background = Colors.white; // White background
-  static const Color surface = Color(0xFFFFFFFF); // Pure White
+  static const Color background =
+      Color(0xFFFFFBE6); // Light yellow (Butter/Vanilla)
+  static const Color surface =
+      Color(0xFFFFFBE6); // Light yellow (Butter/Vanilla)
   static const Color tabBackground =
-      Color(0xFFF8FCFF); // Putih kebiruan lebih muda dari background
-  static const Color contentBackground = Color(0xFFFFFFFF); // White
+      Color(0xFFFFF8DC); // Cornsilk - slightly darker yellow for tabs
+  static const Color contentBackground =
+      Color(0xFFFFFBE6); // Light yellow (Butter/Vanilla)
   static const Color text = Color(
       0xFF7EC8E3); // Biru pastel untuk teks list (warna seperti di bawah menu tabs)
   static const Color textSecondary =

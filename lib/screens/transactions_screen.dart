@@ -61,7 +61,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             provider.transactions.where((t) => _isSameMonth(t.date)).toList();
 
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.background,
           body: SafeArea(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -175,7 +175,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         boxShadow: [
           BoxShadow(
@@ -507,7 +507,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.background,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(32),
           topRight: Radius.circular(32),
@@ -812,7 +812,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             children: [
               ListTile(
                 leading: const Icon(Icons.edit),
-                title: const Text('Edit transaksi'),
+                title: const Text('Edit Transaction'),
                 onTap: () {
                   Navigator.pop(ctx);
                   Navigator.push(
@@ -832,8 +832,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                 ),
                 title: Text(
                   transaction.isWatchlisted
-                      ? 'Hapus dari Watchlist'
-                      : 'Tambah ke Watchlist',
+                      ? 'Remove from Watchlist'
+                      : 'Add to Watchlist',
                 ),
                 onTap: () {
                   context
@@ -844,23 +844,23 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.delete, color: AppColors.expense),
-                title: const Text('Hapus transaksi'),
+                title: const Text('Delete Transaction'),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final confirm = await showDialog<bool>(
                     context: context,
                     builder: (dialogCtx) => AlertDialog(
-                      title: const Text('Hapus Transaksi'),
+                      title: const Text('Delete Transaction'),
                       content:
-                          const Text('Yakin ingin menghapus transaksi ini?'),
+                          const Text('Are you sure you want to delete this transaction?'),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(dialogCtx, false),
-                          child: const Text('Batal'),
+                          child: const Text('Cancel'),
                         ),
                         TextButton(
                           onPressed: () => Navigator.pop(dialogCtx, true),
-                          child: const Text('Hapus'),
+                          child: const Text('Delete'),
                         ),
                       ],
                     ),

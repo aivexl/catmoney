@@ -20,7 +20,17 @@ class CategoryIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconData = AppIcons.getIcon(iconName);
+    // Try to get icon, with fallback for common aliases
+    IconData? iconData = AppIcons.getIcon(iconName);
+
+    // If not found, try common aliases
+    if (iconData == null) {
+      if (iconName.contains('wallet') || iconName.contains('account_balance')) {
+        iconData = AppIcons.getIcon('wallet');
+      } else if (iconName.contains('card')) {
+        iconData = AppIcons.getIcon('credit_card');
+      }
+    }
 
     Widget iconWidget;
 
@@ -33,9 +43,13 @@ class CategoryIcon extends StatelessWidget {
             : (color ?? AppColors.text), // Gold/Yellow
       );
     } else {
-      iconWidget = Text(
-        iconName,
-        style: TextStyle(fontSize: size),
+      // Use default wallet icon as fallback instead of text
+      iconWidget = Icon(
+        Icons.account_balance_wallet_outlined,
+        size: size,
+        color: useYellowLines
+            ? const Color(0xFFFFD700)
+            : (color ?? AppColors.text),
       );
     }
 

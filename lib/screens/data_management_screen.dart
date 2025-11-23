@@ -27,7 +27,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
     if (_isProcessing) return;
 
     final provider = context.read<TransactionProvider>();
-    
+
     if (provider.transactions.isEmpty) {
       _showMessage('No transactions to export', isError: true);
       return;
@@ -37,9 +37,9 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
 
     try {
       final result = await ExportService.exportToExcel(provider.transactions);
-      
+
       if (!mounted) return;
-      
+
       if (result.success) {
         _showMessage(
           '✅ ${result.message}\n${result.path != null ? 'Location: ${result.path}' : ''}',
@@ -87,14 +87,15 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
 
     try {
       final result = await ExportService.importFromExcel();
-      
+
       if (!mounted) return;
 
       if (result.success && result.transactions != null) {
         final provider = context.read<TransactionProvider>();
         await provider.setTransactions(result.transactions!);
-        
-        String message = '✅ Imported ${result.transactions!.length} transactions';
+
+        String message =
+            '✅ Imported ${result.transactions!.length} transactions';
         if (result.warnings != null) {
           message += '\n⚠️ ${result.warnings}';
         }
@@ -114,7 +115,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
     if (_isProcessing) return;
 
     final provider = context.read<TransactionProvider>();
-    
+
     if (provider.transactions.isEmpty) {
       _showMessage('No transactions to backup', isError: true);
       return;
@@ -124,9 +125,9 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
 
     try {
       final result = await BackupService.backupToJson(provider.transactions);
-      
+
       if (!mounted) return;
-      
+
       if (result.success) {
         _showMessage(
           '✅ ${result.message}\n${result.path != null ? 'Location: ${result.path}' : ''}',
@@ -174,13 +175,13 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
 
     try {
       final result = await BackupService.restoreFromJson();
-      
+
       if (!mounted) return;
 
       if (result.success && result.transactions != null) {
         final provider = context.read<TransactionProvider>();
         await provider.setTransactions(result.transactions!);
-        
+
         _showMessage(result.message ?? '✅ Restore completed', isError: false);
       } else if (result.message != null) {
         _showMessage('❌ ${result.message}', isError: true);
@@ -208,12 +209,12 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
 
     try {
       final path = await FilePicker.platform.getDirectoryPath();
-      
+
       if (path == null || !mounted) return;
-      
+
       final settings = context.read<SettingsProvider>();
       await settings.setAutoBackup(enabled: true, folderPath: path);
-      
+
       if (!mounted) return;
       _showMessage('✅ Google Drive folder set: $path', isError: false);
     } catch (e) {
@@ -242,7 +243,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                 children: [
                   CircularProgressIndicator(),
                   SizedBox(height: AppSpacing.md),
-                  Text('Menghubungkan ke Google Drive...'),
+                  Text('Connecting to Google Drive...'),
                 ],
               ),
             ),
@@ -251,7 +252,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
       );
 
       final result = await GoogleDriveService.authenticate();
-      
+
       if (!mounted) return;
       Navigator.of(context).pop(); // Close loading dialog
 
@@ -265,7 +266,8 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
     } catch (e) {
       if (!mounted) return;
       Navigator.of(context).pop(); // Close loading dialog if still open
-      _showErrorDialog('Unexpected Error', 'Error: $e\n\nLihat console untuk detail.');
+      _showErrorDialog(
+          'Unexpected Error', 'Error: $e\n\nSee console for details.');
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
@@ -285,7 +287,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
               Navigator.of(context).pop();
               // Open troubleshooting guide in browser (optional)
             },
-            child: const Text('Lihat Panduan'),
+            child: const Text('View Guide'),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -303,11 +305,12 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Sign Out Google Drive'),
-        content: const Text('Apakah Anda yakin ingin sign out dari Google Drive?'),
+        content:
+            const Text('Are you sure you want to sign out from Google Drive?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Batal'),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -338,14 +341,14 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
     if (_isProcessing) return;
 
     final settings = context.read<SettingsProvider>();
-    
+
     if (kIsWeb) {
       // On web, check authentication first
       if (value) {
         final isAuth = await GoogleDriveService.isAuthenticated();
         if (!isAuth) {
           _showMessage(
-            '⚠️ Silakan sign in ke Google Drive terlebih dahulu',
+            '⚠️ Please sign in to Google Drive first',
             isError: true,
           );
           return;
@@ -356,8 +359,8 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
         await settings.setAutoBackup(enabled: value);
         if (!mounted) return;
         _showMessage(
-          value 
-              ? '✅ Auto-backup enabled. File akan otomatis upload ke Google Drive setelah setiap transaksi'
+          value
+              ? '✅ Auto-backup enabled. Files will automatically upload to Google Drive after each transaction'
               : 'Auto-backup disabled',
           isError: false,
         );
@@ -390,7 +393,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
 
     final settings = context.read<SettingsProvider>();
     final transactions = context.read<TransactionProvider>().transactions;
-    
+
     if (transactions.isEmpty) {
       _showMessage('No transactions to backup', isError: true);
       return;
@@ -401,7 +404,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
       final isAuth = await GoogleDriveService.isAuthenticated();
       if (!isAuth) {
         _showMessage(
-          '⚠️ Silakan sign in ke Google Drive terlebih dahulu',
+          '⚠️ Please sign in to Google Drive first',
           isError: true,
         );
         return;
@@ -442,9 +445,9 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
         transactions,
         settings.driveFolderPath!,
       );
-      
+
       if (!mounted) return;
-      
+
       if (result.success) {
         _showMessage(
           '✅ ${result.message}\n${result.path != null ? 'Location: ${result.path}' : ''}',
@@ -480,11 +483,12 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
     final transactions = context.watch<TransactionProvider>().transactions;
-    
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('📦 Data Management', style: TextStyle(color: Colors.white)),
+        title: const Text('📦 Data Management',
+            style: TextStyle(color: Colors.white)),
         backgroundColor: const Color(0xFFffcc02),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -493,14 +497,14 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
           ListView(
             padding: const EdgeInsets.all(AppSpacing.md),
             children: [
-              _buildSectionTitle('Laporan Excel'),
+              _buildSectionTitle('Excel Report'),
               _buildInfoCard(
                 'Export and import your transaction data in Excel format (.xlsx)',
                 Icons.info_outline,
               ),
               _buildButtonTile(
                 icon: Icons.file_download,
-                title: 'Ekspor Transaksi ke Excel',
+                title: 'Export Transactions to Excel',
                 subtitle:
                     'Export ${transactions.length} transactions to Excel file',
                 onTap: _exportExcel,
@@ -508,38 +512,38 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
               ),
               _buildButtonTile(
                 icon: Icons.file_upload,
-                title: 'Impor Transaksi dari Excel',
+                title: 'Import Transactions from Excel',
                 subtitle: 'Import transactions from Excel file',
                 onTap: _importExcel,
                 enabled: !_isProcessing,
               ),
               const SizedBox(height: AppSpacing.lg),
-              _buildSectionTitle('Backup Lokal'),
+              _buildSectionTitle('Local Backup'),
               _buildInfoCard(
                 'Backup your data to JSON format for safekeeping',
                 Icons.info_outline,
               ),
               _buildButtonTile(
                 icon: Icons.backup,
-                title: 'Backup ke Perangkat',
+                title: 'Backup to Device',
                 subtitle: 'Save backup as .json file on device',
                 onTap: _backupJson,
                 enabled: !_isProcessing && transactions.isNotEmpty,
               ),
               _buildButtonTile(
                 icon: Icons.restore,
-                title: 'Pulihkan dari Backup',
+                title: 'Restore from Backup',
                 subtitle: 'Restore data from .json backup file',
                 onTap: _restoreJson,
                 enabled: !_isProcessing,
               ),
               const SizedBox(height: AppSpacing.lg),
               if (FeaturesConfig.enableGoogleDriveBackup) ...[
-                _buildSectionTitle('Backup Otomatis Google Drive'),
+                _buildSectionTitle('Automatic Google Drive Backup'),
                 if (kIsWeb)
                   _buildInfoCard(
-                    'Auto-backup akan otomatis upload file backup ke Google Drive setelah setiap transaksi.\n\n'
-                    'Anda perlu sign in ke Google Drive terlebih dahulu untuk menggunakan fitur ini.',
+                    'Auto-backup will automatically upload backup files to Google Drive after each transaction.\n\n'
+                    'You need to sign in to Google Drive first to use this feature.',
                     Icons.cloud_outlined,
                   )
                 else
@@ -551,9 +555,9 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
               if (!FeaturesConfig.enableGoogleDriveBackup) ...[
                 _buildSectionTitle('Google Drive Backup (Disabled)'),
                 _buildInfoCard(
-                  '⚠️ Google Drive backup sementara dinonaktifkan.\n\n'
-                  'Untuk mengaktifkan, set FeaturesConfig.enableGoogleDriveBackup = true\n'
-                  'di file lib/config/features_config.dart setelah OAuth setup selesai.',
+                  '⚠️ Google Drive backup is temporarily disabled.\n\n'
+                  'To enable, set FeaturesConfig.enableGoogleDriveBackup = true\n'
+                  'in lib/config/features_config.dart after OAuth setup is complete.',
                   Icons.warning_amber_outlined,
                 ),
               ],
@@ -577,23 +581,25 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                       ),
                       child: ListTile(
                         leading: Icon(
-                          isAuthenticated ? Icons.check_circle : Icons.cloud_off,
+                          isAuthenticated
+                              ? Icons.check_circle
+                              : Icons.cloud_off,
                           color: isAuthenticated
                               ? AppColors.income
                               : AppColors.textSecondary,
                         ),
                         title: Text(
                           isAuthenticated
-                              ? 'Terhubung ke Google Drive'
-                              : 'Belum terhubung ke Google Drive',
+                              ? 'Connected to Google Drive'
+                              : 'Not connected to Google Drive',
                           style: AppTextStyle.body.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         subtitle: Text(
                           isAuthenticated
-                              ? 'Backup akan otomatis upload ke Google Drive'
-                              : 'Klik untuk sign in ke Google Drive',
+                              ? 'Backup will automatically upload to Google Drive'
+                              : 'Click to sign in to Google Drive',
                           style: AppTextStyle.caption,
                         ),
                         trailing: isAuthenticated
@@ -629,10 +635,10 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                     borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   ),
                   child: SwitchListTile(
-                    title: const Text('Aktifkan Auto Backup'),
+                    title: const Text('Enable Auto Backup'),
                     subtitle: Text(
                       kIsWeb
-                          ? 'Backup akan otomatis upload ke Google Drive setelah setiap transaksi'
+                          ? 'Backup will automatically upload to Google Drive after each transaction'
                           : (settings.driveFolderPath == null
                               ? 'Select Google Drive sync folder'
                               : 'Folder: ${settings.driveFolderPath}'),
@@ -652,11 +658,12 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                   ),
                 if (settings.autoBackupEnabled)
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                     child: ElevatedButton.icon(
                       onPressed: _isProcessing ? null : _backupToDriveNow,
                       icon: const Icon(Icons.cloud_upload),
-                      label: const Text('Backup Sekarang ke Google Drive'),
+                      label: const Text('Backup Now to Google Drive'),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.all(AppSpacing.md),
                       ),

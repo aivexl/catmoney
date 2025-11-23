@@ -31,7 +31,6 @@ import '../screens/accounts_screen.dart';
 import '../screens/wishlist_screen.dart';
 import '../screens/spend_tracker_screen.dart';
 import '../screens/bills_screen.dart';
-import '../widgets/category_icon.dart';
 
 /// HomeScreen - Main dashboard screen
 ///
@@ -88,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.background, // Light yellow background
           body: SafeArea(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -133,17 +132,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: AppColors.background, // Same as background color (no white)
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(32),
           topRight: Radius.circular(32),
         ),
       ),
       child: Padding(
         padding: const EdgeInsets.only(
-          left: AppSpacing.lg,
-          right: AppSpacing.lg,
+          left: AppSpacing.md,
+          right: AppSpacing.md,
           top: AppSpacing.md,
           bottom: 100, // Extra padding to clear bottom navigation bar
         ),
@@ -257,9 +256,9 @@ class _HomeScreenState extends State<HomeScreen> {
         right: AppSpacing.md,
         bottom: AppSpacing.md,
       ),
-      decoration: BoxDecoration(
-        color: Color(0xFFffcc02),
-        borderRadius: const BorderRadius.only(
+      decoration: const BoxDecoration(
+        color: Color(0xFFffcc02), // Solid yellow header (same as other pages)
+        borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(AppBorderRadius.xl),
           bottomRight: Radius.circular(AppBorderRadius.xl),
         ),
@@ -268,18 +267,11 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: AppSpacing.md),
-          // Total Saldo Card (Full Width)
+          // Total Balance Card (Full Width)
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withValues(alpha: 0.9),
-                  Colors.white.withValues(alpha: 0.7),
-                ],
-              ),
+              color: AppColors.background, // Solid yellow background (no gradient)
               borderRadius: BorderRadius.circular(AppBorderRadius.lg),
               boxShadow: [
                 BoxShadow(
@@ -334,15 +326,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        const Color(0xFFFFE5E5)
-                            .withValues(alpha: 0.8), // Light red pastel
-                        Colors.white.withValues(alpha: 0.7),
-                      ],
-                    ),
+                    color: AppColors.background, // Solid yellow background (no gradient)
                     borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                     boxShadow: [
                       BoxShadow(
@@ -386,15 +370,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        const Color(0xFFE5F5E5)
-                            .withValues(alpha: 0.8), // Light green pastel
-                        Colors.white.withValues(alpha: 0.7),
-                      ],
-                    ),
+                    color: AppColors.background, // Solid yellow background (no gradient)
                     borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                     boxShadow: [
                       BoxShadow(
@@ -787,10 +763,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Center(
-                  child: CategoryIcon(
-                    iconName: transaction.catEmoji ?? 'cat',
-                    size: 18,
-                    useYellowLines: true,
+                  child: Text(
+                    transaction.catEmoji ?? '🐱',
+                    style: const TextStyle(fontSize: 18), // Font lebih kecil
                   ),
                 ),
               ),
@@ -852,7 +827,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               ListTile(
                 leading: const Icon(Icons.edit),
-                title: const Text('Edit transaksi'),
+                title: const Text('Edit Transaction'),
                 onTap: () {
                   Navigator.pop(ctx);
                   Navigator.push(
@@ -871,8 +846,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   transaction.isWatchlisted ? Icons.star_outline : Icons.star,
                 ),
                 title: Text(transaction.isWatchlisted
-                    ? 'Hapus dari Watchlist'
-                    : 'Tambah ke Watchlist'),
+                    ? 'Remove from Watchlist'
+                    : 'Add to Watchlist'),
                 onTap: () {
                   context
                       .read<TransactionProvider>()
@@ -882,23 +857,23 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.delete, color: AppColors.expense),
-                title: const Text('Hapus transaksi'),
+                title: const Text('Delete Transaction'),
                 onTap: () async {
                   Navigator.pop(ctx);
                   final confirm = await showDialog<bool>(
                     context: context,
                     builder: (dialogCtx) => AlertDialog(
-                      title: const Text('Hapus Transaksi'),
+                      title: const Text('Delete Transaction'),
                       content:
-                          const Text('Yakin ingin menghapus transaksi ini?'),
+                          const Text('Are you sure you want to delete this transaction?'),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(dialogCtx, false),
-                          child: const Text('Batal'),
+                          child: const Text('Cancel'),
                         ),
                         TextButton(
                           onPressed: () => Navigator.pop(dialogCtx, true),
-                          child: const Text('Hapus'),
+                          child: const Text('Delete'),
                         ),
                       ],
                     ),

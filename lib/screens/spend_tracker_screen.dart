@@ -42,7 +42,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       body: Stack(
         children: [
           SafeArea(
