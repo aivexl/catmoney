@@ -3,7 +3,6 @@ import 'dart:io' as io;
 import 'package:flutter/foundation.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:universal_html/html.dart' as html;
 
 import '../models/transaction.dart';
@@ -172,7 +171,7 @@ class BackupService {
       // Import GoogleDriveService dynamically to avoid import issues
       // Upload to Google Drive
       final result = await GoogleDriveService.uploadBackup(transactions);
-      
+
       if (result.success) {
         return BackupResult.success(
           result.message ?? 'Backup uploaded to Google Drive successfully',
@@ -195,7 +194,10 @@ class BackupService {
     try {
       final blob = html.Blob([bytes]);
       final url = html.Url.createObjectUrlFromBlob(blob);
-      final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').substring(0, 19);
+      final timestamp = DateTime.now()
+          .toIso8601String()
+          .replaceAll(':', '-')
+          .substring(0, 19);
       final fileName = isAutoBackup
           ? 'catmoneymanager_auto_backup_$timestamp.json'
           : 'catmoneymanager_backup_$timestamp.json';
@@ -216,10 +218,25 @@ class BackupService {
   /// Save JSON file on native platform
   static Future<BackupResult> _saveNativeJson(List<int> bytes) async {
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').substring(0, 19);
+      final timestamp = DateTime.now()
+          .toIso8601String()
+          .replaceAll(':', '-')
+          .substring(0, 19);
       final fileName = 'catmoneymanager_backup_$timestamp.json';
-      final file = io.File('${directory.path}/$fileName');
+
+      // Let user choose save location
+      final outputPath = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save Backup File',
+        fileName: fileName,
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+
+      if (outputPath == null) {
+        return BackupResult.error('Backup cancelled');
+      }
+
+      final file = io.File(outputPath);
       await file.writeAsBytes(bytes, flush: true);
 
       return BackupResult.success(
@@ -249,8 +266,8 @@ class BackupService {
       if (files.length <= maxBackups) return;
 
       // Sort by modification time (newest first)
-      files.sort((a, b) =>
-          b.statSync().modified.compareTo(a.statSync().modified));
+      files.sort(
+          (a, b) => b.statSync().modified.compareTo(a.statSync().modified));
 
       // Delete old files
       for (var i = maxBackups; i < files.length; i++) {

@@ -9,14 +9,14 @@ import '../models/transaction.dart';
 /// Enterprise-level Google Drive service for auto-backup
 /// Supports OAuth authentication and file upload to Google Drive
 class GoogleDriveService {
-  static const String _clientId = 
+  static const String _clientId =
       '561002972285-38015va7rnue6cn4bp43679e429eb0ff.apps.googleusercontent.com'; // Replace with your OAuth client ID
   static const String _scope = 'https://www.googleapis.com/auth/drive.file';
   static const String _tokenKey = 'google_drive_access_token';
   static const String _refreshTokenKey = 'google_drive_refresh_token';
-  
+
   static GoogleSignIn? _googleSignIn;
-  
+
   /// Initialize Google Sign In
   static GoogleSignIn _getGoogleSignIn() {
     _googleSignIn ??= GoogleSignIn(
@@ -30,7 +30,7 @@ class GoogleDriveService {
   static Future<AuthResult> authenticate() async {
     try {
       final googleSignIn = _getGoogleSignIn();
-      
+
       // Check if already signed in
       final account = await googleSignIn.signInSilently();
       if (account != null) {
@@ -38,52 +38,56 @@ class GoogleDriveService {
         await _saveTokens(auth.accessToken, auth.idToken);
         return AuthResult.success('Already authenticated');
       }
-      
+
       // Sign in
       final GoogleSignInAccount? signInAccount = await googleSignIn.signIn();
       if (signInAccount == null) {
         return AuthResult.cancelled();
       }
-      
-      final GoogleSignInAuthentication auth = await signInAccount.authentication;
+
+      final GoogleSignInAuthentication auth =
+          await signInAccount.authentication;
       await _saveTokens(auth.accessToken, auth.idToken);
-      
+
       return AuthResult.success('Successfully authenticated with Google Drive');
     } catch (e, stackTrace) {
       debugPrint('Google Drive auth error: $e\n$stackTrace');
-      
+
       // Parse common errors
       final errorMessage = e.toString();
-      if (errorMessage.contains('popup_closed_by_user') || 
+
+      // Add mobile-specific error handling
+      if (!kIsWeb && errorMessage.contains('PlatformException')) {
+        return AuthResult.error('Mobile Configuration Error:\n\n'
+            'Google Drive authentication requires additional setup for mobile:\n'
+            '1. Add OAuth client ID for Android/iOS in Google Cloud Console\n'
+            '2. Configure SHA-1 fingerprint (Android)\n'
+            '3. Add URL scheme (iOS)\n\n'
+            'See GOOGLE_DRIVE_SETUP.md for mobile configuration.');
+      }
+
+      if (errorMessage.contains('popup_closed_by_user') ||
           errorMessage.contains('user_cancelled')) {
         return AuthResult.cancelled();
       } else if (errorMessage.contains('redirect_uri_mismatch')) {
-        return AuthResult.error(
-          'OAuth Configuration Error:\n\n'
-          'Redirect URI tidak cocok. Pastikan di Google Cloud Console:\n'
-          '1. Authorized JavaScript origins berisi: http://localhost\n'
-          '2. Authorized redirect URIs berisi: http://localhost\n\n'
-          'Lihat GOOGLE_DRIVE_SETUP.md untuk detail.'
-        );
+        return AuthResult.error('OAuth Configuration Error:\n\n'
+            'Redirect URI tidak cocok. Pastikan di Google Cloud Console:\n'
+            '1. Authorized JavaScript origins berisi: http://localhost\n'
+            '2. Authorized redirect URIs berisi: http://localhost\n\n'
+            'Lihat GOOGLE_DRIVE_SETUP.md untuk detail.');
       } else if (errorMessage.contains('invalid_client')) {
-        return AuthResult.error(
-          'OAuth Configuration Error:\n\n'
-          'Client ID tidak valid. Pastikan:\n'
-          '1. Client ID sudah benar di google_drive_service.dart\n'
-          '2. OAuth Client ID sudah dibuat di Google Cloud Console\n\n'
-          'Lihat GOOGLE_DRIVE_SETUP.md untuk detail.'
-        );
+        return AuthResult.error('OAuth Configuration Error:\n\n'
+            'Client ID tidak valid. Pastikan:\n'
+            '1. Client ID sudah benar di google_drive_service.dart\n'
+            '2. OAuth Client ID sudah dibuat di Google Cloud Console\n\n'
+            'Lihat GOOGLE_DRIVE_SETUP.md untuk detail.');
       } else if (errorMessage.contains('access_denied')) {
-        return AuthResult.error(
-          'Access ditolak.\n\n'
-          'Anda perlu memberikan izin akses Google Drive.'
-        );
+        return AuthResult.error('Access ditolak.\n\n'
+            'Anda perlu memberikan izin akses Google Drive.');
       }
-      
-      return AuthResult.error(
-        'Authentication failed:\n$errorMessage\n\n'
-        'Lihat console untuk detail error.'
-      );
+
+      return AuthResult.error('Authentication failed:\n$errorMessage\n\n'
+          'Lihat console untuk detail error.');
     }
   }
 
@@ -99,7 +103,7 @@ class GoogleDriveService {
           return true;
         }
       }
-      
+
       // Check stored token
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString(_tokenKey);
@@ -135,7 +139,8 @@ class GoogleDriveService {
       // Get access token
       final accessToken = await _getAccessToken();
       if (accessToken == null) {
-        return UploadResult.error('Not authenticated. Please sign in to Google Drive first.');
+        return UploadResult.error(
+            'Not authenticated. Please sign in to Google Drive first.');
       }
 
       // Prepare backup data
@@ -150,27 +155,33 @@ class GoogleDriveService {
       final bytes = utf8.encode(jsonString);
 
       // Create file metadata
-      final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').substring(0, 19);
+      final timestamp = DateTime.now()
+          .toIso8601String()
+          .replaceAll(':', '-')
+          .substring(0, 19);
       final fileName = 'catmoneymanager_auto_backup_$timestamp.json';
-      
+
       // Upload to Google Drive
-      const uploadUrl = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
-      
+      const uploadUrl =
+          'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+
       // Create multipart request
-      final boundary = '----WebKitFormBoundary${DateTime.now().millisecondsSinceEpoch}';
+      final boundary =
+          '----WebKitFormBoundary${DateTime.now().millisecondsSinceEpoch}';
       final metadata = {
         'name': fileName,
         'parents': [], // Upload to root, or specify folder ID
       };
-      
+
       final body = <int>[];
-      
+
       // Add metadata part
       body.addAll(utf8.encode('--$boundary\r\n'));
-      body.addAll(utf8.encode('Content-Type: application/json; charset=UTF-8\r\n\r\n'));
+      body.addAll(
+          utf8.encode('Content-Type: application/json; charset=UTF-8\r\n\r\n'));
       body.addAll(utf8.encode(jsonEncode(metadata)));
       body.addAll(utf8.encode('\r\n'));
-      
+
       // Add file part
       body.addAll(utf8.encode('--$boundary\r\n'));
       body.addAll(utf8.encode('Content-Type: application/json\r\n\r\n'));
@@ -191,10 +202,10 @@ class GoogleDriveService {
         final responseData = jsonDecode(response.body);
         final fileId = responseData['id'] as String;
         final fileUrl = 'https://drive.google.com/file/d/$fileId/view';
-        
+
         // Clean up old backups (keep last 10)
         await _cleanupOldBackups(accessToken);
-        
+
         return UploadResult.success(
           'Backup uploaded to Google Drive successfully',
           fileUrl: fileUrl,
@@ -224,7 +235,7 @@ class GoogleDriveService {
           return auth.accessToken;
         }
       }
-      
+
       // Try stored token
       final prefs = await SharedPreferences.getInstance();
       return prefs.getString(_tokenKey);
@@ -252,7 +263,7 @@ class GoogleDriveService {
           'q=name contains \'catmoneymanager_auto_backup_\' and trashed=false&'
           'orderBy=createdTime desc&'
           'fields=files(id,name,createdTime)';
-      
+
       final response = await http.get(
         Uri.parse(listUrl),
         headers: {'Authorization': 'Bearer $accessToken'},
@@ -261,7 +272,7 @@ class GoogleDriveService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final files = data['files'] as List;
-        
+
         if (files.length > 10) {
           // Delete old files (keep first 10)
           for (var i = 10; i < files.length; i++) {
@@ -318,4 +329,3 @@ class UploadResult {
         fileUrl = null,
         fileId = null;
 }
-

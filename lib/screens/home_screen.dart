@@ -221,7 +221,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Text(
                                   '+${Formatters.formatCurrency(dailyIncome)}',
                                   style: AppTextStyle.caption.copyWith(
-                                    color: AppColors.income,
+                                    color: const Color(
+                                        0xFF43A047), // Material Green 600
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -232,7 +233,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Text(
                                   '-${Formatters.formatCurrency(dailyExpense)}',
                                   style: AppTextStyle.caption.copyWith(
-                                    color: AppColors.expense,
+                                    color: const Color(
+                                        0xFFE91E63), // Material Pink 500
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -745,11 +747,20 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildTransactionCard(Transaction transaction) {
     final isIncome = transaction.type == TransactionType.income;
     final isExpense = transaction.type == TransactionType.expense;
-    final amountColor = isIncome
-        ? AppColors.income
-        : isExpense
-            ? AppColors.expense
-            : Colors.black;
+
+    // Ensure good contrast for amounts on pastel backgrounds
+    Color amountColor;
+    if (isIncome) {
+      // Use darker color for better visibility on pastel backgrounds
+      amountColor = const Color(
+          0xFF43A047); // Material Green 600 - darker and more visible
+    } else if (isExpense) {
+      // Use darker color for better visibility on pastel backgrounds
+      amountColor = const Color(
+          0xFFE91E63); // Material Pink 500 - darker and more visible
+    } else {
+      amountColor = Colors.black;
+    }
 
     final cardColor = _getCardColor(transaction.category);
 

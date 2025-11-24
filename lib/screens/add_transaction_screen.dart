@@ -74,7 +74,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     if (widget.transaction != null) {
       _editingTransaction = widget.transaction;
       final tx = _editingTransaction!;
-      _amountController.text = tx.amount.toString();
+      _amountController.text =
+          Formatters.formatNumberWithSeparator(tx.amount.toStringAsFixed(0));
       _descriptionController.text = tx.description;
       _notesController.text = tx.notes ?? '';
       _selectedDate = tx.date;
@@ -1097,7 +1098,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Amount is required';
                     }
-                    if (double.tryParse(value) == null) {
+                    // Remove formatting before parsing
+                    final cleanValue = Formatters.removeFormatting(value);
+                    final parsedValue = double.tryParse(cleanValue);
+                    if (parsedValue == null || parsedValue <= 0) {
                       return 'Invalid amount';
                     }
                     return null;

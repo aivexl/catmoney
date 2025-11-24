@@ -1,14 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:file_picker/file_picker.dart';
 
-import '../providers/settings_provider.dart';
 import '../providers/transaction_provider.dart';
+import '../providers/account_provider.dart';
+import '../providers/settings_provider.dart';
 import '../services/export_service.dart';
 import '../services/backup_service.dart';
 import '../services/google_drive_service.dart';
 import '../theme/app_colors.dart';
+import '../utils/formatters.dart';
 import '../config/features_config.dart';
 
 /// Enterprise-level data management screen
@@ -27,24 +29,31 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
     if (_isProcessing) return;
 
     final provider = context.read<TransactionProvider>();
+    final accountProvider = context.read<AccountProvider>();
 
     if (provider.transactions.isEmpty) {
       _showMessage('No transactions to export', isError: true);
       return;
     }
 
+    // Show date range picker dialog
+    final dateRange = await _showDateRangePicker();
+    if (dateRange == null) return; // User cancelled
+
     setState(() => _isProcessing = true);
 
     try {
-      final result = await ExportService.exportToExcel(provider.transactions);
+      final result = await ExportService.exportToExcel(
+        provider.transactions,
+        accounts: accountProvider.accounts,
+        startDate: dateRange['start'],
+        endDate: dateRange['end'],
+      );
 
       if (!mounted) return;
 
       if (result.success) {
-        _showMessage(
-          '✅ ${result.message}\n${result.path != null ? 'Location: ${result.path}' : ''}',
-          isError: false,
-        );
+        _showMessage('✅ ${result.message}', isError: false);
       } else {
         _showMessage('❌ ${result.message}', isError: true);
       }
@@ -54,6 +63,81 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
+  }
+
+  /// Show date range picker dialog
+  Future<Map<String, DateTime?>?> _showDateRangePicker() async {
+    DateTime? startDate;
+    DateTime? endDate;
+
+    return showDialog<Map<String, DateTime?>>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Select Date Range'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: Text(startDate == null
+                    ? 'Start Date: All'
+                    : 'Start Date: ${Formatters.formatDate(startDate!)}'),
+                trailing: const Icon(Icons.calendar_today),
+                onTap: () async {
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: startDate ?? DateTime.now(),
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime.now(),
+                  );
+                  if (date != null) {
+                    setState(() => startDate = date);
+                  }
+                },
+              ),
+              ListTile(
+                title: Text(endDate == null
+                    ? 'End Date: All'
+                    : 'End Date: ${Formatters.formatDate(endDate!)}'),
+                trailing: const Icon(Icons.calendar_today),
+                onTap: () async {
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: endDate ?? DateTime.now(),
+                    firstDate: startDate ?? DateTime(2020),
+                    lastDate: DateTime.now(),
+                  );
+                  if (date != null) {
+                    setState(() => endDate = date);
+                  }
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  startDate = null;
+                  endDate = null;
+                });
+              },
+              child: const Text('Clear'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context, {'start': startDate, 'end': endDate});
+              },
+              child: const Text('Export'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _importExcel() async {
@@ -495,7 +579,12 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
       body: Stack(
         children: [
           ListView(
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.only(
+              left: AppSpacing.md,
+              right: AppSpacing.md,
+              top: AppSpacing.md,
+              bottom: 100, // Add bottom padding to clear mobile UI
+            ),
             children: [
               _buildSectionTitle('Excel Report'),
               _buildInfoCard(
@@ -520,20 +609,20 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
               const SizedBox(height: AppSpacing.lg),
               _buildSectionTitle('Local Backup'),
               _buildInfoCard(
-                'Backup your data to JSON format for safekeeping',
+                'Backup your data for safekeeping',
                 Icons.info_outline,
               ),
               _buildButtonTile(
                 icon: Icons.backup,
                 title: 'Backup to Device',
-                subtitle: 'Save backup as .json file on device',
+                subtitle: 'Save backup file on device',
                 onTap: _backupJson,
                 enabled: !_isProcessing && transactions.isNotEmpty,
               ),
               _buildButtonTile(
                 icon: Icons.restore,
                 title: 'Restore from Backup',
-                subtitle: 'Restore data from .json backup file',
+                subtitle: 'Restore data from backup file',
                 onTap: _restoreJson,
                 enabled: !_isProcessing,
               ),
@@ -584,9 +673,8 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                           isAuthenticated
                               ? Icons.check_circle
                               : Icons.cloud_off,
-                          color: isAuthenticated
-                              ? AppColors.income
-                              : Colors.black,
+                          color:
+                              isAuthenticated ? AppColors.income : Colors.black,
                         ),
                         title: Text(
                           isAuthenticated
@@ -601,7 +689,8 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                           isAuthenticated
                               ? 'Backup will automatically upload to Google Drive'
                               : 'Click to sign in to Google Drive',
-                          style: AppTextStyle.caption.copyWith(color: Colors.black),
+                          style: AppTextStyle.caption
+                              .copyWith(color: Colors.black),
                         ),
                         trailing: isAuthenticated
                             ? TextButton(
@@ -685,7 +774,9 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                       children: [
                         const CircularProgressIndicator(),
                         const SizedBox(height: AppSpacing.md),
-                        Text('Processing...', style: AppTextStyle.body.copyWith(color: Colors.black)),
+                        Text('Processing...',
+                            style: AppTextStyle.body
+                                .copyWith(color: Colors.black)),
                       ],
                     ),
                   ),

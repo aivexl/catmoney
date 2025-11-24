@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:universal_html/html.dart' as html;
+import 'package:intl/intl.dart';
 
 import '../models/transaction.dart';
 import '../utils/formatters.dart';
@@ -11,64 +12,73 @@ import '../utils/formatters.dart';
 /// Enterprise-level export service with full web and native support
 /// Zero-error implementation with comprehensive validation and error handling
 class ExportService {
-  /// Export transactions to Excel format
-  /// Works on both web and native platforms
+  /// Export transactions to Excel format with 3 sheets
+  /// Sheet 1: Transactions (detailed)
+  /// Sheet 2: Reports (summary by month and category)
+  /// Sheet 3: Wallets (account balances)
   static Future<ExportResult> exportToExcel(
-    List<Transaction> transactions,
-  ) async {
+    List<Transaction> transactions, {
+    List<dynamic>? accounts, // Accept accounts for Wallets sheet
+    DateTime? startDate, // Optional start date for filtering
+    DateTime? endDate, // Optional end date for filtering
+  }) async {
     try {
       if (transactions.isEmpty) {
         return ExportResult.error('No transactions to export');
       }
 
-      // Create Excel workbook
-      final excel = Excel.createExcel();
-      
-      // Delete default sheet and create our sheet as Sheet1
-      excel.delete('Sheet1');
-      final sheet = excel['Sheet1'];
+      // Filter transactions by date range if provided
+      List<Transaction> filteredTransactions = transactions;
+      if (startDate != null || endDate != null) {
+        filteredTransactions = transactions.where((tx) {
+          // Normalize dates to start of day for comparison
+          final txDate = DateTime(tx.date.year, tx.date.month, tx.date.day);
 
-      // Add headers
-      final headers = [
-        'Date',
-        'Time',
-        'Type',
-        'Category',
-        'Description',
-        'Amount',
-        'Account',
-        'Notes',
-        'Watchlisted',
-      ];
+          if (startDate != null) {
+            final start =
+                DateTime(startDate.year, startDate.month, startDate.day);
+            if (txDate.isBefore(start)) return false;
+          }
 
-      for (var i = 0; i < headers.length; i++) {
-        final cell = sheet
-            .cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0));
-        cell.value = headers[i];
+          if (endDate != null) {
+            final end = DateTime(endDate.year, endDate.month, endDate.day);
+            if (txDate.isAfter(end)) return false;
+          }
+
+          return true;
+        }).toList();
       }
 
-      // Add data rows
-      for (var i = 0; i < transactions.length; i++) {
-        final transaction = transactions[i];
-        final rowIndex = i + 1;
+      if (filteredTransactions.isEmpty) {
+        return ExportResult.error('No transactions in selected date range');
+      }
 
-        final rowData = [
-          Formatters.formatDate(transaction.date),
-          Formatters.formatTime(transaction.date),
-          _getTypeString(transaction.type),
-          transaction.category,
-          transaction.description,
-          transaction.amount.toStringAsFixed(2),
-          transaction.accountId,
-          transaction.notes ?? '',
-          transaction.isWatchlisted ? 'Yes' : 'No',
-        ];
+      // Create Excel workbook
+      final excel = Excel.createExcel();
 
-        for (var j = 0; j < rowData.length; j++) {
-          final cell = sheet.cell(
-            CellIndex.indexByColumnRow(columnIndex: j, rowIndex: rowIndex),
-          );
-          cell.value = rowData[j];
+      // ===== SHEET 1: TRANSACTIONS =====
+      _createTransactionsSheet(excel, filteredTransactions);
+
+      // ===== SHEET 2: REPORTS =====
+      _createReportsSheet(excel, filteredTransactions);
+
+      // ===== SHEET 3: WALLETS =====
+      _createWalletsSheet(excel, filteredTransactions, accounts);
+
+      // Delete the default Sheet1 to avoid having an empty sheet
+      // Do this after creating all our sheets to ensure Sheet1 is not needed
+      final sheetNamesToKeep = {'Transactions', 'Reports', 'Wallets'};
+      final allSheetNames = excel.tables.keys.toList();
+      
+      for (final sheetName in allSheetNames) {
+        if (!sheetNamesToKeep.contains(sheetName)) {
+          try {
+            excel.delete(sheetName);
+            debugPrint('Deleted empty sheet: $sheetName');
+          } catch (e) {
+            // Ignore if deletion fails
+            debugPrint('Could not delete sheet $sheetName: $e');
+          }
         }
       }
 
@@ -78,16 +88,461 @@ class ExportService {
         return ExportResult.error('Failed to generate Excel file');
       }
 
+      // Generate filename with date range
+      String filename = _generateFilename(startDate, endDate);
+
       // Platform-specific file handling
       if (kIsWeb) {
-        return await _downloadWebExcel(bytes);
+        return await _downloadWebExcel(bytes, filename);
       } else {
-        return await _saveNativeExcel(bytes);
+        return await _saveNativeExcel(bytes, filename);
       }
     } catch (e, stackTrace) {
       debugPrint('Export error: $e\n$stackTrace');
       return ExportResult.error('Export failed: ${e.toString()}');
     }
+  }
+
+  /// Generate filename based on date range
+  static String _generateFilename(DateTime? startDate, DateTime? endDate) {
+    final dateFormat = DateFormat('yyyy-MM-dd');
+
+    if (startDate != null && endDate != null) {
+      // Check if same day
+      if (startDate.year == endDate.year &&
+          startDate.month == endDate.month &&
+          startDate.day == endDate.day) {
+        return 'catmoneymanager_transactions_${dateFormat.format(startDate)}.xlsx';
+      } else {
+        return 'catmoneymanager_transactions_${dateFormat.format(startDate)}-${dateFormat.format(endDate)}.xlsx';
+      }
+    } else if (startDate != null) {
+      return 'catmoneymanager_transactions_from_${dateFormat.format(startDate)}.xlsx';
+    } else if (endDate != null) {
+      return 'catmoneymanager_transactions_until_${dateFormat.format(endDate)}.xlsx';
+    } else {
+      final timestamp = DateTime.now()
+          .toIso8601String()
+          .replaceAll(':', '-')
+          .substring(0, 10);
+      return 'catmoneymanager_transactions_$timestamp.xlsx';
+    }
+  }
+
+  /// Create Transactions sheet with detailed columns
+  static void _createTransactionsSheet(
+      Excel excel, List<Transaction> transactions) {
+    final sheet = excel['Transactions'];
+
+    // Get currency symbol from Formatters (e.g., "Rp" or "$")
+    String currencySymbol = Formatters.currencySymbol.trim();
+    // Extract just the symbol (remove any spaces or extra text)
+    if (currencySymbol.contains('Rp')) {
+      currencySymbol = 'Rp';
+    } else if (currencySymbol.contains('\$') || currencySymbol == 'USD') {
+      currencySymbol = '\$';
+    }
+
+    // Headers with detailed information
+    final headers = [
+      'No.',
+      'Date',
+      'Time',
+      'Day of Week',
+      'Type',
+      'Category',
+      'Description',
+      'Currency', // Added currency column
+      'Amount',
+      'Amount (Numeric)',
+      'Wallet/Account',
+      'Notes',
+      'Watchlisted',
+      'Has Photo',
+      'Linked to Wishlist',
+      'Linked to Budget',
+      'Linked to Bill',
+    ];
+
+    // Apply yellow header style
+    for (var i = 0; i < headers.length; i++) {
+      final cell =
+          sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0));
+      cell.value = headers[i];
+      cell.cellStyle = CellStyle(
+        backgroundColorHex: '#FFCC02', // Yellow background
+        fontColorHex: '#000000', // Black text
+        bold: true,
+      );
+    }
+
+    // Track totals
+    double totalIncome = 0;
+    double totalExpense = 0;
+
+    // Add data rows
+    for (var i = 0; i < transactions.length; i++) {
+      final transaction = transactions[i];
+      final rowIndex = i + 1;
+
+      // Calculate totals
+      if (transaction.type == TransactionType.income) {
+        totalIncome += transaction.amount;
+      } else if (transaction.type == TransactionType.expense) {
+        totalExpense += transaction.amount;
+      }
+
+      final rowData = [
+        rowIndex.toString(), // No.
+        Formatters.formatDate(transaction.date), // Date
+        Formatters.formatTime(transaction.date), // Time
+        _getDayOfWeek(transaction.date), // Day of Week
+        _getTypeString(transaction.type), // Type
+        transaction.category, // Category
+        transaction.description, // Description
+        currencySymbol, // Currency (just symbol)
+        Formatters.formatCurrency(transaction.amount)
+            .replaceAll('Rp ', '')
+            .replaceAll('\$ ', ''), // Amount formatted without symbol
+        transaction.amount.toStringAsFixed(2), // Amount numeric
+        transaction.accountId, // Wallet/Account
+        transaction.notes ?? '-', // Notes
+        transaction.isWatchlisted ? 'Yes' : 'No', // Watchlisted
+        transaction.photoPath != null ? 'Yes' : 'No', // Has Photo
+        transaction.wishlistId != null ? 'Yes' : 'No', // Linked to Wishlist
+        transaction.budgetId != null ? 'Yes' : 'No', // Linked to Budget
+        transaction.billId != null ? 'Yes' : 'No', // Linked to Bill
+      ];
+
+      for (var j = 0; j < rowData.length; j++) {
+        final cell = sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: j, rowIndex: rowIndex),
+        );
+        cell.value = rowData[j];
+      }
+    }
+
+    // Add totals row
+    final totalsRowIndex = transactions.length + 2; // Skip one row
+    final balance = totalIncome - totalExpense;
+
+    // Total Income label and value
+    var cell = sheet.cell(
+        CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: totalsRowIndex));
+    cell.value = 'Total Income:';
+    cell.cellStyle = CellStyle(
+      backgroundColorHex: '#FFCC02',
+      fontColorHex: '#000000',
+      bold: true,
+    );
+
+    cell = sheet.cell(
+        CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: totalsRowIndex));
+    cell.value = currencySymbol;
+
+    cell = sheet.cell(
+        CellIndex.indexByColumnRow(columnIndex: 8, rowIndex: totalsRowIndex));
+    cell.value = Formatters.formatCurrency(totalIncome)
+        .replaceAll('Rp ', '')
+        .replaceAll('\$ ', '');
+    cell.cellStyle = CellStyle(
+      fontColorHex: '#43A047', // Green
+      bold: true,
+    );
+
+    // Total Expense label and value
+    cell = sheet.cell(CellIndex.indexByColumnRow(
+        columnIndex: 5, rowIndex: totalsRowIndex + 1));
+    cell.value = 'Total Expense:';
+    cell.cellStyle = CellStyle(
+      backgroundColorHex: '#FFCC02',
+      fontColorHex: '#000000',
+      bold: true,
+    );
+
+    cell = sheet.cell(CellIndex.indexByColumnRow(
+        columnIndex: 7, rowIndex: totalsRowIndex + 1));
+    cell.value = currencySymbol;
+
+    cell = sheet.cell(CellIndex.indexByColumnRow(
+        columnIndex: 8, rowIndex: totalsRowIndex + 1));
+    cell.value = Formatters.formatCurrency(totalExpense)
+        .replaceAll('Rp ', '')
+        .replaceAll('\$ ', '');
+    cell.cellStyle = CellStyle(
+      fontColorHex: '#E91E63', // Pink
+      bold: true,
+    );
+
+    // Balance label and value
+    cell = sheet.cell(CellIndex.indexByColumnRow(
+        columnIndex: 5, rowIndex: totalsRowIndex + 2));
+    cell.value = 'Balance:';
+    cell.cellStyle = CellStyle(
+      backgroundColorHex: '#FFCC02',
+      fontColorHex: '#000000',
+      bold: true,
+    );
+
+    cell = sheet.cell(CellIndex.indexByColumnRow(
+        columnIndex: 7, rowIndex: totalsRowIndex + 2));
+    cell.value = currencySymbol;
+
+    cell = sheet.cell(CellIndex.indexByColumnRow(
+        columnIndex: 8, rowIndex: totalsRowIndex + 2));
+    cell.value = Formatters.formatCurrency(balance)
+        .replaceAll('Rp ', '')
+        .replaceAll('\$ ', '');
+    cell.cellStyle = CellStyle(
+      fontColorHex: balance >= 0
+          ? '#43A047'
+          : '#E91E63', // Green if positive, pink if negative
+      bold: true,
+    );
+  }
+
+  /// Create Reports sheet with monthly and category summaries
+  static void _createReportsSheet(Excel excel, List<Transaction> transactions) {
+    final sheet = excel['Reports'];
+    int currentRow = 0;
+
+    final currencySymbol = Formatters.currencySymbol.trim();
+
+    // ===== MONTHLY SUMMARY =====
+    final monthlyHeader = ['Monthly Summary'];
+    var cell = sheet
+        .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow));
+    cell.value = monthlyHeader[0];
+    cell.cellStyle = CellStyle(
+      backgroundColorHex: '#FFCC02',
+      fontColorHex: '#000000',
+      bold: true,
+      fontSize: 14,
+    );
+    currentRow += 2;
+
+    // Monthly summary headers
+    final monthlySummaryHeaders = [
+      'Month',
+      'Total Income ($currencySymbol)',
+      'Total Expense ($currencySymbol)',
+      'Net ($currencySymbol)',
+      'Transaction Count',
+    ];
+
+    for (var i = 0; i < monthlySummaryHeaders.length; i++) {
+      cell = sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: i, rowIndex: currentRow));
+      cell.value = monthlySummaryHeaders[i];
+      cell.cellStyle = CellStyle(
+        backgroundColorHex: '#FFCC02',
+        fontColorHex: '#000000',
+        bold: true,
+      );
+    }
+    currentRow++;
+
+    // Group by month
+    final monthlyData = <String, Map<String, double>>{};
+    for (var tx in transactions) {
+      final monthKey = Formatters.formatMonthYear(tx.date);
+      monthlyData.putIfAbsent(
+          monthKey, () => {'income': 0, 'expense': 0, 'count': 0});
+
+      if (tx.type == TransactionType.income) {
+        monthlyData[monthKey]!['income'] =
+            (monthlyData[monthKey]!['income'] ?? 0) + tx.amount;
+      } else if (tx.type == TransactionType.expense) {
+        monthlyData[monthKey]!['expense'] =
+            (monthlyData[monthKey]!['expense'] ?? 0) + tx.amount;
+      }
+      monthlyData[monthKey]!['count'] =
+          (monthlyData[monthKey]!['count'] ?? 0) + 1;
+    }
+
+    // Add monthly data
+    for (var entry in monthlyData.entries) {
+      final income = entry.value['income'] ?? 0;
+      final expense = entry.value['expense'] ?? 0;
+      final net = income - expense;
+      final count = entry.value['count'] ?? 0;
+
+      final rowData = [
+        entry.key,
+        Formatters.formatCurrency(income),
+        Formatters.formatCurrency(expense),
+        Formatters.formatCurrency(net),
+        count.toInt().toString(),
+      ];
+
+      for (var j = 0; j < rowData.length; j++) {
+        cell = sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: j, rowIndex: currentRow));
+        cell.value = rowData[j];
+      }
+      currentRow++;
+    }
+
+    currentRow += 2;
+
+    // ===== CATEGORY SUMMARY =====
+    cell = sheet
+        .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow));
+    cell.value = 'Category Summary';
+    cell.cellStyle = CellStyle(
+      backgroundColorHex: '#FFCC02',
+      fontColorHex: '#000000',
+      bold: true,
+      fontSize: 14,
+    );
+    currentRow += 2;
+
+    // Category summary headers
+    final categorySummaryHeaders = [
+      'Category',
+      'Type',
+      'Total Amount ($currencySymbol)',
+      'Transaction Count',
+      'Average Amount ($currencySymbol)',
+    ];
+
+    for (var i = 0; i < categorySummaryHeaders.length; i++) {
+      cell = sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: i, rowIndex: currentRow));
+      cell.value = categorySummaryHeaders[i];
+      cell.cellStyle = CellStyle(
+        backgroundColorHex: '#FFCC02',
+        fontColorHex: '#000000',
+        bold: true,
+      );
+    }
+    currentRow++;
+
+    // Group by category
+    final categoryData = <String, Map<String, dynamic>>{};
+    for (var tx in transactions) {
+      final key = '${tx.category}_${tx.type.toString()}';
+      categoryData.putIfAbsent(
+          key,
+          () => {
+                'category': tx.category,
+                'type': tx.type,
+                'total': 0.0,
+                'count': 0,
+              });
+
+      categoryData[key]!['total'] =
+          (categoryData[key]!['total'] as double) + tx.amount;
+      categoryData[key]!['count'] = (categoryData[key]!['count'] as int) + 1;
+    }
+
+    // Add category data
+    for (var entry in categoryData.values) {
+      final total = entry['total'] as double;
+      final count = entry['count'] as int;
+      final average = total / count;
+
+      final rowData = [
+        entry['category'] as String,
+        _getTypeString(entry['type'] as TransactionType),
+        Formatters.formatCurrency(total),
+        count.toString(),
+        Formatters.formatCurrency(average),
+      ];
+
+      for (var j = 0; j < rowData.length; j++) {
+        cell = sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: j, rowIndex: currentRow));
+        cell.value = rowData[j];
+      }
+      currentRow++;
+    }
+  }
+
+  /// Create Wallets sheet with account balances
+  static void _createWalletsSheet(
+      Excel excel, List<Transaction> transactions, List<dynamic>? accounts) {
+    final sheet = excel['Wallets'];
+
+    final currencySymbol = Formatters.currencySymbol.trim();
+
+    // Headers
+    final headers = [
+      'Wallet/Account',
+      'Total Income ($currencySymbol)',
+      'Total Expense ($currencySymbol)',
+      'Current Balance ($currencySymbol)',
+      'Transaction Count',
+    ];
+
+    // Apply yellow header style
+    for (var i = 0; i < headers.length; i++) {
+      final cell =
+          sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0));
+      cell.value = headers[i];
+      cell.cellStyle = CellStyle(
+        backgroundColorHex: '#FFCC02',
+        fontColorHex: '#000000',
+        bold: true,
+      );
+    }
+
+    // Calculate balances per account
+    final accountData = <String, Map<String, double>>{};
+    for (var tx in transactions) {
+      final accountId = tx.accountId;
+      accountData.putIfAbsent(
+          accountId, () => {'income': 0, 'expense': 0, 'count': 0});
+
+      if (tx.type == TransactionType.income) {
+        accountData[accountId]!['income'] =
+            (accountData[accountId]!['income'] ?? 0) + tx.amount;
+      } else if (tx.type == TransactionType.expense) {
+        accountData[accountId]!['expense'] =
+            (accountData[accountId]!['expense'] ?? 0) + tx.amount;
+      }
+      accountData[accountId]!['count'] =
+          (accountData[accountId]!['count'] ?? 0) + 1;
+    }
+
+    // Add data rows
+    int rowIndex = 1;
+    for (var entry in accountData.entries) {
+      final income = entry.value['income'] ?? 0;
+      final expense = entry.value['expense'] ?? 0;
+      final balance = income - expense;
+      final count = entry.value['count'] ?? 0;
+
+      final rowData = [
+        entry.key,
+        Formatters.formatCurrency(income),
+        Formatters.formatCurrency(expense),
+        Formatters.formatCurrency(balance),
+        count.toInt().toString(),
+      ];
+
+      for (var j = 0; j < rowData.length; j++) {
+        final cell = sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: j, rowIndex: rowIndex),
+        );
+        cell.value = rowData[j];
+      }
+      rowIndex++;
+    }
+  }
+
+  /// Helper: Get day of week
+  static String _getDayOfWeek(DateTime date) {
+    const days = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday'
+    ];
+    return days[date.weekday - 1];
   }
 
   /// Import transactions from Excel file
@@ -217,7 +672,8 @@ class ExportService {
 
       return ImportResult.success(
         transactions,
-        warnings: errors.isEmpty ? null : 'Imported with ${errors.length} errors',
+        warnings:
+            errors.isEmpty ? null : 'Imported with ${errors.length} errors',
       );
     } catch (e, stackTrace) {
       debugPrint('Import error: $e\n$stackTrace');
@@ -226,14 +682,13 @@ class ExportService {
   }
 
   /// Download Excel file on web platform
-  static Future<ExportResult> _downloadWebExcel(List<int> bytes) async {
+  static Future<ExportResult> _downloadWebExcel(
+      List<int> bytes, String filename) async {
     try {
       final blob = html.Blob([bytes]);
       final url = html.Url.createObjectUrlFromBlob(blob);
-      final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').substring(0, 19);
       html.AnchorElement(href: url)
-        ..setAttribute('download',
-            'catmoneymanager_transactions_$timestamp.xlsx')
+        ..setAttribute('download', filename)
         ..click();
       html.Url.revokeObjectUrl(url);
 
@@ -247,12 +702,11 @@ class ExportService {
   }
 
   /// Save Excel file on native platform
-  static Future<ExportResult> _saveNativeExcel(List<int> bytes) async {
+  static Future<ExportResult> _saveNativeExcel(
+      List<int> bytes, String filename) async {
     try {
       final directory = await getApplicationDocumentsDirectory();
-      final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').substring(0, 19);
-      final fileName = 'catmoneymanager_transactions_$timestamp.xlsx';
-      final file = io.File('${directory.path}/$fileName');
+      final file = io.File('${directory.path}/$filename');
       await file.writeAsBytes(bytes);
 
       return ExportResult.success(
@@ -333,4 +787,3 @@ class ImportResult {
         transactions = null,
         warnings = null;
 }
-

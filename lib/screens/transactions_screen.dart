@@ -370,7 +370,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   style: const TextStyle(
                     fontSize: 7,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.income,
+                    color: Color(
+                        0xFF43A047), // Material Green 600 - darker and more visible
                   ),
                   maxLines: 1,
                   textAlign: TextAlign.center,
@@ -385,7 +386,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   style: const TextStyle(
                     fontSize: 7,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.expense,
+                    color: Color(
+                        0xFFE91E63), // Material Pink 500 - darker and more visible
                   ),
                   maxLines: 1,
                   textAlign: TextAlign.center,
@@ -590,6 +592,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                             style: AppTextStyle.caption.copyWith(
                               fontWeight: FontWeight.w600,
                               fontSize: 12,
+                              color: Colors.black,
                             ),
                           ),
                           Row(
@@ -598,7 +601,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                                 Text(
                                   '+${Formatters.formatCurrency(dailyIncome)}',
                                   style: AppTextStyle.caption.copyWith(
-                                    color: AppColors.income,
+                                    color: const Color(
+                                        0xFF43A047), // Material Green 600
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -609,7 +613,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                                 Text(
                                   '-${Formatters.formatCurrency(dailyExpense)}',
                                   style: AppTextStyle.caption.copyWith(
-                                    color: AppColors.expense,
+                                    color: const Color(
+                                        0xFFE91E63), // Material Pink 500
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -727,11 +732,18 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   Widget _buildTransactionCard(Transaction transaction) {
     final isIncome = transaction.type == TransactionType.income;
     final isExpense = transaction.type == TransactionType.expense;
-    final amountColor = isIncome
-        ? AppColors.income
-        : isExpense
-            ? AppColors.expense
-            : Colors.black;
+
+    // Ensure good contrast for amounts on pastel backgrounds
+    Color amountColor;
+    if (isIncome) {
+      amountColor = const Color(
+          0xFF43A047); // Material Green 600 - darker and more visible
+    } else if (isExpense) {
+      amountColor = const Color(
+          0xFFE91E63); // Material Pink 500 - darker and more visible
+    } else {
+      amountColor = Colors.black;
+    }
 
     final cardColor = _getCardColor(transaction.category);
 
