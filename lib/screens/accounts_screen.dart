@@ -126,41 +126,48 @@ class _AccountsScreenState extends State<AccountsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Title
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back),
-                      color: Colors.white,
-                    ),
-                    const SizedBox(width: 4),
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.account_balance_wallet,
-                        color: AppColors.primary,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    const Text(
-                      'Wallets',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.arrow_back, size: 20),
                         color: Colors.white,
+                        padding: const EdgeInsets.all(4),
+                        constraints: const BoxConstraints(),
                       ),
-                    ),
-                  ],
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.account_balance_wallet,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      const Flexible(
+                        child: Text(
+                          'Wallets',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 8),
                 // Month selector
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(20),
@@ -172,25 +179,25 @@ class _AccountsScreenState extends State<AccountsScreen> {
                         onTap: () => _changeMonth(-1),
                         borderRadius: BorderRadius.circular(12),
                         child: const Padding(
-                          padding: EdgeInsets.all(4.0),
-                          child: Icon(Icons.chevron_left, size: 20),
+                          padding: EdgeInsets.all(2.0),
+                          child: Icon(Icons.chevron_left, size: 18),
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 2),
                       Text(
                         Formatters.formatMonthYear(_currentMonth),
                         style: AppTextStyle.body.copyWith(
                           fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                          fontSize: 11,
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 2),
                       InkWell(
                         onTap: () => _changeMonth(1),
                         borderRadius: BorderRadius.circular(12),
                         child: const Padding(
-                          padding: EdgeInsets.all(4.0),
-                          child: Icon(Icons.chevron_right, size: 20),
+                          padding: EdgeInsets.all(2.0),
+                          child: Icon(Icons.chevron_right, size: 18),
                         ),
                       ),
                     ],
@@ -245,7 +252,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
     final initials = account.name.length >= 2
         ? account.name.substring(0, 2).toUpperCase()
         : account.name.toUpperCase();
-    
+
     return Text(
       initials,
       style: TextStyle(
@@ -280,17 +287,20 @@ class _AccountsScreenState extends State<AccountsScreen> {
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Color(account.color).withValues(alpha: 0.3), // Increased from 0.05 to 0.3 for thicker color
+        color: Color(account.color).withValues(
+            alpha: 0.3), // Increased from 0.05 to 0.3 for thicker color
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         boxShadow: [
           BoxShadow(
-            color: Color(account.color).withValues(alpha: 0.3), // Increased from 0.1 to 0.3
+            color: Color(account.color)
+                .withValues(alpha: 0.3), // Increased from 0.1 to 0.3
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
         border: Border.all(
-          color: Color(account.color).withValues(alpha: 0.6), // Increased from 0.3 to 0.6 for thicker border
+          color: Color(account.color).withValues(
+              alpha: 0.6), // Increased from 0.3 to 0.6 for thicker border
           width: 2, // Increased from 1 to 2
         ),
       ),
@@ -303,7 +313,9 @@ class _AccountsScreenState extends State<AccountsScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: Color(account.color).withValues(alpha: 0.5), // Increased from 0.2 to 0.5 for thicker icon background
+                  color: Color(account.color).withValues(
+                      alpha:
+                          0.5), // Increased from 0.2 to 0.5 for thicker icon background
                   borderRadius: BorderRadius.circular(AppBorderRadius.md),
                 ),
                 child: Center(
@@ -330,8 +342,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                 onPressed: () {
                   // TODO: Edit/Delete wallet
                 },
-                icon:
-                    const Icon(Icons.more_vert, color: Colors.black),
+                icon: const Icon(Icons.more_vert, color: Colors.black),
               ),
             ],
           ),
@@ -357,7 +368,8 @@ class _AccountsScreenState extends State<AccountsScreen> {
       children: [
         Text(
           label,
-          style: AppTextStyle.caption.copyWith(fontSize: 12, color: Colors.black),
+          style:
+              AppTextStyle.caption.copyWith(fontSize: 12, color: Colors.black),
         ),
         const SizedBox(height: 4),
         Text(
