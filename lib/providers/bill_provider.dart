@@ -19,6 +19,10 @@ class BillProvider extends ChangeNotifier {
   List<Bill> _bills = [];
   bool _isLoading = false;
 
+  BillProvider() {
+    loadBills();
+  }
+
   List<Bill> get bills => _bills;
   bool get isLoading => _isLoading;
 

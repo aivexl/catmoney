@@ -53,6 +53,7 @@ class AppIcons {
     'calculate': Icons.calculate_outlined,
     'currency_exchange': Icons.currency_exchange,
     'payment': Icons.payment_outlined,
+    'shopping': Icons.shopping_bag_outlined,
     'shopping_bag': Icons.shopping_bag_outlined,
     'shopping_cart': Icons.shopping_cart_outlined,
     'sell': Icons.sell_outlined,

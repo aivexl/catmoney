@@ -11,6 +11,10 @@ class CategoryProvider with ChangeNotifier {
 
   final List<Category> _customCategories = [];
 
+  CategoryProvider() {
+    loadCustomCategories();
+  }
+
   Future<void> loadCustomCategories() async {
     final prefs = await SharedPreferences.getInstance();
     final data = prefs.getString(_customKey);
@@ -38,11 +42,9 @@ class CategoryProvider with ChangeNotifier {
   List<Category> getCustomCategories() => List.unmodifiable(_customCategories);
 
   List<Category> getCategoriesByType(TransactionType type) {
-    final defaults = CategoryData.categories
-        .where((cat) => cat.type == type)
-        .toList();
-    final customs =
-        _customCategories.where((cat) => cat.type == type).toList();
+    final defaults =
+        CategoryData.categories.where((cat) => cat.type == type).toList();
+    final customs = _customCategories.where((cat) => cat.type == type).toList();
     return [...defaults, ...customs];
   }
 
@@ -76,4 +78,3 @@ class CategoryProvider with ChangeNotifier {
     }
   }
 }
-

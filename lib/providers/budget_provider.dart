@@ -19,6 +19,10 @@ class BudgetProvider extends ChangeNotifier {
   List<Budget> _budgets = [];
   bool _isLoading = false;
 
+  BudgetProvider() {
+    loadBudgets();
+  }
+
   List<Budget> get budgets => _budgets;
   bool get isLoading => _isLoading;
 

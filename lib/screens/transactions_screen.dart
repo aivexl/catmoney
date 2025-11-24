@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import '../providers/transaction_provider.dart';
+import '../providers/category_provider.dart';
+import '../models/category.dart';
 import '../theme/app_colors.dart';
 import '../utils/formatters.dart';
 import '../models/transaction.dart';
@@ -694,14 +696,32 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     );
   }
 
-  Color _getCardColor(String category) {
+  Color _getCardColor(String categoryName) {
+    // Try to find in default categories
+    try {
+      final defaultCat = CategoryData.categories.firstWhere(
+        (c) => c.name == categoryName,
+      );
+      return defaultCat.color;
+    } catch (_) {}
+
+    // Try to find in custom categories
+    try {
+      final provider = context.read<CategoryProvider>();
+      final customCat = provider.getCustomCategories().firstWhere(
+            (c) => c.name == categoryName,
+          );
+      return customCat.color;
+    } catch (_) {}
+
+    // Fallback
     final cardColors = [
       AppColors.cardPink,
       AppColors.cardOrange,
       AppColors.cardBlue,
       AppColors.cardLavender,
     ];
-    return cardColors[category.hashCode % cardColors.length];
+    return cardColors[categoryName.hashCode % cardColors.length];
   }
 
   Widget _buildTransactionCard(Transaction transaction) {
@@ -738,20 +758,11 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           ),
           child: Row(
             children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Center(
-                  child: CategoryIcon(
-                    iconName: transaction.catEmoji ?? 'cat',
-                    size: 18,
-                    useYellowLines: true,
-                  ),
-                ),
+              CategoryIcon(
+                iconName: transaction.catEmoji ?? 'cat',
+                size: 24,
+                useYellowLines: true,
+                withBackground: true,
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
@@ -766,6 +777,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       style: AppTextStyle.body.copyWith(
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
+                        color: Colors.black,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -775,6 +787,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       transaction.category,
                       style: AppTextStyle.caption.copyWith(
                         fontSize: 12,
+                        color: Colors.black,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -851,8 +864,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     context: context,
                     builder: (dialogCtx) => AlertDialog(
                       title: const Text('Delete Transaction'),
-                      content:
-                          const Text('Are you sure you want to delete this transaction?'),
+                      content: const Text(
+                          'Are you sure you want to delete this transaction?'),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(dialogCtx, false),

@@ -9,6 +9,10 @@ class TransactionProvider with ChangeNotifier {
   Balance _balance = Balance.zero();
   SettingsProvider? _settings;
 
+  TransactionProvider() {
+    loadTransactions();
+  }
+
   List<Transaction> get transactions => List.unmodifiable(_transactions);
   Balance get balance => _balance;
 
@@ -45,12 +49,12 @@ class TransactionProvider with ChangeNotifier {
       if (transaction.amount.isNaN || transaction.amount.isInfinite) {
         throw ArgumentError('Transaction amount must be a valid number');
       }
-      
+
       await StorageService.saveTransaction(transaction);
       _transactions.add(transaction);
       _calculateBalance();
       notifyListeners();
-      
+
       // Auto-backup dengan error handling (non-blocking)
       try {
         await _settings?.autoBackupIfEnabled(_transactions);
@@ -69,7 +73,7 @@ class TransactionProvider with ChangeNotifier {
     if (id.isEmpty) {
       throw ArgumentError('Transaction ID cannot be empty');
     }
-    
+
     try {
       // Check if transaction exists sebelum delete
       final exists = _transactions.any((t) => t.id == id);
@@ -77,12 +81,12 @@ class TransactionProvider with ChangeNotifier {
         debugPrint('Transaction not found for deletion: $id');
         return;
       }
-      
+
       await StorageService.deleteTransaction(id);
       _transactions.removeWhere((t) => t.id == id);
       _calculateBalance();
       notifyListeners();
-      
+
       // Auto-backup dengan error handling (non-blocking)
       try {
         await _settings?.autoBackupIfEnabled(_transactions);
@@ -105,14 +109,14 @@ class TransactionProvider with ChangeNotifier {
       if (transaction.amount.isNaN || transaction.amount.isInfinite) {
         throw ArgumentError('Transaction amount must be a valid number');
       }
-      
+
       await StorageService.updateTransaction(transaction);
       final index = _transactions.indexWhere((t) => t.id == transaction.id);
       if (index != -1) {
         _transactions[index] = transaction;
         _calculateBalance();
         notifyListeners();
-        
+
         // Auto-backup dengan error handling (non-blocking)
         try {
           await _settings?.autoBackupIfEnabled(_transactions);
@@ -140,7 +144,7 @@ class TransactionProvider with ChangeNotifier {
         debugPrint('Invalid transaction amount detected: ${transaction.id}');
         continue; // Skip invalid transactions
       }
-      
+
       if (transaction.type == TransactionType.income) {
         income += transaction.amount;
       } else if (transaction.type == TransactionType.expense) {
@@ -175,20 +179,20 @@ class TransactionProvider with ChangeNotifier {
   /// Get transactions grouped by category
   Map<String, double> getTransactionsByCategory(TransactionType? type) {
     final Map<String, double> categoryTotals = {};
-    
+
     for (var transaction in _transactions) {
       if (type != null && transaction.type != type) {
         continue;
       }
-      
+
       final categoryName = transaction.category;
       if (!categoryTotals.containsKey(categoryName)) {
         categoryTotals[categoryName] = 0.0;
       }
-      categoryTotals[categoryName] = 
+      categoryTotals[categoryName] =
           (categoryTotals[categoryName] ?? 0.0) + transaction.amount;
     }
-    
+
     return categoryTotals;
   }
 
@@ -214,7 +218,3 @@ class TransactionProvider with ChangeNotifier {
     await _settings?.autoBackupIfEnabled(_transactions);
   }
 }
-
-
-
-

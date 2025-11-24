@@ -5,6 +5,10 @@ import '../services/storage_service.dart';
 class AccountProvider with ChangeNotifier {
   List<Account> _accounts = [];
 
+  AccountProvider() {
+    loadAccounts();
+  }
+
   List<Account> get accounts => _accounts;
 
   /// Load accounts from storage
@@ -44,4 +48,3 @@ class AccountProvider with ChangeNotifier {
     }
   }
 }
-

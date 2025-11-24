@@ -19,10 +19,11 @@ class AppColors {
   static const Color yellow = Color(0xFFFFFACD); // Lemon Chiffon
 
   // Warna untuk transaction cards
-  static const Color cardPink = Color(0xFFFFE4E1); // Misty Rose
-  static const Color cardOrange = Color(0xFFFFE5CC); // Light Orange
-  static const Color cardBlue = Color(0xFFFFF5E6); // Light Yellowish
-  static const Color cardLavender = Color(0xFFF0E6FF); // Light Lavender
+  // Warna untuk transaction cards
+  static const Color cardPink = Color(0xFFFFC1CC); // Darker Pink
+  static const Color cardOrange = Color(0xFFFFD1A3); // Darker Orange
+  static const Color cardBlue = Color(0xFFFFE0B2); // Darker Yellowish
+  static const Color cardLavender = Color(0xFFDCD0FF); // Darker Lavender
 
   // Warna untuk UI
   static const Color background =

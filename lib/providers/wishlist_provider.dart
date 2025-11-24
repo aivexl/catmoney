@@ -19,6 +19,10 @@ class WishlistProvider extends ChangeNotifier {
   List<Wishlist> _wishlists = [];
   bool _isLoading = false;
 
+  WishlistProvider() {
+    loadWishlists();
+  }
+
   List<Wishlist> get wishlists => _wishlists;
   bool get isLoading => _isLoading;
 

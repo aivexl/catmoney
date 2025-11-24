@@ -58,7 +58,6 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   String? _selectedBudgetId;
   String? _selectedBillId;
 
-
   // Validation error messages
   String? _accountError;
   String? _categoryError;
@@ -160,7 +159,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const Text('Select Icon', style: AppTextStyle.h3),
+                    const Text('Select Icon',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        )),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 200, // Increased height for grid
@@ -203,7 +207,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const Text('Select Color', style: AppTextStyle.h3),
+                    const Text('Select Color',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        )),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 50,
@@ -469,13 +478,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           _selectedWishlistId!,
           transaction.amount,
         );
-        
+
         // Show achievement notifications
         if (result['success'] == true && mounted) {
           final notifications = result['notifications'] as List<String>?;
           final progress = result['progress'] as double?;
-          
-          if (notifications != null && notifications.isNotEmpty && progress != null) {
+
+          if (notifications != null &&
+              notifications.isNotEmpty &&
+              progress != null) {
             // Show wishlist milestone notification
             notification.FloatingNotification.showWishlistMilestone(
               context,
@@ -502,8 +513,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           final notifications = result['notifications'] as List<String>?;
           final percentage = result['percentage'] as double?;
           final isExceeded = result['isExceeded'] as bool?;
-          
-          if (notifications != null && notifications.isNotEmpty && percentage != null) {
+
+          if (notifications != null &&
+              notifications.isNotEmpty &&
+              percentage != null) {
             notification.FloatingNotification.showBudgetWarning(
               context,
               percentage: percentage.toInt(),
@@ -593,13 +606,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           _selectedWishlistId!,
           transaction.amount,
         );
-        
+
         // Show achievement notifications
         if (result['success'] == true && mounted) {
           final notifications = result['notifications'] as List<String>?;
           final progress = result['progress'] as double?;
-          
-          if (notifications != null && notifications.isNotEmpty && progress != null) {
+
+          if (notifications != null &&
+              notifications.isNotEmpty &&
+              progress != null) {
             // Show wishlist milestone notification
             notification.FloatingNotification.showWishlistMilestone(
               context,
@@ -626,8 +641,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           final notifications = result['notifications'] as List<String>?;
           final percentage = result['percentage'] as double?;
           final isExceeded = result['isExceeded'] as bool?;
-          
-          if (notifications != null && notifications.isNotEmpty && percentage != null) {
+
+          if (notifications != null &&
+              notifications.isNotEmpty &&
+              percentage != null) {
             notification.FloatingNotification.showBudgetWarning(
               context,
               percentage: percentage.toInt(),
@@ -770,7 +787,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const Text('Select Icon', style: AppTextStyle.h3),
+                    const Text('Select Icon',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        )),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 200, // Increased height for grid
@@ -813,7 +835,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const Text('Select Color', style: AppTextStyle.h3),
+                    const Text('Select Color',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        )),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 50,
@@ -1157,7 +1184,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 const SizedBox(height: 24),
 
                 // Account Selection
-                const Text('Account', style: AppTextStyle.h3),
+                const Text('Account',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    )),
                 const SizedBox(height: 12),
                 Consumer<AccountProvider>(
                   builder: (context, provider, child) {
@@ -1182,8 +1214,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                   border: Border.all(
                                       color: AppColors.border, width: 1),
                                 ),
-                                child: const Icon(Icons.add,
-                                    color: Colors.black),
+                                child:
+                                    const Icon(Icons.add, color: Colors.black),
                               ),
                             );
                           }
@@ -1194,7 +1226,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                             onTap: () {
                               setState(() {
                                 _selectedAccountId = account.id;
-                                _accountError = null; // Clear error when selected
+                                _accountError =
+                                    null; // Clear error when selected
                               });
                             },
                             child: Container(
@@ -1260,7 +1293,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
                 // Wishlist Selection (Optional)
                 if (_selectedType == TransactionType.expense) ...[
-                  const Text('Wishlist (Optional)', style: AppTextStyle.h3),
+                  const Text('Wishlist (Optional)',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      )),
                   const SizedBox(height: 12),
                   Consumer<WishlistProvider>(
                     builder: (context, provider, child) {
@@ -1365,7 +1403,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 // Spend Tracker / Budget Selection (Optional)
                 if (_selectedType == TransactionType.expense) ...[
                   const Text('Spend Tracker (Optional)',
-                      style: AppTextStyle.h3),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      )),
                   const SizedBox(height: 12),
                   Consumer<BudgetProvider>(
                     builder: (context, provider, child) {
@@ -1466,7 +1508,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
                 // Bills Selection (Optional)
                 if (_selectedType == TransactionType.expense) ...[
-                  const Text('Bills (Optional)', style: AppTextStyle.h3),
+                  const Text('Bills (Optional)',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black,
+                      )),
                   const SizedBox(height: 12),
                   Consumer<BillProvider>(
                     builder: (context, provider, child) {
@@ -1570,7 +1617,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Text('Category', style: AppTextStyle.h3),
+                      const Text('Category',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          )),
                       ElevatedButton.icon(
                         onPressed: _showAddCategoryDialog,
                         icon: const Icon(Icons.add_circle, size: 18),
@@ -1597,11 +1649,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     children: categories.map((category) {
                       final isSelected = _selectedCategoryId == category.id;
                       return GestureDetector(
-                        onTap: () =>
-                            setState(() {
-                              _selectedCategoryId = category.id;
-                              _categoryError = null; // Clear error when selected
-                            }),
+                        onTap: () => setState(() {
+                          _selectedCategoryId = category.id;
+                          _categoryError = null; // Clear error when selected
+                        }),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 12),
@@ -1690,8 +1741,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  validator: (value) =>
-                      value == null || value.isEmpty ? 'Description is required' : null,
+                  validator: (value) => value == null || value.isEmpty
+                      ? 'Description is required'
+                      : null,
                 ),
                 const SizedBox(height: 16),
 
@@ -1738,8 +1790,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                               SizedBox(height: 8),
                               Text(
                                 'Add Photo',
-                                style:
-                                    TextStyle(color: Colors.black),
+                                style: TextStyle(color: Colors.black),
                               ),
                             ],
                           )

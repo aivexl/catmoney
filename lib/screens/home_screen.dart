@@ -22,6 +22,8 @@ import 'package:flutter/material.dart';
 import 'package:vector_math/vector_math_64.dart' show Vector3;
 import 'package:provider/provider.dart';
 import '../providers/transaction_provider.dart';
+import '../providers/category_provider.dart';
+import '../models/category.dart';
 import '../theme/app_colors.dart';
 import '../utils/formatters.dart';
 import '../models/transaction.dart';
@@ -31,6 +33,7 @@ import '../screens/accounts_screen.dart';
 import '../screens/wishlist_screen.dart';
 import '../screens/spend_tracker_screen.dart';
 import '../screens/bills_screen.dart';
+import '../widgets/category_icon.dart';
 
 /// HomeScreen - Main dashboard screen
 ///
@@ -272,7 +275,8 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: AppColors.background, // Solid yellow background (no gradient)
+              color:
+                  AppColors.background, // Solid yellow background (no gradient)
               borderRadius: BorderRadius.circular(AppBorderRadius.lg),
               boxShadow: [
                 BoxShadow(
@@ -327,7 +331,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.background, // Solid yellow background (no gradient)
+                    color: AppColors
+                        .background, // Solid yellow background (no gradient)
                     borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                     boxShadow: [
                       BoxShadow(
@@ -371,7 +376,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.background, // Solid yellow background (no gradient)
+                    color: AppColors
+                        .background, // Solid yellow background (no gradient)
                     borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                     boxShadow: [
                       BoxShadow(
@@ -708,14 +714,32 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Color _getCardColor(String category) {
+  Color _getCardColor(String categoryName) {
+    // Try to find in default categories
+    try {
+      final defaultCat = CategoryData.categories.firstWhere(
+        (c) => c.name == categoryName,
+      );
+      return defaultCat.color;
+    } catch (_) {}
+
+    // Try to find in custom categories
+    try {
+      final provider = context.read<CategoryProvider>();
+      final customCat = provider.getCustomCategories().firstWhere(
+            (c) => c.name == categoryName,
+          );
+      return customCat.color;
+    } catch (_) {}
+
+    // Fallback
     final cardColors = [
       AppColors.cardPink,
       AppColors.cardOrange,
       AppColors.cardBlue,
       AppColors.cardLavender,
     ];
-    return cardColors[category.hashCode % cardColors.length];
+    return cardColors[categoryName.hashCode % cardColors.length];
   }
 
   Widget _buildTransactionCard(Transaction transaction) {
@@ -756,19 +780,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           child: Row(
             children: [
-              Container(
-                width: 32, // Lebih kecil
-                height: 32, // Lebih kecil
-                decoration: BoxDecoration(
-                  color: cardColor,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Center(
-                  child: Text(
-                    transaction.catEmoji ?? '🐱',
-                    style: const TextStyle(fontSize: 18), // Font lebih kecil
-                  ),
-                ),
+              CategoryIcon(
+                iconName: transaction.catEmoji ?? 'cat',
+                size: 24,
+                useYellowLines: true,
+                withBackground: true,
               ),
               const SizedBox(width: AppSpacing.sm), // Spacing lebih kecil
               Expanded(
@@ -867,8 +883,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     context: context,
                     builder: (dialogCtx) => AlertDialog(
                       title: const Text('Delete Transaction'),
-                      content:
-                          const Text('Are you sure you want to delete this transaction?'),
+                      content: const Text(
+                          'Are you sure you want to delete this transaction?'),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(dialogCtx, false),
@@ -1049,7 +1065,8 @@ class _MenuIconButtonState extends State<_MenuIconButton> {
                     : 1.0)), // Smaller scale on hover for small screens
               child: Center(
                 child: widget.icon is String
-                    ? _buildAssetIcon(widget.icon as String, iconInnerSize, widget.color)
+                    ? _buildAssetIcon(
+                        widget.icon as String, iconInnerSize, widget.color)
                     : Icon(
                         widget.icon,
                         size: iconInnerSize,
