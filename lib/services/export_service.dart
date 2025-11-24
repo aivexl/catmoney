@@ -9,550 +9,528 @@ import 'package:intl/intl.dart';
 import '../models/transaction.dart';
 import '../utils/formatters.dart';
 
-/// Enterprise-level export service with full web and native support
-/// Zero-error implementation with comprehensive validation and error handling
+/// Service for exporting and importing data to/from Excel
+/// Features:
+/// - Multiple sheets: Transactions, Reports, Wallets
+/// - Styled headers (Yellow background)
+/// - Detailed transaction data including Currency column
 class ExportService {
-  /// Export transactions to Excel format with 3 sheets
-  /// Sheet 1: Transactions (detailed)
-  /// Sheet 2: Reports (summary by month and category)
-  /// Sheet 3: Wallets (account balances)
+  // ===========================================================================
+  // EXPORT FUNCTIONALITY
+  // ===========================================================================
+
+  /// Export transactions to a multi-sheet Excel file
   static Future<ExportResult> exportToExcel(
     List<Transaction> transactions, {
-    List<dynamic>? accounts, // Accept accounts for Wallets sheet
-    DateTime? startDate, // Optional start date for filtering
-    DateTime? endDate, // Optional end date for filtering
+    List<dynamic>? accounts,
+    DateTime? startDate,
+    DateTime? endDate,
   }) async {
     try {
       if (transactions.isEmpty) {
         return ExportResult.error('No transactions to export');
       }
 
-      // Filter transactions by date range if provided
-      List<Transaction> filteredTransactions = transactions;
-      if (startDate != null || endDate != null) {
-        filteredTransactions = transactions.where((tx) {
-          // Normalize dates to start of day for comparison
-          final txDate = DateTime(tx.date.year, tx.date.month, tx.date.day);
-
-          if (startDate != null) {
-            final start =
-                DateTime(startDate.year, startDate.month, startDate.day);
-            if (txDate.isBefore(start)) return false;
-          }
-
-          if (endDate != null) {
-            final end = DateTime(endDate.year, endDate.month, endDate.day);
-            if (txDate.isAfter(end)) return false;
-          }
-
-          return true;
-        }).toList();
-      }
-
+      // 1. Filter Data
+      final filteredTransactions =
+          _filterTransactions(transactions, startDate, endDate);
       if (filteredTransactions.isEmpty) {
-        return ExportResult.error('No transactions in selected date range');
+        return ExportResult.error(
+            'No transactions found in the selected date range');
       }
 
-      // Create Excel workbook
+      // 2. Create Excel Workbook
       final excel = Excel.createExcel();
 
-      // ===== SHEET 1: TRANSACTIONS =====
+      // 3. Create all sheets (don't rename or delete anything to avoid errors)
       _createTransactionsSheet(excel, filteredTransactions);
-
-      // ===== SHEET 2: REPORTS =====
       _createReportsSheet(excel, filteredTransactions);
-
-      // ===== SHEET 3: WALLETS =====
       _createWalletsSheet(excel, filteredTransactions, accounts);
 
-      // Delete the default Sheet1 to avoid having an empty sheet
-      // Do this after creating all our sheets to ensure Sheet1 is not needed
-      final sheetNamesToKeep = {'Transactions', 'Reports', 'Wallets'};
-      final allSheetNames = excel.tables.keys.toList();
-      
-      for (final sheetName in allSheetNames) {
-        if (!sheetNamesToKeep.contains(sheetName)) {
-          try {
-            excel.delete(sheetName);
-            debugPrint('Deleted empty sheet: $sheetName');
-          } catch (e) {
-            // Ignore if deletion fails
-            debugPrint('Could not delete sheet $sheetName: $e');
-          }
-        }
-      }
+      // Note: Sheet1 will remain as an empty sheet, but this avoids crashes
 
-      // Generate file bytes
+      // 4. Save/Download File
       final bytes = excel.encode();
       if (bytes == null) {
-        return ExportResult.error('Failed to generate Excel file');
+        return ExportResult.error('Failed to encode Excel file');
       }
 
-      // Generate filename with date range
-      String filename = _generateFilename(startDate, endDate);
+      final filename = _generateFilename(startDate, endDate);
 
-      // Platform-specific file handling
       if (kIsWeb) {
         return await _downloadWebExcel(bytes, filename);
       } else {
         return await _saveNativeExcel(bytes, filename);
       }
     } catch (e, stackTrace) {
-      debugPrint('Export error: $e\n$stackTrace');
-      return ExportResult.error('Export failed: ${e.toString()}');
+      debugPrint('Export Error: $e\n$stackTrace');
+      return ExportResult.error(
+          'An unexpected error occurred during export: $e');
     }
   }
 
-  /// Generate filename based on date range
-  static String _generateFilename(DateTime? startDate, DateTime? endDate) {
-    final dateFormat = DateFormat('yyyy-MM-dd');
+  /// Filter transactions by date range
+  static List<Transaction> _filterTransactions(
+    List<Transaction> transactions,
+    DateTime? startDate,
+    DateTime? endDate,
+  ) {
+    if (startDate == null && endDate == null) return transactions;
 
-    if (startDate != null && endDate != null) {
-      // Check if same day
-      if (startDate.year == endDate.year &&
-          startDate.month == endDate.month &&
-          startDate.day == endDate.day) {
-        return 'catmoneymanager_transactions_${dateFormat.format(startDate)}.xlsx';
-      } else {
-        return 'catmoneymanager_transactions_${dateFormat.format(startDate)}-${dateFormat.format(endDate)}.xlsx';
+    return transactions.where((tx) {
+      final txDate = DateTime(tx.date.year, tx.date.month, tx.date.day);
+
+      if (startDate != null) {
+        final start = DateTime(startDate.year, startDate.month, startDate.day);
+        if (txDate.isBefore(start)) return false;
       }
-    } else if (startDate != null) {
-      return 'catmoneymanager_transactions_from_${dateFormat.format(startDate)}.xlsx';
-    } else if (endDate != null) {
-      return 'catmoneymanager_transactions_until_${dateFormat.format(endDate)}.xlsx';
-    } else {
-      final timestamp = DateTime.now()
-          .toIso8601String()
-          .replaceAll(':', '-')
-          .substring(0, 10);
-      return 'catmoneymanager_transactions_$timestamp.xlsx';
-    }
+
+      if (endDate != null) {
+        final end = DateTime(endDate.year, endDate.month, endDate.day);
+        if (txDate.isAfter(end)) return false;
+      }
+
+      return true;
+    }).toList();
   }
 
-  /// Create Transactions sheet with detailed columns
+  // ----- SHEET 1: TRANSACTIONS -----
+
   static void _createTransactionsSheet(
       Excel excel, List<Transaction> transactions) {
     final sheet = excel['Transactions'];
 
-    // Get currency symbol from Formatters (e.g., "Rp" or "$")
-    String currencySymbol = Formatters.currencySymbol.trim();
-    // Extract just the symbol (remove any spaces or extra text)
-    if (currencySymbol.contains('Rp')) {
-      currencySymbol = 'Rp';
-    } else if (currencySymbol.contains('\$') || currencySymbol == 'USD') {
-      currencySymbol = '\$';
-    }
-
-    // Headers with detailed information
+    // Define Headers
     final headers = [
       'No.',
       'Date',
       'Time',
-      'Day of Week',
+      'Day',
       'Type',
       'Category',
       'Description',
-      'Currency', // Added currency column
+      'Currency', // Requested Currency Column
       'Amount',
-      'Amount (Numeric)',
-      'Wallet/Account',
+      'Amount (Raw)',
+      'Wallet',
       'Notes',
       'Watchlisted',
       'Has Photo',
-      'Linked to Wishlist',
-      'Linked to Budget',
-      'Linked to Bill',
+      'Wishlist Linked',
+      'Budget Linked',
+      'Bill Linked',
+      'ID', // Detailed ID
     ];
 
-    // Apply yellow header style
-    for (var i = 0; i < headers.length; i++) {
-      final cell =
-          sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0));
-      cell.value = headers[i];
-      cell.cellStyle = CellStyle(
-        backgroundColorHex: '#FFCC02', // Yellow background
-        fontColorHex: '#000000', // Black text
-        bold: true,
-      );
-    }
+    // Write Headers with Style
+    _writeHeaders(sheet, headers);
 
-    // Track totals
+    // Write Data
+    final currencySymbol = Formatters.currencySymbol.trim();
+
     double totalIncome = 0;
     double totalExpense = 0;
 
-    // Add data rows
     for (var i = 0; i < transactions.length; i++) {
-      final transaction = transactions[i];
+      final tx = transactions[i];
       final rowIndex = i + 1;
 
       // Calculate totals
-      if (transaction.type == TransactionType.income) {
-        totalIncome += transaction.amount;
-      } else if (transaction.type == TransactionType.expense) {
-        totalExpense += transaction.amount;
+      if (tx.type == TransactionType.income) {
+        totalIncome += tx.amount;
+      } else if (tx.type == TransactionType.expense) {
+        totalExpense += tx.amount;
       }
 
       final rowData = [
-        rowIndex.toString(), // No.
-        Formatters.formatDate(transaction.date), // Date
-        Formatters.formatTime(transaction.date), // Time
-        _getDayOfWeek(transaction.date), // Day of Week
-        _getTypeString(transaction.type), // Type
-        transaction.category, // Category
-        transaction.description, // Description
-        currencySymbol, // Currency (just symbol)
-        Formatters.formatCurrency(transaction.amount)
-            .replaceAll('Rp ', '')
-            .replaceAll('\$ ', ''), // Amount formatted without symbol
-        transaction.amount.toStringAsFixed(2), // Amount numeric
-        transaction.accountId, // Wallet/Account
-        transaction.notes ?? '-', // Notes
-        transaction.isWatchlisted ? 'Yes' : 'No', // Watchlisted
-        transaction.photoPath != null ? 'Yes' : 'No', // Has Photo
-        transaction.wishlistId != null ? 'Yes' : 'No', // Linked to Wishlist
-        transaction.budgetId != null ? 'Yes' : 'No', // Linked to Budget
-        transaction.billId != null ? 'Yes' : 'No', // Linked to Bill
+        (i + 1).toString(),
+        Formatters.formatDate(tx.date),
+        Formatters.formatTime(tx.date),
+        DateFormat('EEEE').format(tx.date),
+        tx.type
+            .toString()
+            .split('.')
+            .last
+            .toUpperCase(), // INCOME, EXPENSE, TRANSFER
+        tx.category,
+        tx.description,
+        currencySymbol, // The currency symbol (e.g. $)
+        Formatters.formatCurrency(tx.amount)
+            .replaceAll(RegExp(r'[^\d.,]'), '')
+            .trim(), // Formatted amount without symbol
+        tx.amount.toString(), // Raw numeric amount
+        tx.accountId,
+        tx.notes ?? '-',
+        tx.isWatchlisted ? 'Yes' : 'No',
+        tx.photoPath != null ? 'Yes' : 'No',
+        tx.wishlistId != null ? 'Yes' : 'No',
+        tx.budgetId != null ? 'Yes' : 'No',
+        tx.billId != null ? 'Yes' : 'No',
+        tx.id,
       ];
 
-      for (var j = 0; j < rowData.length; j++) {
-        final cell = sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: j, rowIndex: rowIndex),
-        );
-        cell.value = rowData[j];
-      }
+      _writeRow(sheet, rowIndex, rowData);
     }
 
-    // Add totals row
-    final totalsRowIndex = transactions.length + 2; // Skip one row
+    // Add Totals Section
+    final totalRowStart = transactions.length + 3;
     final balance = totalIncome - totalExpense;
 
-    // Total Income label and value
-    var cell = sheet.cell(
-        CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: totalsRowIndex));
-    cell.value = 'Total Income:';
-    cell.cellStyle = CellStyle(
-      backgroundColorHex: '#FFCC02',
-      fontColorHex: '#000000',
-      bold: true,
-    );
+    // Helper to write styled total row
+    void writeTotalRow(int row, String label, double amount, String colorHex) {
+      // Label
+      var cell =
+          sheet.cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: row));
+      cell.value = label;
+      cell.cellStyle = CellStyle(
+        backgroundColorHex: '#FFCC02',
+        fontColorHex: '#000000',
+        bold: true,
+      );
 
-    cell = sheet.cell(
-        CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: totalsRowIndex));
-    cell.value = currencySymbol;
+      // Currency
+      cell =
+          sheet.cell(CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: row));
+      cell.value = currencySymbol;
+      cell.cellStyle = CellStyle(bold: true);
 
-    cell = sheet.cell(
-        CellIndex.indexByColumnRow(columnIndex: 8, rowIndex: totalsRowIndex));
-    cell.value = Formatters.formatCurrency(totalIncome)
-        .replaceAll('Rp ', '')
-        .replaceAll('\$ ', '');
-    cell.cellStyle = CellStyle(
-      fontColorHex: '#43A047', // Green
-      bold: true,
-    );
+      // Amount
+      cell =
+          sheet.cell(CellIndex.indexByColumnRow(columnIndex: 8, rowIndex: row));
+      cell.value = Formatters.formatCurrency(amount)
+          .replaceAll(RegExp(r'[^\d.,]'), '')
+          .trim();
+      cell.cellStyle = CellStyle(
+        fontColorHex: colorHex,
+        bold: true,
+      );
+    }
 
-    // Total Expense label and value
-    cell = sheet.cell(CellIndex.indexByColumnRow(
-        columnIndex: 5, rowIndex: totalsRowIndex + 1));
-    cell.value = 'Total Expense:';
-    cell.cellStyle = CellStyle(
-      backgroundColorHex: '#FFCC02',
-      fontColorHex: '#000000',
-      bold: true,
-    );
+    writeTotalRow(
+        totalRowStart, 'Total Income:', totalIncome, '#4CAF50'); // Green
+    writeTotalRow(
+        totalRowStart + 1, 'Total Expense:', totalExpense, '#F44336'); // Red
+    writeTotalRow(totalRowStart + 2, 'Total Balance:', balance,
+        balance >= 0 ? '#4CAF50' : '#F44336');
 
-    cell = sheet.cell(CellIndex.indexByColumnRow(
-        columnIndex: 7, rowIndex: totalsRowIndex + 1));
-    cell.value = currencySymbol;
-
-    cell = sheet.cell(CellIndex.indexByColumnRow(
-        columnIndex: 8, rowIndex: totalsRowIndex + 1));
-    cell.value = Formatters.formatCurrency(totalExpense)
-        .replaceAll('Rp ', '')
-        .replaceAll('\$ ', '');
-    cell.cellStyle = CellStyle(
-      fontColorHex: '#E91E63', // Pink
-      bold: true,
-    );
-
-    // Balance label and value
-    cell = sheet.cell(CellIndex.indexByColumnRow(
-        columnIndex: 5, rowIndex: totalsRowIndex + 2));
-    cell.value = 'Balance:';
-    cell.cellStyle = CellStyle(
-      backgroundColorHex: '#FFCC02',
-      fontColorHex: '#000000',
-      bold: true,
-    );
-
-    cell = sheet.cell(CellIndex.indexByColumnRow(
-        columnIndex: 7, rowIndex: totalsRowIndex + 2));
-    cell.value = currencySymbol;
-
-    cell = sheet.cell(CellIndex.indexByColumnRow(
-        columnIndex: 8, rowIndex: totalsRowIndex + 2));
-    cell.value = Formatters.formatCurrency(balance)
-        .replaceAll('Rp ', '')
-        .replaceAll('\$ ', '');
-    cell.cellStyle = CellStyle(
-      fontColorHex: balance >= 0
-          ? '#43A047'
-          : '#E91E63', // Green if positive, pink if negative
-      bold: true,
-    );
+    // Auto-fit columns (approximation by setting width)
+    for (var i = 0; i < headers.length; i++) {
+      sheet.setColWidth(i, 15.0);
+    }
+    sheet.setColWidth(6, 30.0); // Description wider
+    sheet.setColWidth(11, 25.0); // Notes wider
   }
 
-  /// Create Reports sheet with monthly and category summaries
+  // ----- SHEET 2: REPORTS -----
+
   static void _createReportsSheet(Excel excel, List<Transaction> transactions) {
     final sheet = excel['Reports'];
     int currentRow = 0;
-
     final currencySymbol = Formatters.currencySymbol.trim();
 
-    // ===== MONTHLY SUMMARY =====
-    final monthlyHeader = ['Monthly Summary'];
-    var cell = sheet
-        .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow));
-    cell.value = monthlyHeader[0];
-    cell.cellStyle = CellStyle(
-      backgroundColorHex: '#FFCC02',
-      fontColorHex: '#000000',
-      bold: true,
-      fontSize: 14,
-    );
-    currentRow += 2;
+    // 1. Monthly Summary
+    _writeSectionHeader(sheet, currentRow, 'Monthly Summary');
+    currentRow += 1;
 
-    // Monthly summary headers
-    final monthlySummaryHeaders = [
+    final monthlyHeaders = [
       'Month',
-      'Total Income ($currencySymbol)',
-      'Total Expense ($currencySymbol)',
+      'Income ($currencySymbol)',
+      'Expense ($currencySymbol)',
       'Net ($currencySymbol)',
-      'Transaction Count',
+      'Count'
     ];
+    _writeHeaders(sheet, monthlyHeaders, startRow: currentRow);
+    currentRow += 1;
 
-    for (var i = 0; i < monthlySummaryHeaders.length; i++) {
-      cell = sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: i, rowIndex: currentRow));
-      cell.value = monthlySummaryHeaders[i];
-      cell.cellStyle = CellStyle(
-        backgroundColorHex: '#FFCC02',
-        fontColorHex: '#000000',
-        bold: true,
-      );
-    }
-    currentRow++;
+    final monthlyData = _groupTransactionsByMonth(transactions);
 
-    // Group by month
-    final monthlyData = <String, Map<String, double>>{};
-    for (var tx in transactions) {
-      final monthKey = Formatters.formatMonthYear(tx.date);
-      monthlyData.putIfAbsent(
-          monthKey, () => {'income': 0, 'expense': 0, 'count': 0});
-
-      if (tx.type == TransactionType.income) {
-        monthlyData[monthKey]!['income'] =
-            (monthlyData[monthKey]!['income'] ?? 0) + tx.amount;
-      } else if (tx.type == TransactionType.expense) {
-        monthlyData[monthKey]!['expense'] =
-            (monthlyData[monthKey]!['expense'] ?? 0) + tx.amount;
-      }
-      monthlyData[monthKey]!['count'] =
-          (monthlyData[monthKey]!['count'] ?? 0) + 1;
-    }
-
-    // Add monthly data
-    for (var entry in monthlyData.entries) {
-      final income = entry.value['income'] ?? 0;
-      final expense = entry.value['expense'] ?? 0;
-      final net = income - expense;
-      final count = entry.value['count'] ?? 0;
-
+    for (final entry in monthlyData.entries) {
+      final data = entry.value;
       final rowData = [
         entry.key,
-        Formatters.formatCurrency(income),
-        Formatters.formatCurrency(expense),
-        Formatters.formatCurrency(net),
-        count.toInt().toString(),
+        Formatters.formatCurrency(data['income']!)
+            .replaceAll(currencySymbol, '')
+            .trim(),
+        Formatters.formatCurrency(data['expense']!)
+            .replaceAll(currencySymbol, '')
+            .trim(),
+        Formatters.formatCurrency(data['net']!)
+            .replaceAll(currencySymbol, '')
+            .trim(),
+        data['count'].toString(),
       ];
-
-      for (var j = 0; j < rowData.length; j++) {
-        cell = sheet.cell(
-            CellIndex.indexByColumnRow(columnIndex: j, rowIndex: currentRow));
-        cell.value = rowData[j];
-      }
+      _writeRow(sheet, currentRow, rowData);
       currentRow++;
     }
 
-    currentRow += 2;
+    currentRow += 2; // Spacer
 
-    // ===== CATEGORY SUMMARY =====
-    cell = sheet
-        .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow));
-    cell.value = 'Category Summary';
-    cell.cellStyle = CellStyle(
-      backgroundColorHex: '#FFCC02',
-      fontColorHex: '#000000',
-      bold: true,
-      fontSize: 14,
-    );
-    currentRow += 2;
+    // 2. Category Summary
+    _writeSectionHeader(sheet, currentRow, 'Category Summary');
+    currentRow += 1;
 
-    // Category summary headers
-    final categorySummaryHeaders = [
+    final categoryHeaders = [
       'Category',
       'Type',
-      'Total Amount ($currencySymbol)',
-      'Transaction Count',
-      'Average Amount ($currencySymbol)',
+      'Total ($currencySymbol)',
+      'Count',
+      'Avg ($currencySymbol)'
     ];
+    _writeHeaders(sheet, categoryHeaders, startRow: currentRow);
+    currentRow += 1;
 
-    for (var i = 0; i < categorySummaryHeaders.length; i++) {
-      cell = sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: i, rowIndex: currentRow));
-      cell.value = categorySummaryHeaders[i];
-      cell.cellStyle = CellStyle(
-        backgroundColorHex: '#FFCC02',
-        fontColorHex: '#000000',
-        bold: true,
-      );
-    }
-    currentRow++;
+    final categoryData = _groupTransactionsByCategory(transactions);
 
-    // Group by category
-    final categoryData = <String, Map<String, dynamic>>{};
-    for (var tx in transactions) {
-      final key = '${tx.category}_${tx.type.toString()}';
-      categoryData.putIfAbsent(
-          key,
-          () => {
-                'category': tx.category,
-                'type': tx.type,
-                'total': 0.0,
-                'count': 0,
-              });
-
-      categoryData[key]!['total'] =
-          (categoryData[key]!['total'] as double) + tx.amount;
-      categoryData[key]!['count'] = (categoryData[key]!['count'] as int) + 1;
-    }
-
-    // Add category data
-    for (var entry in categoryData.values) {
-      final total = entry['total'] as double;
-      final count = entry['count'] as int;
-      final average = total / count;
-
+    for (final entry in categoryData.entries) {
+      final data = entry.value;
       final rowData = [
-        entry['category'] as String,
-        _getTypeString(entry['type'] as TransactionType),
-        Formatters.formatCurrency(total),
-        count.toString(),
-        Formatters.formatCurrency(average),
+        data['category'].toString(), // Ensure String
+        data['type'].toString().toUpperCase(),
+        Formatters.formatCurrency(data['total'])
+            .replaceAll(currencySymbol, '')
+            .trim(),
+        data['count'].toString(),
+        Formatters.formatCurrency(data['average'])
+            .replaceAll(currencySymbol, '')
+            .trim(),
       ];
-
-      for (var j = 0; j < rowData.length; j++) {
-        cell = sheet.cell(
-            CellIndex.indexByColumnRow(columnIndex: j, rowIndex: currentRow));
-        cell.value = rowData[j];
-      }
+      _writeRow(sheet, currentRow, rowData);
       currentRow++;
     }
+
+    // Adjust widths
+    sheet.setColWidth(0, 20.0);
+    sheet.setColWidth(1, 15.0);
+    sheet.setColWidth(2, 15.0);
+    sheet.setColWidth(3, 15.0);
+    sheet.setColWidth(4, 10.0);
   }
 
-  /// Create Wallets sheet with account balances
+  // ----- SHEET 3: WALLETS -----
+
   static void _createWalletsSheet(
       Excel excel, List<Transaction> transactions, List<dynamic>? accounts) {
     final sheet = excel['Wallets'];
-
     final currencySymbol = Formatters.currencySymbol.trim();
 
-    // Headers
     final headers = [
-      'Wallet/Account',
+      'Wallet Name',
       'Total Income ($currencySymbol)',
       'Total Expense ($currencySymbol)',
-      'Current Balance ($currencySymbol)',
-      'Transaction Count',
+      'Net Flow ($currencySymbol)',
+      'Tx Count'
     ];
+    _writeHeaders(sheet, headers);
 
-    // Apply yellow header style
-    for (var i = 0; i < headers.length; i++) {
-      final cell =
-          sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0));
-      cell.value = headers[i];
-      cell.cellStyle = CellStyle(
-        backgroundColorHex: '#FFCC02',
-        fontColorHex: '#000000',
-        bold: true,
-      );
+    final walletData = _groupTransactionsByWallet(transactions);
+
+    int currentRow = 1;
+
+    for (final entry in walletData.entries) {
+      final data = entry.value;
+      final rowData = [
+        _getWalletName(entry.key, accounts), // Helper to resolve name
+        Formatters.formatCurrency(data['income']!)
+            .replaceAll(currencySymbol, '')
+            .trim(),
+        Formatters.formatCurrency(data['expense']!)
+            .replaceAll(currencySymbol, '')
+            .trim(),
+        Formatters.formatCurrency(data['net']!)
+            .replaceAll(currencySymbol, '')
+            .trim(),
+        data['count'].toString(),
+      ];
+      _writeRow(sheet, currentRow, rowData);
+      currentRow++;
     }
 
-    // Calculate balances per account
-    final accountData = <String, Map<String, double>>{};
+    sheet.setColWidth(0, 20.0);
+    sheet.setColWidth(1, 15.0);
+    sheet.setColWidth(2, 15.0);
+    sheet.setColWidth(3, 15.0);
+  }
+
+  // ===========================================================================
+  // DATA PROCESSING HELPERS
+  // ===========================================================================
+
+  static Map<String, Map<String, double>> _groupTransactionsByMonth(
+      List<Transaction> transactions) {
+    final data = <String, Map<String, double>>{};
+
     for (var tx in transactions) {
-      final accountId = tx.accountId;
-      accountData.putIfAbsent(
-          accountId, () => {'income': 0, 'expense': 0, 'count': 0});
+      final key = Formatters.formatMonthYear(tx.date);
+      if (!data.containsKey(key)) {
+        data[key] = {'income': 0, 'expense': 0, 'net': 0, 'count': 0};
+      }
 
       if (tx.type == TransactionType.income) {
-        accountData[accountId]!['income'] =
-            (accountData[accountId]!['income'] ?? 0) + tx.amount;
+        data[key]!['income'] = data[key]!['income']! + tx.amount;
       } else if (tx.type == TransactionType.expense) {
-        accountData[accountId]!['expense'] =
-            (accountData[accountId]!['expense'] ?? 0) + tx.amount;
+        data[key]!['expense'] = data[key]!['expense']! + tx.amount;
       }
-      accountData[accountId]!['count'] =
-          (accountData[accountId]!['count'] ?? 0) + 1;
+      data[key]!['net'] = data[key]!['income']! - data[key]!['expense']!;
+      data[key]!['count'] = data[key]!['count']! + 1;
+    }
+    return data;
+  }
+
+  static Map<String, Map<String, dynamic>> _groupTransactionsByCategory(
+      List<Transaction> transactions) {
+    final data = <String, Map<String, dynamic>>{};
+
+    for (var tx in transactions) {
+      final key = '${tx.category}_${tx.type}';
+      if (!data.containsKey(key)) {
+        data[key] = {
+          'category': tx.category,
+          'type': tx.type.toString().split('.').last,
+          'total': 0.0,
+          'count': 0,
+          'average': 0.0,
+        };
+      }
+
+      data[key]!['total'] = (data[key]!['total'] as double) + tx.amount;
+      data[key]!['count'] = (data[key]!['count'] as int) + 1;
     }
 
-    // Add data rows
-    int rowIndex = 1;
-    for (var entry in accountData.entries) {
-      final income = entry.value['income'] ?? 0;
-      final expense = entry.value['expense'] ?? 0;
-      final balance = income - expense;
-      final count = entry.value['count'] ?? 0;
+    // Calculate averages
+    for (var key in data.keys) {
+      data[key]!['average'] =
+          (data[key]!['total'] as double) / (data[key]!['count'] as int);
+    }
 
-      final rowData = [
-        entry.key,
-        Formatters.formatCurrency(income),
-        Formatters.formatCurrency(expense),
-        Formatters.formatCurrency(balance),
-        count.toInt().toString(),
-      ];
+    return data;
+  }
 
-      for (var j = 0; j < rowData.length; j++) {
-        final cell = sheet.cell(
-          CellIndex.indexByColumnRow(columnIndex: j, rowIndex: rowIndex),
-        );
-        cell.value = rowData[j];
+  static Map<String, Map<String, double>> _groupTransactionsByWallet(
+      List<Transaction> transactions) {
+    final data = <String, Map<String, double>>{};
+
+    for (var tx in transactions) {
+      final key = tx.accountId;
+      if (!data.containsKey(key)) {
+        data[key] = {'income': 0, 'expense': 0, 'net': 0, 'count': 0};
       }
-      rowIndex++;
+
+      if (tx.type == TransactionType.income) {
+        data[key]!['income'] = data[key]!['income']! + tx.amount;
+      } else if (tx.type == TransactionType.expense) {
+        data[key]!['expense'] = data[key]!['expense']! + tx.amount;
+      }
+      data[key]!['net'] = data[key]!['income']! - data[key]!['expense']!;
+      data[key]!['count'] = data[key]!['count']! + 1;
+    }
+    return data;
+  }
+
+  static String _getWalletName(String accountId, List<dynamic>? accounts) {
+    if (accounts == null) return accountId;
+    try {
+      final account =
+          accounts.firstWhere((a) => a.id == accountId, orElse: () => null);
+      if (account != null) return account.name;
+    } catch (e) {
+      // Ignore error
+    }
+    return accountId; // Fallback to ID
+  }
+
+  // ===========================================================================
+  // EXCEL HELPERS
+  // ===========================================================================
+
+  static void _writeHeaders(Sheet sheet, List<String> headers,
+      {int startRow = 0}) {
+    for (var i = 0; i < headers.length; i++) {
+      final cell = sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: startRow));
+      cell.value = headers[i];
+      cell.cellStyle = CellStyle(
+        backgroundColorHex: '#FFCC02', // Yellow
+        fontColorHex: '#000000', // Black
+        bold: true,
+        horizontalAlign: HorizontalAlign.Center,
+      );
     }
   }
 
-  /// Helper: Get day of week
-  static String _getDayOfWeek(DateTime date) {
-    const days = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday'
-    ];
-    return days[date.weekday - 1];
+  static void _writeSectionHeader(Sheet sheet, int row, String title) {
+    final cell =
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: row));
+    cell.value = title;
+    cell.cellStyle = CellStyle(
+      bold: true,
+      fontSize: 12,
+      underline: Underline.Single,
+    );
   }
 
-  /// Import transactions from Excel file
+  static void _writeRow(Sheet sheet, int row, List<String> data) {
+    for (var i = 0; i < data.length; i++) {
+      final cell =
+          sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: row));
+      cell.value = data[i];
+      cell.cellStyle = CellStyle(
+        horizontalAlign: HorizontalAlign.Left,
+      );
+    }
+  }
+
+  static String _generateFilename(DateTime? startDate, DateTime? endDate) {
+    final now = DateTime.now();
+    final formatter = DateFormat('yyyyMMdd');
+
+    if (startDate != null && endDate != null) {
+      return 'CatMoney_Export_${formatter.format(startDate)}-${formatter.format(endDate)}.xlsx';
+    }
+    return 'CatMoney_Export_${formatter.format(now)}.xlsx';
+  }
+
+  // ===========================================================================
+  // PLATFORM SPECIFIC SAVE/DOWNLOAD
+  // ===========================================================================
+
+  static Future<ExportResult> _downloadWebExcel(
+      List<int> bytes, String filename) async {
+    try {
+      final blob = html.Blob([bytes]);
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.AnchorElement(href: url)
+        ..setAttribute('download', filename)
+        ..click();
+      html.Url.revokeObjectUrl(url);
+      return ExportResult.success('File downloaded successfully');
+    } catch (e) {
+      return ExportResult.error('Web download failed: $e');
+    }
+  }
+
+  static Future<ExportResult> _saveNativeExcel(
+      List<int> bytes, String filename) async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final file = io.File('${dir.path}/$filename');
+      await file.writeAsBytes(bytes);
+      return ExportResult.success('File saved to ${file.path}',
+          path: file.path);
+    } catch (e) {
+      return ExportResult.error('Native save failed: $e');
+    }
+  }
+
+  // ===========================================================================
+  // IMPORT FUNCTIONALITY (Preserved)
+  // ===========================================================================
+
   static Future<ImportResult> importFromExcel() async {
     try {
-      // Pick file
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['xlsx', 'xls'],
-        withData: kIsWeb, // Load bytes on web
+        withData: kIsWeb,
       );
 
       if (result == null || result.files.isEmpty) {
@@ -563,197 +541,101 @@ class ExportService {
       List<int> bytes;
 
       if (kIsWeb) {
-        // On web, use bytes directly
-        if (file.bytes == null) {
-          return ImportResult.error('Failed to read file');
-        }
+        if (file.bytes == null)
+          return ImportResult.error('Failed to read file data');
         bytes = file.bytes!;
       } else {
-        // On native, read file
-        if (file.path == null) {
-          return ImportResult.error('Invalid file path');
-        }
+        if (file.path == null) return ImportResult.error('Invalid file path');
         bytes = await io.File(file.path!).readAsBytes();
       }
 
-      // Parse Excel
       final excel = Excel.decodeBytes(bytes);
-      if (excel.tables.isEmpty) {
+      if (excel.tables.isEmpty)
         return ImportResult.error('Excel file is empty');
-      }
 
-      // Get first sheet
-      final tableName = excel.tables.keys.first;
-      final table = excel.tables[tableName];
-      if (table == null || table.rows.isEmpty) {
-        return ImportResult.error('No data found in Excel file');
-      }
+      // Try to find 'Transactions' sheet, otherwise use first sheet
+      final sheetName = excel.tables.keys.firstWhere(
+        (k) => k.toLowerCase() == 'transactions',
+        orElse: () => excel.tables.keys.first,
+      );
 
-      // Parse transactions
+      final table = excel.tables[sheetName];
+      if (table == null || table.rows.isEmpty)
+        return ImportResult.error('No data found');
+
       final transactions = <Transaction>[];
       final errors = <String>[];
 
-      // Skip header row
+      // Assuming standard format (skip header)
       for (var i = 1; i < table.rows.length; i++) {
         try {
           final row = table.rows[i];
-          if (row.isEmpty || row.every((cell) => cell == null)) continue;
+          if (row.isEmpty) continue;
 
-          // Extract cell values safely
-          final dateStr = _getCellValue(row, 0);
-          // final timeStr = _getCellValue(row, 1); // Time column for display only
-          final typeStr = _getCellValue(row, 2);
-          final category = _getCellValue(row, 3);
-          final description = _getCellValue(row, 4);
-          final amountStr = _getCellValue(row, 5);
-          final accountId = _getCellValue(row, 6);
-          final notes = _getCellValue(row, 7);
-          final watchlistedStr = _getCellValue(row, 8);
+          // Helper to get string value
+          String getVal(int idx) =>
+              idx < row.length ? row[idx]?.value?.toString() ?? '' : '';
 
-          // Validate required fields
-          if (dateStr.isEmpty ||
-              typeStr.isEmpty ||
-              category.isEmpty ||
-              description.isEmpty ||
-              amountStr.isEmpty) {
-            errors.add('Row ${i + 1}: Missing required fields');
-            continue;
-          }
+          // Basic validation
+          final dateStr = getVal(1); // Date is usually col 1 in our export
+          final typeStr = getVal(4); // Type col 4
+          final amountStr =
+              getVal(9); // Raw Amount col 9 (safer than formatted)
 
-          // Parse date
+          if (dateStr.isEmpty) continue; // Skip empty rows
+
           DateTime date;
           try {
-            date = DateTime.parse(dateStr);
+            // Try parsing standard format
+            date = DateFormat('d MMMM yyyy').parse(dateStr);
           } catch (e) {
-            errors.add('Row ${i + 1}: Invalid date format');
-            continue;
+            try {
+              date = DateTime.parse(dateStr);
+            } catch (e2) {
+              // Fallback
+              date = DateTime.now();
+              errors.add('Row $i: Invalid date format');
+            }
           }
 
-          // Parse amount
-          double amount;
+          final type = typeStr.toUpperCase().contains('INCOME')
+              ? TransactionType.income
+              : typeStr.toUpperCase().contains('TRANSFER')
+                  ? TransactionType.transfer
+                  : TransactionType.expense;
+
+          double amount = 0;
           try {
-            amount = double.parse(amountStr.replaceAll(',', ''));
+            amount = double.parse(amountStr);
           } catch (e) {
-            errors.add('Row ${i + 1}: Invalid amount');
-            continue;
+            // Try parsing formatted amount if raw fails
+            final amtFormatted = getVal(8).replaceAll(RegExp(r'[^\d.]'), '');
+            amount = double.tryParse(amtFormatted) ?? 0;
           }
 
-          // Parse type
-          final type = _parseTransactionType(typeStr);
-          if (type == null) {
-            errors.add('Row ${i + 1}: Invalid transaction type');
-            continue;
-          }
-
-          // Create transaction
-          final transaction = Transaction(
-            id: '${DateTime.now().millisecondsSinceEpoch}_$i',
+          transactions.add(Transaction(
+            id: DateTime.now().millisecondsSinceEpoch.toString() + '_$i',
             type: type,
             amount: amount,
-            category: category,
-            description: description,
+            category: getVal(5),
+            description: getVal(6),
             date: date,
-            accountId: accountId.isEmpty ? 'cash' : accountId,
-            notes: notes.isEmpty ? null : notes,
-            isWatchlisted: watchlistedStr.toLowerCase() == 'yes',
-          );
-
-          transactions.add(transaction);
+            accountId: getVal(10).isEmpty ? 'cash' : getVal(10),
+            notes: getVal(11),
+          ));
         } catch (e) {
-          errors.add('Row ${i + 1}: ${e.toString()}');
+          errors.add('Row $i: $e');
         }
       }
 
-      if (transactions.isEmpty && errors.isNotEmpty) {
-        return ImportResult.error(
-          'No valid transactions found. Errors:\n${errors.take(5).join('\n')}',
-        );
-      }
-
-      return ImportResult.success(
-        transactions,
-        warnings:
-            errors.isEmpty ? null : 'Imported with ${errors.length} errors',
-      );
-    } catch (e, stackTrace) {
-      debugPrint('Import error: $e\n$stackTrace');
-      return ImportResult.error('Import failed: ${e.toString()}');
-    }
-  }
-
-  /// Download Excel file on web platform
-  static Future<ExportResult> _downloadWebExcel(
-      List<int> bytes, String filename) async {
-    try {
-      final blob = html.Blob([bytes]);
-      final url = html.Url.createObjectUrlFromBlob(blob);
-      html.AnchorElement(href: url)
-        ..setAttribute('download', filename)
-        ..click();
-      html.Url.revokeObjectUrl(url);
-
-      return ExportResult.success(
-        'Excel file downloaded successfully',
-        path: 'Downloads folder',
-      );
+      return ImportResult.success(transactions,
+          warnings: errors.isNotEmpty ? errors.join('\n') : null);
     } catch (e) {
-      return ExportResult.error('Web download failed: ${e.toString()}');
-    }
-  }
-
-  /// Save Excel file on native platform
-  static Future<ExportResult> _saveNativeExcel(
-      List<int> bytes, String filename) async {
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = io.File('${directory.path}/$filename');
-      await file.writeAsBytes(bytes);
-
-      return ExportResult.success(
-        'Excel file saved successfully',
-        path: file.path,
-      );
-    } catch (e) {
-      return ExportResult.error('Failed to save file: ${e.toString()}');
-    }
-  }
-
-  /// Helper: Get cell value as string
-  static String _getCellValue(List<Data?> row, int index) {
-    if (index >= row.length) return '';
-    final cell = row[index];
-    if (cell == null) return '';
-    return cell.value?.toString() ?? '';
-  }
-
-  /// Helper: Get transaction type string
-  static String _getTypeString(TransactionType type) {
-    switch (type) {
-      case TransactionType.income:
-        return 'Income';
-      case TransactionType.expense:
-        return 'Expense';
-      case TransactionType.transfer:
-        return 'Transfer';
-    }
-  }
-
-  /// Helper: Parse transaction type from string
-  static TransactionType? _parseTransactionType(String str) {
-    switch (str.toLowerCase()) {
-      case 'income':
-        return TransactionType.income;
-      case 'expense':
-        return TransactionType.expense;
-      case 'transfer':
-        return TransactionType.transfer;
-      default:
-        return null;
+      return ImportResult.error('Import failed: $e');
     }
   }
 }
 
-/// Result class for export operations
 class ExportResult {
   final bool success;
   final String message;
@@ -765,7 +647,6 @@ class ExportResult {
         path = null;
 }
 
-/// Result class for import operations
 class ImportResult {
   final bool success;
   final String? message;
@@ -775,12 +656,10 @@ class ImportResult {
   ImportResult.success(this.transactions, {this.warnings})
       : success = true,
         message = null;
-
   ImportResult.error(this.message)
       : success = false,
         transactions = null,
         warnings = null;
-
   ImportResult.cancelled()
       : success = false,
         message = null,
