@@ -21,11 +21,11 @@ enum RecurringPeriod {
   String get displayName {
     switch (this) {
       case RecurringPeriod.monthly:
-        return 'Bulanan';
+        return 'Monthly';
       case RecurringPeriod.quarterly:
-        return 'Per 3 Bulan';
+        return 'Quarterly';
       case RecurringPeriod.yearly:
-        return 'Tahunan';
+        return 'Yearly';
     }
   }
 
@@ -49,7 +49,7 @@ class Bill {
   final double amount;
   final DateTime dueDate;
   final bool isRecurring;
-  final RecurringPeriod? recurringPeriod;
+  final int? recurringMonths; // Number of months to repeat
   final bool isPaid;
   final Color? color;
 
@@ -70,7 +70,7 @@ class Bill {
     required this.amount,
     required this.dueDate,
     this.isRecurring = false,
-    this.recurringPeriod,
+    this.recurringMonths,
     this.isPaid = false,
     this.color,
     this.notifyH3 = true,
@@ -100,11 +100,11 @@ class Bill {
 
   /// Get status text
   String get statusText {
-    if (isPaid) return 'Lunas';
-    if (isOverdue) return 'Terlambat ${daysUntilDue.abs()} hari';
-    if (isDueToday) return 'Jatuh tempo hari ini';
-    if (isDueSoon) return 'Jatuh tempo dalam $daysUntilDue hari';
-    return 'Jatuh tempo ${daysUntilDue} hari lagi';
+    if (isPaid) return 'Paid';
+    if (isOverdue) return 'Overdue ${daysUntilDue.abs()} days';
+    if (isDueToday) return 'Due today';
+    if (isDueSoon) return 'Due in $daysUntilDue days';
+    return 'Due in $daysUntilDue days';
   }
 
   /// Copy with method
@@ -115,7 +115,7 @@ class Bill {
     double? amount,
     DateTime? dueDate,
     bool? isRecurring,
-    RecurringPeriod? recurringPeriod,
+    int? recurringMonths,
     bool? isPaid,
     Color? color,
     bool? notifyH3,
@@ -132,7 +132,7 @@ class Bill {
       amount: amount ?? this.amount,
       dueDate: dueDate ?? this.dueDate,
       isRecurring: isRecurring ?? this.isRecurring,
-      recurringPeriod: recurringPeriod ?? this.recurringPeriod,
+      recurringMonths: recurringMonths ?? this.recurringMonths,
       isPaid: isPaid ?? this.isPaid,
       color: color ?? this.color,
       notifyH3: notifyH3 ?? this.notifyH3,
@@ -153,7 +153,17 @@ class Bill {
       'amount': amount,
       'dueDate': dueDate.toIso8601String(),
       'isRecurring': isRecurring,
-      'recurringPeriod': recurringPeriod?.name,
+      'recurringMonths': recurringMonths,
+      // Keep old field for backward compatibility
+      'recurringPeriod': recurringMonths != null
+          ? (recurringMonths == 1
+              ? 'monthly'
+              : recurringMonths == 3
+                  ? 'quarterly'
+                  : recurringMonths == 12
+                      ? 'yearly'
+                      : null)
+          : null,
       'isPaid': isPaid,
       'color': color?.value,
       'notifyH3': notifyH3,
@@ -174,12 +184,17 @@ class Bill {
       amount: (json['amount'] as num).toDouble(),
       dueDate: DateTime.parse(json['dueDate'] as String),
       isRecurring: json['isRecurring'] as bool? ?? false,
-      recurringPeriod: json['recurringPeriod'] != null
-          ? RecurringPeriod.values.firstWhere(
-              (e) => e.name == json['recurringPeriod'],
-              orElse: () => RecurringPeriod.monthly,
-            )
-          : null,
+      recurringMonths: json['recurringMonths'] != null
+          ? json['recurringMonths'] as int
+          : json['recurringPeriod'] != null
+              ? (json['recurringPeriod'] == 'monthly'
+                  ? 1
+                  : json['recurringPeriod'] == 'quarterly'
+                      ? 3
+                      : json['recurringPeriod'] == 'yearly'
+                          ? 12
+                          : null)
+              : null,
       isPaid: json['isPaid'] as bool? ?? false,
       color: json['color'] != null ? Color(json['color'] as int) : null,
       notifyH3: json['notifyH3'] as bool? ?? true,
@@ -193,13 +208,13 @@ class Bill {
 
   /// Generate next bill for recurring bills
   Bill generateNextBill() {
-    if (!isRecurring || recurringPeriod == null) {
+    if (!isRecurring || recurringMonths == null || recurringMonths! <= 0) {
       throw Exception('Cannot generate next bill for non-recurring bill');
     }
 
     final nextDueDate = DateTime(
       dueDate.year,
-      dueDate.month + recurringPeriod!.monthsToAdd,
+      dueDate.month + recurringMonths!,
       dueDate.day,
     );
 
@@ -210,7 +225,7 @@ class Bill {
       amount: amount,
       dueDate: nextDueDate,
       isRecurring: isRecurring,
-      recurringPeriod: recurringPeriod,
+      recurringMonths: recurringMonths,
       isPaid: false,
       color: color,
       notifyH3: notifyH3,

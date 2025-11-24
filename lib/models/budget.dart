@@ -21,11 +21,11 @@ enum BudgetPeriod {
   String get displayName {
     switch (this) {
       case BudgetPeriod.daily:
-        return 'Harian';
+        return 'Daily';
       case BudgetPeriod.weekly:
-        return 'Mingguan';
+        return 'Weekly';
       case BudgetPeriod.monthly:
-        return 'Bulanan';
+        return 'Monthly';
     }
   }
 }

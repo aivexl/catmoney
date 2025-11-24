@@ -594,13 +594,14 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                               : 'Not connected to Google Drive',
                           style: AppTextStyle.body.copyWith(
                             fontWeight: FontWeight.w600,
+                            color: Colors.black,
                           ),
                         ),
                         subtitle: Text(
                           isAuthenticated
                               ? 'Backup will automatically upload to Google Drive'
                               : 'Click to sign in to Google Drive',
-                          style: AppTextStyle.caption,
+                          style: AppTextStyle.caption.copyWith(color: Colors.black),
                         ),
                         trailing: isAuthenticated
                             ? TextButton(
@@ -642,7 +643,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                           : (settings.driveFolderPath == null
                               ? 'Select Google Drive sync folder'
                               : 'Folder: ${settings.driveFolderPath}'),
-                      style: AppTextStyle.caption,
+                      style: AppTextStyle.caption.copyWith(color: Colors.black),
                     ),
                     value: settings.autoBackupEnabled,
                     onChanged: _isProcessing ? null : _toggleAutoBackup,
@@ -675,16 +676,16 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
           if (_isProcessing)
             Container(
               color: Colors.black26,
-              child: const Center(
+              child: Center(
                 child: Card(
                   child: Padding(
-                    padding: EdgeInsets.all(AppSpacing.xl),
+                    padding: const EdgeInsets.all(AppSpacing.xl),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        CircularProgressIndicator(),
-                        SizedBox(height: AppSpacing.md),
-                        Text('Processing...', style: AppTextStyle.body),
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: AppSpacing.md),
+                        Text('Processing...', style: AppTextStyle.body.copyWith(color: Colors.black)),
                       ],
                     ),
                   ),
@@ -707,6 +708,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
         title,
         style: AppTextStyle.h3.copyWith(
           fontWeight: FontWeight.bold,
+          color: Colors.black,
         ),
       ),
     );

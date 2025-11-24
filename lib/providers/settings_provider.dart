@@ -13,8 +13,8 @@ class SettingsProvider with ChangeNotifier {
   static const _autoBackupKey = 'auto_backup_enabled';
   static const _drivePathKey = 'drive_folder_path';
 
-  String _currencySymbol = 'Rp';
-  String _currencyName = 'Rupiah';
+  String _currencySymbol = '\$';
+  String _currencyName = 'US Dollar';
   bool _autoBackupEnabled = false;
   String? _driveFolderPath;
 
@@ -29,8 +29,8 @@ class SettingsProvider with ChangeNotifier {
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    _currencySymbol = prefs.getString(_symbolKey) ?? 'Rp';
-    _currencyName = prefs.getString(_nameKey) ?? 'Rupiah';
+    _currencySymbol = prefs.getString(_symbolKey) ?? '\$';
+    _currencyName = prefs.getString(_nameKey) ?? 'US Dollar';
     _autoBackupEnabled = prefs.getBool(_autoBackupKey) ?? false;
     _driveFolderPath = prefs.getString(_drivePathKey);
     Formatters.setCurrency(

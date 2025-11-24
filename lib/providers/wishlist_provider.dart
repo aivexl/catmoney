@@ -102,7 +102,7 @@ class WishlistProvider extends ChangeNotifier {
         newProgress >= 50 &&
         wishlist.notifyAt50 &&
         !wishlist.hasNotified50) {
-      notifications.add('50% tercapai! 🎉');
+      notifications.add('50% achieved! 🎉');
       _wishlists[index] = updatedWishlist.copyWith(hasNotified50: true);
     }
     // Check 75% milestone
@@ -110,7 +110,7 @@ class WishlistProvider extends ChangeNotifier {
         newProgress >= 75 &&
         wishlist.notifyAt75 &&
         !wishlist.hasNotified75) {
-      notifications.add('75% tercapai! Hampir sampai! 🚀');
+      notifications.add('75% achieved! Almost there! 🚀');
       _wishlists[index] = updatedWishlist.copyWith(hasNotified75: true);
     }
     // Check 100% milestone
@@ -118,7 +118,7 @@ class WishlistProvider extends ChangeNotifier {
         newProgress >= 100 &&
         wishlist.notifyAt100 &&
         !wishlist.hasNotified100) {
-      notifications.add('Target tercapai! Selamat! 🎊');
+      notifications.add('Target achieved! Congratulations! 🎊');
       _wishlists[index] = updatedWishlist.copyWith(hasNotified100: true);
     } else {
       _wishlists[index] = updatedWishlist;

@@ -53,23 +53,23 @@ class FloatingNotification {
 
     if (percentage >= 100) {
       final messages = [
-        '🎊 Yeay! Target "$wishlistName" tercapai!\nWaktunya belanja! 🛍️',
-        '🎉 Selamat! "$wishlistName" sudah terkumpul!\nImpianmu jadi kenyataan! ✨',
-        '🌟 Luar biasa! Target "$wishlistName" berhasil!\nKamu hebat! 💪',
+        '🎊 Yay! Target "$wishlistName" achieved!\nTime to shop! 🛍️',
+        '🎉 Congratulations! "$wishlistName" is complete!\nYour dream came true! ✨',
+        '🌟 Amazing! Target "$wishlistName" achieved!\nYou\'re awesome! 💪',
       ];
       message = messages[DateTime.now().millisecond % messages.length];
     } else if (percentage >= 75) {
       final messages = [
-        '🚀 Wow! 75% tercapai untuk "$wishlistName"!\nTinggal sedikit lagi! 💪',
-        '⭐ Keren! Sudah 75% menuju "$wishlistName"!\nSemangat! 🔥',
-        '💫 Hampir sampai! 75% untuk "$wishlistName"!\nKeep going! 🎯',
+        '🚀 Wow! 75% achieved for "$wishlistName"!\nAlmost there! 💪',
+        '⭐ Great! Already 75% towards "$wishlistName"!\nKeep it up! 🔥',
+        '💫 Almost there! 75% for "$wishlistName"!\nKeep going! 🎯',
       ];
       message = messages[DateTime.now().millisecond % messages.length];
     } else {
       final messages = [
-        '🎯 Good job! 50% untuk "$wishlistName"!\nSetengah jalan! 👏',
-        '✨ Mantap! Sudah 50% menuju "$wishlistName"!\nLanjutkan! 💪',
-        '🌈 Hebat! Setengah perjalanan "$wishlistName" selesai! 🎉',
+        '🎯 Good job! 50% for "$wishlistName"!\nHalfway there! 👏',
+        '✨ Awesome! Already 50% towards "$wishlistName"!\nKeep going! 💪',
+        '🌈 Great! Halfway journey for "$wishlistName" complete! 🎉',
       ];
       message = messages[DateTime.now().millisecond % messages.length];
     }
@@ -93,18 +93,18 @@ class FloatingNotification {
 
     if (isExceeded) {
       message =
-          '🚨 Over budget!\n"$budgetName" sudah $percentage%!\nHati-hati ya! 💸';
+          '🚨 Over budget!\n"$budgetName" is already $percentage%!\nBe careful! 💸';
       type = NotificationType.error;
     } else if (percentage >= 100) {
-      message = '⚠️ Budget "$budgetName" habis!\nLimit tercapai 100%! 🛑';
+      message = '⚠️ Budget "$budgetName" exhausted!\nLimit reached 100%! 🛑';
       type = NotificationType.error;
     } else if (percentage >= 75) {
       message =
-          '⚠️ Awas! Budget "$budgetName" sudah $percentage%!\nPelan-pelan ya! 🐌';
+          '⚠️ Warning! Budget "$budgetName" is already $percentage%!\nSlow down! 🐌';
       type = NotificationType.warning;
     } else {
       message =
-          '💡 Info: Budget "$budgetName" terpakai $percentage%.\nMasih aman! ✅';
+          '💡 Info: Budget "$budgetName" used $percentage%.\nStill safe! ✅';
       type = NotificationType.info;
     }
 
@@ -125,9 +125,9 @@ class FloatingNotification {
 
     if (hasRecurring) {
       message =
-          '✅ "$billName" lunas!\nBill bulan depan sudah dibuat otomatis! 📅';
+          '✅ "$billName" paid!\nNext month\'s bill created automatically! 📅';
     } else {
-      message = '✅ "$billName" berhasil dibayar!\nMantap! 👍';
+      message = '✅ "$billName" paid successfully!\nGreat! 👍';
     }
 
     show(
@@ -304,7 +304,7 @@ class _FloatingNotificationWidgetState
                       const SizedBox(height: 8),
                       // Hint text
                       Text(
-                        'Tap untuk menutup',
+                        'Tap to close',
                         style: TextStyle(
                           color: Colors.grey.shade600,
                           fontSize: 12,

@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../providers/budget_provider.dart';
+import '../providers/settings_provider.dart';
 import '../models/budget.dart';
 import '../utils/formatters.dart';
 import '../widgets/shared_bottom_nav_bar.dart';
@@ -151,8 +152,8 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
           children: [
             const Text('💰', style: TextStyle(fontSize: 64)),
             const SizedBox(height: AppSpacing.md),
-            const Text('No budgets yet',
-                style: AppTextStyle.h2, textAlign: TextAlign.center),
+            Text('No budgets yet',
+                style: AppTextStyle.h2.copyWith(color: Colors.black), textAlign: TextAlign.center),
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Create a budget to control your spending!',
@@ -283,9 +284,9 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(budget.category, style: AppTextStyle.h2),
+                        Text(budget.category, style: AppTextStyle.h2.copyWith(color: Colors.black)),
                         Text('${budget.period.displayName}',
-                            style: AppTextStyle.caption),
+                            style: AppTextStyle.caption.copyWith(color: Colors.black)),
                       ],
                     ),
                   ),
@@ -443,6 +444,9 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setState) {
+            String categoryError = '';
+            String limitError = '';
+            
             return Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -466,17 +470,57 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                         prefixIcon: const Icon(Icons.label),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: limitController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Limit Amount',
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                        prefixIcon: const Icon(Icons.attach_money),
+                    if (categoryError.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 12),
+                        child: Text(
+                          categoryError,
+                          style: const TextStyle(
+                            color: AppColors.expense,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
+                    ],
+                    const SizedBox(height: 16),
+                    Consumer<SettingsProvider>(
+                      builder: (context, settings, _) {
+                        return TextField(
+                          controller: limitController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [CurrencyInputFormatter()],
+                          decoration: InputDecoration(
+                            labelText: 'Limit Amount',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Text(
+                                settings.currencySymbol,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
+                    if (limitError.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 12),
+                        child: Text(
+                          limitError,
+                          style: const TextStyle(
+                            color: AppColors.expense,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     Text('Period', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 8),
@@ -493,7 +537,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    Text('Pilih Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text('Select Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 200, // Increased height for grid
@@ -536,7 +580,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Text('Pilih Warna', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text('Select Color', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 50,
@@ -624,8 +668,27 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                       height: 50,
                       child: ElevatedButton(
                         onPressed: () async {
-                          if (categoryController.text.isEmpty ||
-                              limitController.text.isEmpty) {
+                          setState(() {
+                            categoryError = '';
+                            limitError = '';
+                          });
+                          
+                          if (categoryController.text.isEmpty) {
+                            setState(() {
+                              categoryError = 'Category is required';
+                            });
+                          }
+                          if (limitController.text.isEmpty) {
+                            setState(() {
+                              limitError = 'Limit amount is required';
+                            });
+                          } else if (double.tryParse(Formatters.removeFormatting(limitController.text)) == null) {
+                            setState(() {
+                              limitError = 'Invalid amount';
+                            });
+                          }
+                          
+                          if (categoryError.isNotEmpty || limitError.isNotEmpty) {
                             return;
                           }
 
@@ -636,7 +699,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                                 .toString(),
                             category: categoryController.text,
                             emoji: selectedEmoji,
-                            limitAmount: double.parse(limitController.text),
+                            limitAmount: double.parse(Formatters.removeFormatting(limitController.text)),
                             period: selectedPeriod,
                             startDate: now,
                             endDate:
@@ -656,7 +719,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('Simpan'),
+                        child: const Text('Save'),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -687,6 +750,9 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setState) {
+            String categoryError = '';
+            String limitError = '';
+            
             return Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -704,25 +770,65 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                     TextField(
                       controller: categoryController,
                       decoration: InputDecoration(
-                        labelText: 'Kategori',
+                        labelText: 'Category',
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12)),
                         prefixIcon: const Icon(Icons.label),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: limitController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Limit Amount',
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                        prefixIcon: const Icon(Icons.attach_money),
+                    if (categoryError.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 12),
+                        child: Text(
+                          categoryError,
+                          style: const TextStyle(
+                            color: AppColors.expense,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                     const SizedBox(height: 16),
-                    Text('Periode', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Consumer<SettingsProvider>(
+                      builder: (context, settings, _) {
+                        return TextField(
+                          controller: limitController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [CurrencyInputFormatter()],
+                          decoration: InputDecoration(
+                            labelText: 'Limit Amount',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Text(
+                                settings.currencySymbol,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    if (limitError.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 12),
+                        child: Text(
+                          limitError,
+                          style: const TextStyle(
+                            color: AppColors.expense,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    Text('Period', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 8),
                     SegmentedButton<BudgetPeriod>(
                       segments: BudgetPeriod.values.map((period) {
@@ -737,7 +843,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    Text('Pilih Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text('Select Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 200, // Increased height for grid
@@ -780,7 +886,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Text('Pilih Warna', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text('Select Color', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 50,
@@ -876,7 +982,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                           final updated = budget.copyWith(
                             category: categoryController.text,
                             emoji: selectedEmoji,
-                            limitAmount: double.parse(limitController.text),
+                            limitAmount: double.parse(Formatters.removeFormatting(limitController.text)),
                             period: selectedPeriod,
                             color: selectedColor,
                           );

@@ -95,7 +95,7 @@ class BillProvider extends ChangeNotifier {
     _bills[index] = bill.copyWith(isPaid: true);
 
     // Generate next bill if recurring
-    if (bill.isRecurring && bill.recurringPeriod != null) {
+    if (bill.isRecurring && bill.recurringMonths != null) {
       try {
         final nextBill = bill.generateNextBill();
         _bills.add(nextBill);
@@ -151,19 +151,19 @@ class BillProvider extends ChangeNotifier {
 
       // H-3 notification
       if (daysUntil == 3 && bill.notifyH3 && !bill.hasNotifiedH3) {
-        notifications.add('📅 ${bill.name} jatuh tempo dalam 3 hari');
+        notifications.add('📅 ${bill.name} due in 3 days');
         _bills[i] = bill.copyWith(hasNotifiedH3: true);
         hasChanges = true;
       }
       // H-2 notification
       else if (daysUntil == 2 && bill.notifyH2 && !bill.hasNotifiedH2) {
-        notifications.add('⏰ ${bill.name} jatuh tempo dalam 2 hari');
+        notifications.add('⏰ ${bill.name} due in 2 days');
         _bills[i] = bill.copyWith(hasNotifiedH2: true);
         hasChanges = true;
       }
       // H notification (due today)
       else if (daysUntil == 0 && bill.notifyH && !bill.hasNotifiedH) {
-        notifications.add('🚨 ${bill.name} jatuh tempo HARI INI!');
+        notifications.add('🚨 ${bill.name} due TODAY!');
         _bills[i] = bill.copyWith(hasNotifiedH: true);
         hasChanges = true;
       }
@@ -184,12 +184,12 @@ class BillProvider extends ChangeNotifier {
 
     for (final bill in _bills.toList()) {
       if (!bill.isRecurring || !bill.isPaid) continue;
-      if (bill.recurringPeriod == null) continue;
+      if (bill.recurringMonths == null || bill.recurringMonths! <= 0) continue;
 
       // Check if we need to generate next bill
       final nextDueDate = DateTime(
         bill.dueDate.year,
-        bill.dueDate.month + bill.recurringPeriod!.monthsToAdd,
+        bill.dueDate.month + bill.recurringMonths!,
         bill.dueDate.day,
       );
 

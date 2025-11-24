@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../providers/wishlist_provider.dart';
+import '../providers/settings_provider.dart';
 import '../models/wishlist.dart';
 import '../utils/formatters.dart';
 import '../widgets/shared_bottom_nav_bar.dart';
@@ -186,7 +187,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
       children: [
         if (active.isNotEmpty) ...[
           Text(
-            'Aktif',
+            'Active',
             style: AppTextStyle.h3.copyWith(color: Colors.black),
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -195,7 +196,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
         if (completed.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.md),
           Text(
-            'Selesai',
+            'Completed',
             style: AppTextStyle.h3.copyWith(color: Colors.black),
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -452,6 +453,8 @@ class _WishlistScreenState extends State<WishlistScreen> {
     final targetController = TextEditingController();
     String selectedEmoji = 'target'; // Default icon key
     Color selectedColor = PastelColors.palette[0];
+    String? nameError;
+    String? targetError;
 
     showModalBottomSheet(
       context: context,
@@ -485,20 +488,60 @@ class _WishlistScreenState extends State<WishlistScreen> {
                       prefixIcon: const Icon(Icons.label),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: targetController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Target Amount',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  if (nameError != null) ...[
+                    const SizedBox(height: 4),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 12),
+                      child: Text(
+                        nameError!,
+                        style: const TextStyle(
+                          color: AppColors.expense,
+                          fontSize: 12,
+                        ),
                       ),
-                      prefixIcon: const Icon(Icons.attach_money),
                     ),
-                  ),
+                  ],
                   const SizedBox(height: 16),
-                  Text('Pilih Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                  Consumer<SettingsProvider>(
+                    builder: (context, settings, _) {
+                      return TextField(
+                        controller: targetController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [CurrencyInputFormatter()],
+                        decoration: InputDecoration(
+                          labelText: 'Target Amount',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Text(
+                              settings.currencySymbol,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  if (targetError != null) ...[
+                    const SizedBox(height: 4),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 12),
+                      child: Text(
+                        targetError!,
+                        style: const TextStyle(
+                          color: AppColors.expense,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  Text('Select Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 200, // Increased height for grid
@@ -540,7 +583,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Text('Pilih Warna', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                  Text('Select Color', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 50,
@@ -628,16 +671,39 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () async {
-                        if (nameController.text.isEmpty ||
-                            targetController.text.isEmpty) {
+                        setState(() {
+                          nameError = null;
+                          targetError = null;
+                        });
+                        
+                        if (nameController.text.isEmpty) {
+                          setState(() {
+                            nameError = 'Target name is required';
+                          });
+                        }
+                        if (targetController.text.isEmpty) {
+                          setState(() {
+                            targetError = 'Target amount is required';
+                          });
+                        } else {
+                          final amountText = Formatters.removeFormatting(targetController.text);
+                          if (double.tryParse(amountText) == null) {
+                            setState(() {
+                              targetError = 'Invalid amount';
+                            });
+                          }
+                        }
+                        
+                        if (nameError != null || targetError != null) {
                           return;
                         }
 
+                        final amountText = Formatters.removeFormatting(targetController.text);
                         final wishlist = Wishlist(
                           id: DateTime.now().millisecondsSinceEpoch.toString(),
                           name: nameController.text,
                           emoji: selectedEmoji,
-                          targetAmount: double.parse(targetController.text),
+                          targetAmount: double.parse(amountText),
                           createdAt: DateTime.now(),
                           color: selectedColor,
                         );
@@ -673,6 +739,8 @@ class _WishlistScreenState extends State<WishlistScreen> {
         TextEditingController(text: wishlist.targetAmount.toString());
     String selectedEmoji = wishlist.emoji;
     Color selectedColor = wishlist.color ?? PastelColors.palette[0];
+    String? nameError;
+    String? targetError;
 
     showModalBottomSheet(
       context: context,
@@ -706,20 +774,60 @@ class _WishlistScreenState extends State<WishlistScreen> {
                       prefixIcon: const Icon(Icons.label),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: targetController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Target Amount',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  if (nameError != null) ...[
+                    const SizedBox(height: 4),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 12),
+                      child: Text(
+                        nameError!,
+                        style: const TextStyle(
+                          color: AppColors.expense,
+                          fontSize: 12,
+                        ),
                       ),
-                      prefixIcon: const Icon(Icons.attach_money),
                     ),
-                  ),
+                  ],
                   const SizedBox(height: 16),
-                  Text('Pilih Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                  Consumer<SettingsProvider>(
+                    builder: (context, settings, _) {
+                      return TextField(
+                        controller: targetController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [CurrencyInputFormatter()],
+                        decoration: InputDecoration(
+                          labelText: 'Target Amount',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          prefixIcon: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Text(
+                              settings.currencySymbol,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  if (targetError != null) ...[
+                    const SizedBox(height: 4),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 12),
+                      child: Text(
+                        targetError!,
+                        style: const TextStyle(
+                          color: AppColors.expense,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  Text('Select Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 200, // Increased height for grid
@@ -761,7 +869,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Text('Pilih Warna', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                  Text('Select Color', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 50,
@@ -849,15 +957,38 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () async {
-                        if (nameController.text.isEmpty ||
-                            targetController.text.isEmpty) {
+                        setState(() {
+                          nameError = null;
+                          targetError = null;
+                        });
+                        
+                        if (nameController.text.isEmpty) {
+                          setState(() {
+                            nameError = 'Target name is required';
+                          });
+                        }
+                        if (targetController.text.isEmpty) {
+                          setState(() {
+                            targetError = 'Target amount is required';
+                          });
+                        } else {
+                          final amountText = Formatters.removeFormatting(targetController.text);
+                          if (double.tryParse(amountText) == null) {
+                            setState(() {
+                              targetError = 'Invalid amount';
+                            });
+                          }
+                        }
+                        
+                        if (nameError != null || targetError != null) {
                           return;
                         }
 
+                        final amountText = Formatters.removeFormatting(targetController.text);
                         final updated = wishlist.copyWith(
                           name: nameController.text,
                           emoji: selectedEmoji,
-                          targetAmount: double.parse(targetController.text),
+                          targetAmount: double.parse(amountText),
                           color: selectedColor,
                         );
 

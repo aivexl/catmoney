@@ -144,7 +144,7 @@ class CategoryPieChart extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.xs),
                   Text(
-                    'Belum ada data',
+                    'No data yet',
                     style: AppTextStyle.caption.copyWith(
                       color: Colors.black,
                     ),

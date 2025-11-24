@@ -102,7 +102,7 @@ class BudgetProvider extends ChangeNotifier {
         newPercentage >= 50 &&
         budget.notifyAt50 &&
         !budget.hasNotified50) {
-      notifications.add('⚠️ 50% budget terpakai');
+      notifications.add('⚠️ 50% budget used');
       _budgets[index] = updatedBudget.copyWith(hasNotified50: true);
     }
     // Check 75% milestone
@@ -110,7 +110,7 @@ class BudgetProvider extends ChangeNotifier {
         newPercentage >= 75 &&
         budget.notifyAt75 &&
         !budget.hasNotified75) {
-      notifications.add('⚠️ 75% budget terpakai! Hati-hati!');
+      notifications.add('⚠️ 75% budget used! Be careful!');
       _budgets[index] = updatedBudget.copyWith(hasNotified75: true);
     }
     // Check 100% milestone
@@ -118,7 +118,7 @@ class BudgetProvider extends ChangeNotifier {
         newPercentage >= 100 &&
         budget.notifyAt100 &&
         !budget.hasNotified100) {
-      notifications.add('🚨 Budget limit tercapai!');
+      notifications.add('🚨 Budget limit reached!');
       _budgets[index] = updatedBudget.copyWith(hasNotified100: true);
     }
     // Over budget warning

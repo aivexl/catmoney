@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../providers/bill_provider.dart';
+import '../providers/settings_provider.dart';
 import '../models/bill.dart';
 import '../utils/formatters.dart';
 import '../widgets/shared_bottom_nav_bar.dart';
@@ -291,7 +292,10 @@ class _BillsScreenState extends State<BillsScreen> {
               _buildDetailRow('Status', bill.isPaid ? 'Paid' : 'Unpaid'),
               if (bill.isRecurring)
                 _buildDetailRow(
-                    'Recurring', bill.recurringPeriod?.displayName ?? '-'),
+                    'Recurring', 
+                    bill.recurringMonths != null 
+                        ? 'Every ${bill.recurringMonths} ${bill.recurringMonths == 1 ? 'month' : 'months'}'
+                        : '-'),
               const SizedBox(height: 24),
               Row(
                 children: [
@@ -447,8 +451,10 @@ class _BillsScreenState extends State<BillsScreen> {
     DateTime selectedDate = DateTime.now().add(const Duration(days: 7));
     String selectedEmoji = 'receipt'; // Default icon key
     bool isRecurring = false;
-    RecurringPeriod selectedPeriod = RecurringPeriod.monthly;
+    final recurringMonthsController = TextEditingController(text: '1');
     Color selectedColor = PastelColors.palette[0];
+    String? nameError;
+    String? amountError;
 
     showModalBottomSheet(
       context: context,
@@ -482,20 +488,60 @@ class _BillsScreenState extends State<BillsScreen> {
                         prefixIcon: const Icon(Icons.label),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: amountController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Amount',
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                        prefixIcon: const Icon(Icons.attach_money),
+                    if (nameError != null) ...[
+                      const SizedBox(height: 4),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 12),
+                        child: Text(
+                          nameError!,
+                          style: const TextStyle(
+                            color: AppColors.expense,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
+                    ],
+                    const SizedBox(height: 16),
+                    Consumer<SettingsProvider>(
+                      builder: (context, settings, _) {
+                        return TextField(
+                          controller: amountController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [CurrencyInputFormatter()],
+                          decoration: InputDecoration(
+                            labelText: 'Amount',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Text(
+                                settings.currencySymbol,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
+                    if (amountError != null) ...[
+                      const SizedBox(height: 4),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 12),
+                        child: Text(
+                          amountError!,
+                          style: const TextStyle(
+                            color: AppColors.expense,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     ListTile(
-                      title: const Text('Jatuh Tempo'),
+                      title: const Text('Due Date'),
                       subtitle: Text(Formatters.formatDate(selectedDate)),
                       trailing: const Icon(Icons.calendar_today),
                       onTap: () async {
@@ -518,23 +564,22 @@ class _BillsScreenState extends State<BillsScreen> {
                       onChanged: (value) => setState(() => isRecurring = value),
                     ),
                     if (isRecurring) ...[
-                      const SizedBox(height: 8),
-                      SegmentedButton<RecurringPeriod>(
-                        segments: RecurringPeriod.values.map((period) {
-                          return ButtonSegment(
-                            value: period,
-                            label: Text(period.displayName),
-                          );
-                        }).toList(),
-                        selected: {selectedPeriod},
-                        onSelectionChanged:
-                            (Set<RecurringPeriod> newSelection) {
-                          setState(() => selectedPeriod = newSelection.first);
-                        },
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: recurringMonthsController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: 'Repeat every (months)',
+                          hintText: 'Enter number of months',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          prefixIcon: const Icon(Icons.repeat),
+                        ),
                       ),
                     ],
                     const SizedBox(height: 16),
-                    Text('Pilih Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text('Select Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 200, // Increased height for grid
@@ -577,7 +622,7 @@ class _BillsScreenState extends State<BillsScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Text('Pilih Warna', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text('Select Color', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 50,
@@ -665,8 +710,27 @@ class _BillsScreenState extends State<BillsScreen> {
                       height: 50,
                       child: ElevatedButton(
                         onPressed: () async {
-                          if (nameController.text.isEmpty ||
-                              amountController.text.isEmpty) {
+                          setState(() {
+                            nameError = null;
+                            amountError = null;
+                          });
+                          
+                          if (nameController.text.isEmpty) {
+                            setState(() {
+                              nameError = 'Bill name is required';
+                            });
+                          }
+                          if (amountController.text.isEmpty) {
+                            setState(() {
+                              amountError = 'Amount is required';
+                            });
+                          } else if (double.tryParse(Formatters.removeFormatting(amountController.text)) == null) {
+                            setState(() {
+                              amountError = 'Invalid amount';
+                            });
+                          }
+                          
+                          if (nameError != null || amountError != null) {
                             return;
                           }
 
@@ -676,11 +740,12 @@ class _BillsScreenState extends State<BillsScreen> {
                                 .toString(),
                             name: nameController.text,
                             emoji: selectedEmoji,
-                            amount: double.parse(amountController.text),
+                            amount: double.parse(Formatters.removeFormatting(amountController.text)),
                             dueDate: selectedDate,
                             isRecurring: isRecurring,
-                            recurringPeriod:
-                                isRecurring ? selectedPeriod : null,
+                            recurringMonths: isRecurring
+                                ? int.tryParse(recurringMonthsController.text) ?? 1
+                                : null,
                             color: selectedColor,
                           );
 
@@ -715,8 +780,8 @@ class _BillsScreenState extends State<BillsScreen> {
     DateTime selectedDate = bill.dueDate;
     String selectedEmoji = bill.emoji;
     bool isRecurring = bill.isRecurring;
-    RecurringPeriod selectedPeriod =
-        bill.recurringPeriod ?? RecurringPeriod.monthly;
+    final recurringMonthsController = TextEditingController(
+        text: bill.recurringMonths?.toString() ?? '1');
     Color selectedColor = bill.color ?? PastelColors.palette[0];
 
     showModalBottomSheet(
@@ -728,6 +793,9 @@ class _BillsScreenState extends State<BillsScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setState) {
+            String? nameError;
+            String? amountError;
+            
             return Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -751,20 +819,60 @@ class _BillsScreenState extends State<BillsScreen> {
                         prefixIcon: const Icon(Icons.label),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: amountController,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Amount',
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                        prefixIcon: const Icon(Icons.attach_money),
+                    if (nameError != null) ...[
+                      const SizedBox(height: 4),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 12),
+                        child: Text(
+                          nameError!,
+                          style: const TextStyle(
+                            color: AppColors.expense,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
+                    ],
+                    const SizedBox(height: 16),
+                    Consumer<SettingsProvider>(
+                      builder: (context, settings, _) {
+                        return TextField(
+                          controller: amountController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [CurrencyInputFormatter()],
+                          decoration: InputDecoration(
+                            labelText: 'Amount',
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Text(
+                                settings.currencySymbol,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
+                    if (amountError != null) ...[
+                      const SizedBox(height: 4),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 12),
+                        child: Text(
+                          amountError!,
+                          style: const TextStyle(
+                            color: AppColors.expense,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     ListTile(
-                      title: const Text('Jatuh Tempo'),
+                      title: const Text('Due Date'),
                       subtitle: Text(Formatters.formatDate(selectedDate)),
                       trailing: const Icon(Icons.calendar_today),
                       onTap: () async {
@@ -787,23 +895,22 @@ class _BillsScreenState extends State<BillsScreen> {
                       onChanged: (value) => setState(() => isRecurring = value),
                     ),
                     if (isRecurring) ...[
-                      const SizedBox(height: 8),
-                      SegmentedButton<RecurringPeriod>(
-                        segments: RecurringPeriod.values.map((period) {
-                          return ButtonSegment(
-                            value: period,
-                            label: Text(period.displayName),
-                          );
-                        }).toList(),
-                        selected: {selectedPeriod},
-                        onSelectionChanged:
-                            (Set<RecurringPeriod> newSelection) {
-                          setState(() => selectedPeriod = newSelection.first);
-                        },
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: recurringMonthsController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: 'Repeat every (months)',
+                          hintText: 'Enter number of months',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          prefixIcon: const Icon(Icons.repeat),
+                        ),
                       ),
                     ],
                     const SizedBox(height: 16),
-                    Text('Pilih Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text('Select Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 200, // Increased height for grid
@@ -846,7 +953,7 @@ class _BillsScreenState extends State<BillsScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Text('Pilih Warna', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text('Select Color', style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 50,
@@ -934,19 +1041,39 @@ class _BillsScreenState extends State<BillsScreen> {
                       height: 50,
                       child: ElevatedButton(
                         onPressed: () async {
-                          if (nameController.text.isEmpty ||
-                              amountController.text.isEmpty) {
+                          setState(() {
+                            nameError = null;
+                            amountError = null;
+                          });
+                          
+                          if (nameController.text.isEmpty) {
+                            setState(() {
+                              nameError = 'Bill name is required';
+                            });
+                          }
+                          if (amountController.text.isEmpty) {
+                            setState(() {
+                              amountError = 'Amount is required';
+                            });
+                          } else if (double.tryParse(Formatters.removeFormatting(amountController.text)) == null) {
+                            setState(() {
+                              amountError = 'Invalid amount';
+                            });
+                          }
+                          
+                          if (nameError != null || amountError != null) {
                             return;
                           }
 
                           final updated = bill.copyWith(
                             name: nameController.text,
                             emoji: selectedEmoji,
-                            amount: double.parse(amountController.text),
+                            amount: double.parse(Formatters.removeFormatting(amountController.text)),
                             dueDate: selectedDate,
                             isRecurring: isRecurring,
-                            recurringPeriod:
-                                isRecurring ? selectedPeriod : null,
+                            recurringMonths: isRecurring
+                                ? int.tryParse(recurringMonthsController.text) ?? 1
+                                : null,
                             color: selectedColor,
                           );
 

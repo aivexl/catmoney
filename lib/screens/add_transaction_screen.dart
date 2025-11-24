@@ -58,8 +58,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   String? _selectedBudgetId;
   String? _selectedBillId;
 
-  // For adding new account
-  bool _showAddAccount = false;
+
+  // Validation error messages
+  String? _accountError;
+  String? _categoryError;
 
   Transaction? _editingTransaction;
   bool get _isEditing => _editingTransaction != null;
@@ -398,18 +400,31 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Future<void> _saveTransaction() async {
+    // Reset error messages
+    setState(() {
+      _accountError = null;
+      _categoryError = null;
+    });
+
+    // Validate form fields
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
+    // Validate account selection
+    if (_selectedAccountId == null) {
+      setState(() {
+        _accountError = 'Account is required';
+      });
+      return;
+    }
+
+    // Validate category selection (except for transfer)
     if (_selectedType != TransactionType.transfer &&
         _selectedCategoryId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select category'),
-          backgroundColor: AppColors.expense,
-        ),
-      );
+      setState(() {
+        _categoryError = 'Category is required';
+      });
       return;
     }
 
@@ -423,7 +438,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       id: _isEditing
           ? _editingTransaction!.id
           : DateTime.now().millisecondsSinceEpoch.toString(),
-      amount: double.parse(_amountController.text),
+      amount: double.parse(Formatters.removeFormatting(_amountController.text)),
       description: _descriptionController.text,
       date: _selectedDate,
       type: _selectedType,
@@ -450,10 +465,25 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       final wishlistProvider = context.read<WishlistProvider>();
       final wishlist = wishlistProvider.getWishlistById(_selectedWishlistId!);
       if (wishlist != null) {
-        await wishlistProvider.addToWishlist(
+        final result = await wishlistProvider.addToWishlist(
           _selectedWishlistId!,
           transaction.amount,
         );
+        
+        // Show achievement notifications
+        if (result['success'] == true && mounted) {
+          final notifications = result['notifications'] as List<String>?;
+          final progress = result['progress'] as double?;
+          
+          if (notifications != null && notifications.isNotEmpty && progress != null) {
+            // Show wishlist milestone notification
+            notification.FloatingNotification.showWishlistMilestone(
+              context,
+              percentage: progress.toInt(),
+              wishlistName: wishlist.name,
+            );
+          }
+        }
       }
     }
 
@@ -462,21 +492,23 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       final budgetProvider = context.read<BudgetProvider>();
       final budget = budgetProvider.getBudgetById(_selectedBudgetId!);
       if (budget != null) {
-        await budgetProvider.addSpending(
+        final result = await budgetProvider.addSpending(
           _selectedBudgetId!,
           transaction.amount,
         );
 
-        // Check if budget exceeded and show notification
-        final newSpent = budget.spentAmount + transaction.amount;
-        if (newSpent > budget.limitAmount) {
-          if (mounted) {
-            final percentage = (newSpent / budget.limitAmount * 100).toInt();
+        // Show budget warning notifications
+        if (result['success'] == true && mounted) {
+          final notifications = result['notifications'] as List<String>?;
+          final percentage = result['percentage'] as double?;
+          final isExceeded = result['isExceeded'] as bool?;
+          
+          if (notifications != null && notifications.isNotEmpty && percentage != null) {
             notification.FloatingNotification.showBudgetWarning(
               context,
-              percentage: percentage,
+              percentage: percentage.toInt(),
               budgetName: budget.category,
-              isExceeded: true,
+              isExceeded: isExceeded ?? false,
             );
           }
         }
@@ -534,7 +566,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
     final transaction = Transaction(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      amount: double.parse(_amountController.text),
+      amount: double.parse(Formatters.removeFormatting(_amountController.text)),
       description: _descriptionController.text,
       date: _selectedDate,
       type: _selectedType,
@@ -557,10 +589,25 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       final wishlistProvider = context.read<WishlistProvider>();
       final wishlist = wishlistProvider.getWishlistById(_selectedWishlistId!);
       if (wishlist != null) {
-        await wishlistProvider.addToWishlist(
+        final result = await wishlistProvider.addToWishlist(
           _selectedWishlistId!,
           transaction.amount,
         );
+        
+        // Show achievement notifications
+        if (result['success'] == true && mounted) {
+          final notifications = result['notifications'] as List<String>?;
+          final progress = result['progress'] as double?;
+          
+          if (notifications != null && notifications.isNotEmpty && progress != null) {
+            // Show wishlist milestone notification
+            notification.FloatingNotification.showWishlistMilestone(
+              context,
+              percentage: progress.toInt(),
+              wishlistName: wishlist.name,
+            );
+          }
+        }
       }
     }
 
@@ -569,21 +616,23 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       final budgetProvider = context.read<BudgetProvider>();
       final budget = budgetProvider.getBudgetById(_selectedBudgetId!);
       if (budget != null) {
-        await budgetProvider.addSpending(
+        final result = await budgetProvider.addSpending(
           _selectedBudgetId!,
           transaction.amount,
         );
 
-        // Check if budget exceeded and show notification
-        final newSpent = budget.spentAmount + transaction.amount;
-        if (newSpent > budget.limitAmount) {
-          if (mounted) {
-            final percentage = (newSpent / budget.limitAmount * 100).toInt();
+        // Show budget warning notifications
+        if (result['success'] == true && mounted) {
+          final notifications = result['notifications'] as List<String>?;
+          final percentage = result['percentage'] as double?;
+          final isExceeded = result['isExceeded'] as bool?;
+          
+          if (notifications != null && notifications.isNotEmpty && percentage != null) {
             notification.FloatingNotification.showBudgetWarning(
               context,
-              percentage: percentage,
+              percentage: percentage.toInt(),
               budgetName: budget.category,
-              isExceeded: true,
+              isExceeded: isExceeded ?? false,
             );
           }
         }
@@ -982,6 +1031,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 TextFormField(
                   controller: _amountController,
                   keyboardType: TextInputType.number,
+                  inputFormatters: [CurrencyInputFormatter()],
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -1018,7 +1068,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter amount';
+                      return 'Amount is required';
                     }
                     if (double.tryParse(value) == null) {
                       return 'Invalid amount';
@@ -1144,6 +1194,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                             onTap: () {
                               setState(() {
                                 _selectedAccountId = account.id;
+                                _accountError = null; // Clear error when selected
                               });
                             },
                             child: Container(
@@ -1191,6 +1242,19 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     );
                   },
                 ),
+                if (_accountError != null) ...[
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 12),
+                    child: Text(
+                      _accountError!,
+                      style: const TextStyle(
+                        color: AppColors.expense,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
 
                 const SizedBox(height: 24),
 
@@ -1534,7 +1598,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       final isSelected = _selectedCategoryId == category.id;
                       return GestureDetector(
                         onTap: () =>
-                            setState(() => _selectedCategoryId = category.id),
+                            setState(() {
+                              _selectedCategoryId = category.id;
+                              _categoryError = null; // Clear error when selected
+                            }),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 12),
@@ -1580,6 +1647,19 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       );
                     }).toList(),
                   ),
+                  if (_categoryError != null) ...[
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 12),
+                      child: Text(
+                        _categoryError!,
+                        style: const TextStyle(
+                          color: AppColors.expense,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
                 ] else ...[
                   Container(
                     width: double.infinity,
@@ -1611,7 +1691,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     ),
                   ),
                   validator: (value) =>
-                      value == null || value.isEmpty ? 'Required' : null,
+                      value == null || value.isEmpty ? 'Description is required' : null,
                 ),
                 const SizedBox(height: 16),
 

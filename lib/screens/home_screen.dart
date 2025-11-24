@@ -965,6 +965,34 @@ class _MenuIconButton extends StatefulWidget {
 class _MenuIconButtonState extends State<_MenuIconButton> {
   bool _isHovered = false;
 
+  /// Build asset icon with proper error handling
+  Widget _buildAssetIcon(String assetPath, double size, Color fallbackColor) {
+    try {
+      return Image.asset(
+        assetPath,
+        width: size,
+        height: size,
+        filterQuality: FilterQuality.high,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          debugPrint('Error loading icon: $assetPath - $error');
+          return Icon(
+            Icons.pets,
+            size: size,
+            color: fallbackColor,
+          );
+        },
+      );
+    } catch (e) {
+      debugPrint('Exception loading icon: $assetPath - $e');
+      return Icon(
+        Icons.pets,
+        size: size,
+        color: fallbackColor,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // More aggressive responsive sizing for small devices
@@ -1021,21 +1049,7 @@ class _MenuIconButtonState extends State<_MenuIconButton> {
                     : 1.0)), // Smaller scale on hover for small screens
               child: Center(
                 child: widget.icon is String
-                    ? Image.asset(
-                        widget.icon,
-                        width: iconInnerSize,
-                        height: iconInnerSize,
-                        filterQuality: FilterQuality.high,
-                        fit: BoxFit.contain,
-                        // color: widget.color, // Removed to show original asset colors
-                        errorBuilder: (context, error, stackTrace) {
-                          return Icon(
-                            Icons.broken_image,
-                            size: iconInnerSize,
-                            color: Colors.red,
-                          );
-                        },
-                      )
+                    ? _buildAssetIcon(widget.icon as String, iconInnerSize, widget.color)
                     : Icon(
                         widget.icon,
                         size: iconInnerSize,

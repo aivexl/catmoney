@@ -33,7 +33,7 @@ class BalancePieChart extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                'Belum ada data',
+                'No data yet',
                 style: AppTextStyle.caption.copyWith(color: Colors.black),
               ),
             ],
@@ -81,7 +81,7 @@ class BalancePieChart extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Perbandingan',
+                  'Comparison',
                   style: AppTextStyle.caption.copyWith(fontSize: 11, color: Colors.black),
                 ),
                 const SizedBox(height: 2),
@@ -99,7 +99,7 @@ class BalancePieChart extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          'Masuk',
+                          'Income',
                           style: AppTextStyle.small.copyWith(
                             color: AppColors.income,
                             fontSize: 10,
@@ -125,7 +125,7 @@ class BalancePieChart extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          'Keluar',
+                          'Expense',
                           style: AppTextStyle.small.copyWith(
                             color: AppColors.expense,
                             fontSize: 10,
