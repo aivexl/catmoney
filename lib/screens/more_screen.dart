@@ -33,13 +33,16 @@ class _MoreScreenState extends State<MoreScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildSectionTitle('Settings'),
-                    _buildMenuItem(
-                      context,
-                      icon: Icons.currency_exchange,
-                      title: 'Currency',
-                      subtitle: 'IDR (Indonesian Rupiah)',
-                      color: const Color(0xFFBAE1FF), // Pastel Blue
-                      onTap: () => _showCurrencySelector(context),
+                    Consumer<SettingsProvider>(
+                      builder: (context, settings, _) => _buildMenuItem(
+                        context,
+                        icon: Icons.currency_exchange,
+                        title: 'Currency',
+                        subtitle:
+                            '${settings.currencySymbol} (${settings.currencyName})',
+                        color: const Color(0xFFBAE1FF), // Pastel Blue
+                        onTap: () => _showCurrencySelector(context),
+                      ),
                     ),
                     _buildMenuItem(
                       context,
@@ -214,10 +217,11 @@ class _MoreScreenState extends State<MoreScreen> {
           ),
           child: Icon(icon, color: color),
         ),
-        title: Text(title, style: AppTextStyle.body.copyWith(color: Colors.black)),
-        subtitle: Text(subtitle, style: AppTextStyle.caption.copyWith(color: Colors.black)),
-        trailing:
-            const Icon(Icons.chevron_right, color: Colors.black),
+        title:
+            Text(title, style: AppTextStyle.body.copyWith(color: Colors.black)),
+        subtitle: Text(subtitle,
+            style: AppTextStyle.caption.copyWith(color: Colors.black)),
+        trailing: const Icon(Icons.chevron_right, color: Colors.black),
         onTap: onTap,
       ),
     );
