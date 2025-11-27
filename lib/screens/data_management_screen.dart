@@ -11,6 +11,7 @@ import '../services/google_drive_service.dart';
 import '../theme/app_colors.dart';
 import '../utils/formatters.dart';
 import '../config/features_config.dart';
+import 'restore_google_drive_screen.dart';
 
 /// Enterprise-level data management screen
 /// Zero-error implementation with comprehensive user feedback
@@ -645,6 +646,38 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                       ),
                     ),
                   ),
+
+                // Restore from Google Drive button
+                FutureBuilder<bool>(
+                  future: GoogleDriveService.isAuthenticated(),
+                  builder: (context, snapshot) {
+                    final isAuthenticated = snapshot.data ?? false;
+                    if (!isAuthenticated) return const SizedBox.shrink();
+
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                      child: OutlinedButton.icon(
+                        onPressed: _isProcessing
+                            ? null
+                            : () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const RestoreGoogleDriveScreen(),
+                                  ),
+                                );
+                              },
+                        icon: const Icon(Icons.cloud_download),
+                        label: const Text('Restore from Google Drive'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.all(AppSpacing.md),
+                          side: const BorderSide(color: AppColors.primary),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ],
               if (!FeaturesConfig.enableGoogleDriveBackup) ...[
                 _buildSectionTitle('Google Drive Backup (Disabled)'),
