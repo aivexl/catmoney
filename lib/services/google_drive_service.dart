@@ -10,7 +10,7 @@ import '../models/transaction.dart';
 /// Supports OAuth authentication and file upload to Google Drive
 class GoogleDriveService {
   static const String _clientId =
-      '561002972285-jsjgq2af2t49n00r36qqhhjil7ro12ua.apps.googleusercontent.com';
+      '561002972285-38015va7rnue6cn4bp43679e429eb0ff.apps.googleusercontent.com';
   static const String _scope = 'https://www.googleapis.com/auth/drive.file';
   static const String _tokenKey = 'google_drive_access_token';
   static const String _refreshTokenKey = 'google_drive_refresh_token';
@@ -22,8 +22,12 @@ class GoogleDriveService {
     if (kIsWeb) {
       _googleSignIn ??= GoogleSignIn(scopes: [_scope], clientId: _clientId);
     } else {
-      // On Android/iOS, clientId is handled by google-services.json / Info.plist
-      _googleSignIn ??= GoogleSignIn(scopes: [_scope]);
+      // On Android/iOS without Firebase, we need to specify serverClientId
+      // This is the Web Client ID from Google Cloud Console
+      _googleSignIn ??= GoogleSignIn(
+        scopes: [_scope],
+        serverClientId: _clientId, // Use Web Client ID as server client ID
+      );
     }
     return _googleSignIn!;
   }
@@ -61,7 +65,8 @@ class GoogleDriveService {
       // Add mobile-specific error handling
       if (!kIsWeb) {
         if (errorMessage.contains(
-            'PlatformException(sign_in_failed, com.google.android.gms.common.api.ApiException: 10: , null, null)')) {
+          'PlatformException(sign_in_failed, com.google.android.gms.common.api.ApiException: 10: , null, null)',
+        )) {
           return AuthResult.error(
             'Configuration Error (Error 10):\n\n'
             'This usually means the SHA-1 fingerprint is missing or incorrect in the Firebase/Google Cloud Console.\n'
@@ -70,7 +75,8 @@ class GoogleDriveService {
         }
 
         if (errorMessage.contains(
-            'PlatformException(sign_in_failed, com.google.android.gms.common.api.ApiException: 12500: , null, null)')) {
+          'PlatformException(sign_in_failed, com.google.android.gms.common.api.ApiException: 12500: , null, null)',
+        )) {
           return AuthResult.error(
             'Configuration Error (Error 12500):\n\n'
             'This usually means the support email is not selected in the Firebase Console project settings.',
@@ -290,6 +296,116 @@ class GoogleDriveService {
     }
   }
 
+  /// List all backup files from Google Drive
+  static Future<ListBackupsResult> listBackupFiles() async {
+    try {
+      // Get access token
+      final accessToken = await _getAccessToken();
+      if (accessToken == null) {
+        return ListBackupsResult.error(
+          'Not authenticated. Please sign in to Google Drive first.',
+        );
+      }
+
+      // List files with our prefix
+      const listUrl = 'https://www.googleapis.com/drive/v3/files?'
+          'q=name contains \'catmoneymanager_auto_backup_\' and trashed=false&'
+          'orderBy=createdTime desc&'
+          'fields=files(id,name,createdTime,size)';
+
+      final response = await http.get(
+        Uri.parse(listUrl),
+        headers: {'Authorization': 'Bearer $accessToken'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final files = data['files'] as List;
+
+        if (files.isEmpty) {
+          return ListBackupsResult.error(
+              'No backup files found in Google Drive');
+        }
+
+        final backupFiles = files.map((file) {
+          return BackupFileInfo(
+            id: file['id'] as String,
+            name: file['name'] as String,
+            createdTime: DateTime.parse(file['createdTime'] as String),
+            size: file['size'] != null ? int.parse(file['size'] as String) : 0,
+          );
+        }).toList();
+
+        return ListBackupsResult.success(backupFiles);
+      } else {
+        debugPrint('List error: ${response.statusCode} - ${response.body}');
+        return ListBackupsResult.error(
+          'Failed to list backups: ${response.statusCode}',
+        );
+      }
+    } catch (e, stackTrace) {
+      debugPrint('List backups error: $e\n$stackTrace');
+      return ListBackupsResult.error('Failed to list backups: ${e.toString()}');
+    }
+  }
+
+  /// Restore transactions from a Google Drive backup file
+  static Future<RestoreFromDriveResult> restoreFromBackup(String fileId) async {
+    try {
+      // Get access token
+      final accessToken = await _getAccessToken();
+      if (accessToken == null) {
+        return RestoreFromDriveResult.error(
+          'Not authenticated. Please sign in to Google Drive first.',
+        );
+      }
+
+      // Download file content
+      final downloadUrl =
+          'https://www.googleapis.com/drive/v3/files/$fileId?alt=media';
+
+      final response = await http.get(
+        Uri.parse(downloadUrl),
+        headers: {'Authorization': 'Bearer $accessToken'},
+      );
+
+      if (response.statusCode == 200) {
+        // Parse JSON
+        final jsonString = utf8.decode(response.bodyBytes);
+        final Map<String, dynamic> jsonData = jsonDecode(jsonString);
+
+        if (!jsonData.containsKey('transactions')) {
+          return RestoreFromDriveResult.error('Invalid backup file format');
+        }
+
+        final List<dynamic> transactionsJson = jsonData['transactions'];
+        final transactions = transactionsJson
+            .map((map) => Transaction.fromMap(map as Map<String, dynamic>))
+            .toList();
+
+        if (transactions.isEmpty) {
+          return RestoreFromDriveResult.error(
+            'Backup file contains no transactions',
+          );
+        }
+
+        return RestoreFromDriveResult.success(
+          transactions,
+          message:
+              'Restored ${transactions.length} transactions from Google Drive',
+        );
+      } else {
+        debugPrint('Download error: ${response.statusCode} - ${response.body}');
+        return RestoreFromDriveResult.error(
+          'Failed to download backup: ${response.statusCode}',
+        );
+      }
+    } catch (e, stackTrace) {
+      debugPrint('Restore error: $e\n$stackTrace');
+      return RestoreFromDriveResult.error('Restore failed: ${e.toString()}');
+    }
+  }
+
   /// Clean up old backup files (keep last 10)
   static Future<void> _cleanupOldBackups(String accessToken) async {
     try {
@@ -363,4 +479,75 @@ class UploadResult {
         message = null,
         fileUrl = null,
         fileId = null;
+}
+
+/// Backup file information from Google Drive
+class BackupFileInfo {
+  final String id;
+  final String name;
+  final DateTime createdTime;
+  final int size;
+
+  BackupFileInfo({
+    required this.id,
+    required this.name,
+    required this.createdTime,
+    required this.size,
+  });
+
+  String get formattedSize {
+    if (size < 1024) return '$size B';
+    if (size < 1024 * 1024) return '${(size / 1024).toStringAsFixed(1)} KB';
+    return '${(size / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
+
+  String get formattedDate {
+    final now = DateTime.now();
+    final diff = now.difference(createdTime);
+
+    if (diff.inDays == 0) {
+      if (diff.inHours == 0) {
+        return '${diff.inMinutes} minutes ago';
+      }
+      return '${diff.inHours} hours ago';
+    } else if (diff.inDays == 1) {
+      return 'Yesterday';
+    } else if (diff.inDays < 7) {
+      return '${diff.inDays} days ago';
+    } else {
+      return '${createdTime.day}/${createdTime.month}/${createdTime.year}';
+    }
+  }
+}
+
+/// Result class for listing backups
+class ListBackupsResult {
+  final bool success;
+  final String? error;
+  final List<BackupFileInfo>? files;
+
+  ListBackupsResult.success(this.files)
+      : success = true,
+        error = null;
+
+  ListBackupsResult.error(this.error)
+      : success = false,
+        files = null;
+}
+
+/// Result class for restore from Google Drive
+class RestoreFromDriveResult {
+  final bool success;
+  final String? message;
+  final String? error;
+  final List<Transaction>? transactions;
+
+  RestoreFromDriveResult.success(this.transactions, {this.message})
+      : success = true,
+        error = null;
+
+  RestoreFromDriveResult.error(this.error)
+      : success = false,
+        message = null,
+        transactions = null;
 }

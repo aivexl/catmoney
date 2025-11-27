@@ -189,6 +189,30 @@ class BackupService {
     }
   }
 
+  /// List all backup files from Google Drive
+  static Future<ListBackupsResult> listGoogleDriveBackups() async {
+    try {
+      return await GoogleDriveService.listBackupFiles();
+    } catch (e, stackTrace) {
+      debugPrint('List Google Drive backups error: $e\n$stackTrace');
+      return ListBackupsResult.error('Failed to list backups: ${e.toString()}');
+    }
+  }
+
+  /// Restore from a Google Drive backup file
+  static Future<RestoreFromDriveResult> restoreFromGoogleDrive(
+    String fileId,
+  ) async {
+    try {
+      return await GoogleDriveService.restoreFromBackup(fileId);
+    } catch (e, stackTrace) {
+      debugPrint('Restore from Google Drive error: $e\n$stackTrace');
+      return RestoreFromDriveResult.error(
+        'Restore failed: ${e.toString()}',
+      );
+    }
+  }
+
   /// Download JSON file on web platform
   static Future<BackupResult> _downloadWebJson(
     List<int> bytes, {
