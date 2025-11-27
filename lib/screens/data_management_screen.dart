@@ -647,36 +647,41 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                     ),
                   ),
 
-                // Restore from Google Drive button
-                FutureBuilder<bool>(
-                  future: GoogleDriveService.isAuthenticated(),
-                  builder: (context, snapshot) {
-                    final isAuthenticated = snapshot.data ?? false;
-                    if (!isAuthenticated) return const SizedBox.shrink();
+                // Restore from Google Drive button - always visible
+                Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: OutlinedButton.icon(
+                    onPressed: _isProcessing
+                        ? null
+                        : () async {
+                            // Check if authenticated first
+                            final isAuth =
+                                await GoogleDriveService.isAuthenticated();
+                            if (!isAuth) {
+                              if (!mounted) return;
+                              _showMessage(
+                                '⚠️ Please sign in to Google Drive first',
+                                isError: true,
+                              );
+                              return;
+                            }
 
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                      child: OutlinedButton.icon(
-                        onPressed: _isProcessing
-                            ? null
-                            : () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        const RestoreGoogleDriveScreen(),
-                                  ),
-                                );
-                              },
-                        icon: const Icon(Icons.cloud_download),
-                        label: const Text('Restore from Google Drive'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.all(AppSpacing.md),
-                          side: const BorderSide(color: AppColors.primary),
-                        ),
-                      ),
-                    );
-                  },
+                            if (!mounted) return;
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    const RestoreGoogleDriveScreen(),
+                              ),
+                            );
+                          },
+                    icon: const Icon(Icons.cloud_download),
+                    label: const Text('Restore from Google Drive'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      side: const BorderSide(color: AppColors.primary),
+                    ),
+                  ),
                 ),
               ],
               if (!FeaturesConfig.enableGoogleDriveBackup) ...[
