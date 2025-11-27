@@ -19,7 +19,12 @@ class GoogleDriveService {
 
   /// Initialize Google Sign In
   static GoogleSignIn _getGoogleSignIn() {
-    _googleSignIn ??= GoogleSignIn(scopes: [_scope], clientId: _clientId);
+    if (kIsWeb) {
+      _googleSignIn ??= GoogleSignIn(scopes: [_scope], clientId: _clientId);
+    } else {
+      // On Android/iOS, clientId is handled by google-services.json / Info.plist
+      _googleSignIn ??= GoogleSignIn(scopes: [_scope]);
+    }
     return _googleSignIn!;
   }
 
@@ -54,19 +59,36 @@ class GoogleDriveService {
       final errorMessage = e.toString();
 
       // Add mobile-specific error handling
-      if (!kIsWeb &&
-          (errorMessage.contains('PlatformException') ||
-              errorMessage.contains('DEVELOPER_ERROR') ||
-              errorMessage.contains('sign_in_failed') ||
-              errorMessage.contains('error 10'))) {
-        return AuthResult.error(
-          'Mobile Configuration Error:\n\n'
-          'Google Drive authentication requires additional setup for mobile:\n'
-          '1. Add OAuth client ID for Android/iOS in Google Cloud Console\n'
-          '2. Configure SHA-1 fingerprint (Android)\n'
-          '3. Add URL scheme (iOS)\n\n'
-          'See GOOGLE_DRIVE_SETUP.md for mobile configuration.',
-        );
+      if (!kIsWeb) {
+        if (errorMessage.contains(
+            'PlatformException(sign_in_failed, com.google.android.gms.common.api.ApiException: 10: , null, null)')) {
+          return AuthResult.error(
+            'Configuration Error (Error 10):\n\n'
+            'This usually means the SHA-1 fingerprint is missing or incorrect in the Firebase/Google Cloud Console.\n'
+            'Please ensure you have added the correct SHA-1 from your keystore.',
+          );
+        }
+
+        if (errorMessage.contains(
+            'PlatformException(sign_in_failed, com.google.android.gms.common.api.ApiException: 12500: , null, null)')) {
+          return AuthResult.error(
+            'Configuration Error (Error 12500):\n\n'
+            'This usually means the support email is not selected in the Firebase Console project settings.',
+          );
+        }
+
+        if (errorMessage.contains('PlatformException') ||
+            errorMessage.contains('DEVELOPER_ERROR') ||
+            errorMessage.contains('sign_in_failed')) {
+          return AuthResult.error(
+            'Mobile Configuration Error:\n\n'
+            'Authentication failed. Please check:\n'
+            '1. google-services.json is present in android/app/\n'
+            '2. SHA-1 fingerprint is correctly configured in Firebase Console\n'
+            '3. The package name matches exactly (com.machineloops.catmoneymanager)\n\n'
+            'Error details: $errorMessage',
+          );
+        }
       }
 
       if (errorMessage.contains('popup_closed_by_user') ||
