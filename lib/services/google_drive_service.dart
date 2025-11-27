@@ -10,7 +10,7 @@ import '../models/transaction.dart';
 /// Supports OAuth authentication and file upload to Google Drive
 class GoogleDriveService {
   static const String _clientId =
-      '561002972285-38015va7rnue6cn4bp43679e429eb0ff.apps.googleusercontent.com'; // Replace with your OAuth client ID
+      '561002972285-jsjgq2af2t49n00r36qqhhjil7ro12ua.apps.googleusercontent.com';
   static const String _scope = 'https://www.googleapis.com/auth/drive.file';
   static const String _tokenKey = 'google_drive_access_token';
   static const String _refreshTokenKey = 'google_drive_refresh_token';
@@ -19,10 +19,7 @@ class GoogleDriveService {
 
   /// Initialize Google Sign In
   static GoogleSignIn _getGoogleSignIn() {
-    _googleSignIn ??= GoogleSignIn(
-      scopes: [_scope],
-      clientId: _clientId,
-    );
+    _googleSignIn ??= GoogleSignIn(scopes: [_scope], clientId: _clientId);
     return _googleSignIn!;
   }
 
@@ -57,37 +54,51 @@ class GoogleDriveService {
       final errorMessage = e.toString();
 
       // Add mobile-specific error handling
-      if (!kIsWeb && errorMessage.contains('PlatformException')) {
-        return AuthResult.error('Mobile Configuration Error:\n\n'
-            'Google Drive authentication requires additional setup for mobile:\n'
-            '1. Add OAuth client ID for Android/iOS in Google Cloud Console\n'
-            '2. Configure SHA-1 fingerprint (Android)\n'
-            '3. Add URL scheme (iOS)\n\n'
-            'See GOOGLE_DRIVE_SETUP.md for mobile configuration.');
+      if (!kIsWeb &&
+          (errorMessage.contains('PlatformException') ||
+              errorMessage.contains('DEVELOPER_ERROR') ||
+              errorMessage.contains('sign_in_failed') ||
+              errorMessage.contains('error 10'))) {
+        return AuthResult.error(
+          'Mobile Configuration Error:\n\n'
+          'Google Drive authentication requires additional setup for mobile:\n'
+          '1. Add OAuth client ID for Android/iOS in Google Cloud Console\n'
+          '2. Configure SHA-1 fingerprint (Android)\n'
+          '3. Add URL scheme (iOS)\n\n'
+          'See GOOGLE_DRIVE_SETUP.md for mobile configuration.',
+        );
       }
 
       if (errorMessage.contains('popup_closed_by_user') ||
           errorMessage.contains('user_cancelled')) {
         return AuthResult.cancelled();
       } else if (errorMessage.contains('redirect_uri_mismatch')) {
-        return AuthResult.error('OAuth Configuration Error:\n\n'
-            'Redirect URI tidak cocok. Pastikan di Google Cloud Console:\n'
-            '1. Authorized JavaScript origins berisi: http://localhost\n'
-            '2. Authorized redirect URIs berisi: http://localhost\n\n'
-            'Lihat GOOGLE_DRIVE_SETUP.md untuk detail.');
+        return AuthResult.error(
+          'OAuth Configuration Error:\n\n'
+          'Redirect URI does not match. Ensure in Google Cloud Console:\n'
+          '1. Authorized JavaScript origins contains: http://localhost\n'
+          '2. Authorized redirect URIs contains: http://localhost\n\n'
+          'See GOOGLE_DRIVE_SETUP.md for details.',
+        );
       } else if (errorMessage.contains('invalid_client')) {
-        return AuthResult.error('OAuth Configuration Error:\n\n'
-            'Client ID tidak valid. Pastikan:\n'
-            '1. Client ID sudah benar di google_drive_service.dart\n'
-            '2. OAuth Client ID sudah dibuat di Google Cloud Console\n\n'
-            'Lihat GOOGLE_DRIVE_SETUP.md untuk detail.');
+        return AuthResult.error(
+          'OAuth Configuration Error:\n\n'
+          'Client ID is invalid. Ensure:\n'
+          '1. Client ID is correct in google_drive_service.dart\n'
+          '2. OAuth Client ID is created in Google Cloud Console\n\n'
+          'See GOOGLE_DRIVE_SETUP.md for details.',
+        );
       } else if (errorMessage.contains('access_denied')) {
-        return AuthResult.error('Access ditolak.\n\n'
-            'Anda perlu memberikan izin akses Google Drive.');
+        return AuthResult.error(
+          'Access denied.\n\n'
+          'You need to grant Google Drive access permission.',
+        );
       }
 
-      return AuthResult.error('Authentication failed:\n$errorMessage\n\n'
-          'Lihat console untuk detail error.');
+      return AuthResult.error(
+        'Authentication failed:\n$errorMessage\n\n'
+        'See console for error details.',
+      );
     }
   }
 
@@ -140,7 +151,8 @@ class GoogleDriveService {
       final accessToken = await _getAccessToken();
       if (accessToken == null) {
         return UploadResult.error(
-            'Not authenticated. Please sign in to Google Drive first.');
+          'Not authenticated. Please sign in to Google Drive first.',
+        );
       }
 
       // Prepare backup data
@@ -178,7 +190,8 @@ class GoogleDriveService {
       // Add metadata part
       body.addAll(utf8.encode('--$boundary\r\n'));
       body.addAll(
-          utf8.encode('Content-Type: application/json; charset=UTF-8\r\n\r\n'));
+        utf8.encode('Content-Type: application/json; charset=UTF-8\r\n\r\n'),
+      );
       body.addAll(utf8.encode(jsonEncode(metadata)));
       body.addAll(utf8.encode('\r\n'));
 

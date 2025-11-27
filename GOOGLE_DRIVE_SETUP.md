@@ -19,6 +19,83 @@ Something went wrong
 
 ---
 
+## 📱 Mobile Configuration (Android/iOS)
+
+**PENTING:** Untuk mobile, Anda **TIDAK** menggunakan Client ID Web. Anda perlu menambahkan konfigurasi Android/iOS di Google Cloud Console.
+
+### Android Setup
+
+> [!IMPORTANT]
+> Android memerlukan OAuth client ID terpisah dengan SHA-1 fingerprint. Ikuti langkah berikut dengan teliti.
+
+#### Langkah 1: Dapatkan SHA-1 Fingerprint
+
+Buka terminal/PowerShell di folder project, lalu jalankan:
+
+```powershell
+cd android
+.\gradlew signingReport
+```
+
+Cari output seperti ini:
+```
+Variant: debug
+Config: debug
+Store: C:\Users\YourName\.android\debug.keystore
+Alias: AndroidDebugKey
+MD5: XX:XX:XX:...
+SHA1: A1:B2:C3:D4:E5:F6:... ← COPY INI
+SHA-256: ...
+```
+
+**Copy SHA-1 fingerprint** (contoh: `A1:B2:C3:D4:E5:F6:...`)
+
+#### Langkah 2: Buat OAuth Client ID untuk Android
+
+1. **Buka Google Cloud Console** → [Credentials](https://console.cloud.google.com/apis/credentials)
+2. **Create Credentials** → **OAuth client ID**
+3. **Application type**: Pilih **Android**
+4. **Name**: `CatMoneyManager Android`
+5. **Package name**: `com.machineloops.catmoneymanager`
+6. **SHA-1 certificate fingerprint**: Paste SHA-1 yang sudah di-copy
+7. Klik **Create**
+
+> [!NOTE]
+> Anda **TIDAK** perlu download `google-services.json` untuk OAuth. File ini hanya diperlukan jika menggunakan Firebase.
+
+#### Langkah 3: Verifikasi Konfigurasi
+
+Setelah membuat OAuth client ID:
+- ✅ Package name harus **exact match**: `com.machineloops.catmoneymanager`
+- ✅ SHA-1 fingerprint harus dari keystore yang digunakan (debug atau release)
+- ✅ OAuth client ID akan otomatis aktif (tidak perlu konfigurasi tambahan di kode)
+
+
+### iOS Setup
+
+1. **Buka Google Cloud Console** > Credentials.
+2. **Create Credentials** > **OAuth client ID**.
+3. Application type: **iOS**.
+4. **Bundle ID:** `com.machineloops.catmoneymanager` (sesuai `ios/Runner.xcodeproj`).
+5. **Create**.
+6. **Download `GoogleService-Info.plist`** dan letakkan di `ios/Runner/`.
+7. **Add URL Scheme** di `ios/Runner/Info.plist`:
+   ```xml
+   <key>CFBundleURLTypes</key>
+   <array>
+   	<dict>
+   		<key>CFBundleTypeRole</key>
+   		<string>Editor</string>
+   		<key>CFBundleURLSchemes</key>
+   		<array>
+   			<string>com.googleusercontent.apps.CLIENT_ID_REVERSED</string>
+   		</array>
+   	</dict>
+   </array>
+   ```
+
+---
+
 ## ✅ Solusi: Setup OAuth Client ID
 
 ### Langkah 1: Buat Project di Google Cloud Console

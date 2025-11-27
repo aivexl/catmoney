@@ -1,10 +1,13 @@
 import 'dart:io' as io;
+import 'dart:typed_data';
 import 'package:excel/excel.dart';
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 import '../models/transaction.dart';
 import '../utils/formatters.dart';
@@ -511,14 +514,72 @@ class ExportService {
   static Future<ExportResult> _saveNativeExcel(
       List<int> bytes, String filename) async {
     try {
-      final dir = await getApplicationDocumentsDirectory();
-      final file = io.File('${dir.path}/$filename');
-      await file.writeAsBytes(bytes);
-      return ExportResult.success('File saved to ${file.path}',
-          path: file.path);
-    } catch (e) {
-      return ExportResult.error('Native save failed: $e');
+      // Request storage permission
+      final permission = await _requestStoragePermission();
+      if (!permission) {
+        return ExportResult.error(
+          'Storage permission denied. Please enable storage access in Settings.',
+        );
+      }
+
+      // Ensure bytes are properly typed
+      final Uint8List data =
+          bytes is Uint8List ? bytes : Uint8List.fromList(bytes);
+
+      // On Android/iOS, saveFile with bytes parameter will handle the save
+      final outputPath = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save Excel Report',
+        fileName: filename,
+        type: FileType.custom,
+        allowedExtensions: ['xlsx'],
+        bytes: data, // Pass bytes directly - this is the key fix!
+      );
+
+      if (outputPath == null) {
+        return ExportResult.error('Export cancelled');
+      }
+
+      // Verify file was created by checking if path was returned
+      // On mobile, the file is already written by the file_picker plugin
+      final fileSize = data.length;
+
+      return ExportResult.success(
+          'File saved successfully (${(fileSize / 1024).toStringAsFixed(1)} KB)',
+          path: outputPath);
+    } catch (e, stackTrace) {
+      debugPrint('Native save error: $e\n$stackTrace');
+      return ExportResult.error('Failed to save file: $e');
     }
+  }
+
+  /// Request storage permission based on Android version
+  static Future<bool> _requestStoragePermission() async {
+    if (kIsWeb) return true;
+
+    if (io.Platform.isAndroid) {
+      // Android 13+ uses different permissions
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      if (androidInfo.version.sdkInt >= 33) {
+        // Android 13+ - no storage permission needed for file picker
+        return true;
+      } else if (androidInfo.version.sdkInt >= 30) {
+        // Android 11-12 - use storage permission
+        var status = await Permission.storage.status;
+        if (!status.isGranted) {
+          status = await Permission.storage.request();
+        }
+        return status.isGranted;
+      } else {
+        // Android 10 and below
+        var status = await Permission.storage.status;
+        if (!status.isGranted) {
+          status = await Permission.storage.request();
+        }
+        return status.isGranted;
+      }
+    }
+
+    return true; // iOS doesn't need storage permission for file picker
   }
 
   // ===========================================================================

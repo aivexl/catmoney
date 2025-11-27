@@ -1,9 +1,12 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'dart:io' as io;
 import 'package:flutter/foundation.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:universal_html/html.dart' as html;
+import 'package:permission_handler/permission_handler.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 import '../models/transaction.dart';
 import 'google_drive_service.dart';
@@ -218,34 +221,69 @@ class BackupService {
   /// Save JSON file on native platform
   static Future<BackupResult> _saveNativeJson(List<int> bytes) async {
     try {
+      // Request storage permission
+      final permission = await _requestStoragePermission();
+      if (!permission) {
+        return BackupResult.error(
+          'Storage permission denied. Please enable storage access in Settings.',
+        );
+      }
+
       final timestamp = DateTime.now()
           .toIso8601String()
           .replaceAll(':', '-')
           .substring(0, 19);
       final fileName = 'catmoneymanager_backup_$timestamp.json';
 
-      // Let user choose save location
+      // Ensure bytes are properly typed
+      final Uint8List data =
+          bytes is Uint8List ? bytes : Uint8List.fromList(bytes);
+
+      // On Android/iOS, saveFile with bytes parameter will handle the save
       final outputPath = await FilePicker.platform.saveFile(
         dialogTitle: 'Save Backup File',
         fileName: fileName,
         type: FileType.custom,
         allowedExtensions: ['json'],
+        bytes: data, // Pass bytes directly - this is the key fix!
       );
 
       if (outputPath == null) {
         return BackupResult.error('Backup cancelled');
       }
 
-      final file = io.File(outputPath);
-      await file.writeAsBytes(bytes, flush: true);
+      // Verify file was created by checking if path was returned
+      // On mobile, the file is already written by the file_picker plugin
+      final fileSize = data.length;
 
       return BackupResult.success(
-        'Backup saved successfully',
-        path: file.path,
+        'Backup saved successfully (${(fileSize / 1024).toStringAsFixed(1)} KB)',
+        path: outputPath,
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('Native save error: $e\n$stackTrace');
       return BackupResult.error('Failed to save backup: ${e.toString()}');
     }
+  }
+
+  /// Request storage permission based on Android version
+  static Future<bool> _requestStoragePermission() async {
+    if (kIsWeb) return true;
+
+    if (io.Platform.isAndroid) {
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      if (androidInfo.version.sdkInt >= 33) {
+        return true; // No permission needed for file picker on Android 13+
+      } else {
+        var status = await Permission.storage.status;
+        if (!status.isGranted) {
+          status = await Permission.storage.request();
+        }
+        return status.isGranted;
+      }
+    }
+
+    return true; // iOS doesn't need storage permission for file picker
   }
 
   /// Clean up old backup files, keeping only the most recent

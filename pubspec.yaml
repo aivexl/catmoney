@@ -57,6 +57,10 @@ dependencies:
   # Vector math for transformations
   vector_math: ^2.1.4
   
+  # Permission handling
+  permission_handler: ^11.3.0
+  device_info_plus: ^10.1.0
+  
 
 dev_dependencies:
   flutter_test:

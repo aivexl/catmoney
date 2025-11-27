@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:file_picker/file_picker.dart';
 
 import '../providers/transaction_provider.dart';
 import '../providers/account_provider.dart';
@@ -278,35 +277,6 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
     }
   }
 
-  Future<void> _selectDriveFolder() async {
-    if (_isProcessing) return;
-
-    // Check if on web platform
-    if (kIsWeb) {
-      _showMessage(
-        '⚠️ Auto-backup to folder is not supported on web platform.\n'
-        'Use manual backup instead (downloads to your browser).',
-        isError: true,
-      );
-      return;
-    }
-
-    try {
-      final path = await FilePicker.platform.getDirectoryPath();
-
-      if (path == null || !mounted) return;
-
-      final settings = context.read<SettingsProvider>();
-      await settings.setAutoBackup(enabled: true, folderPath: path);
-
-      if (!mounted) return;
-      _showMessage('✅ Google Drive folder set: $path', isError: false);
-    } catch (e) {
-      if (!mounted) return;
-      _showMessage('❌ Error selecting folder: $e', isError: true);
-    }
-  }
-
   Future<void> _signInGoogleDrive() async {
     if (_isProcessing) return;
 
@@ -426,65 +396,8 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
 
     final settings = context.read<SettingsProvider>();
 
-    if (kIsWeb) {
-      // On web, check authentication first
-      if (value) {
-        final isAuth = await GoogleDriveService.isAuthenticated();
-        if (!isAuth) {
-          _showMessage(
-            '⚠️ Please sign in to Google Drive first',
-            isError: true,
-          );
-          return;
-        }
-      }
-
-      try {
-        await settings.setAutoBackup(enabled: value);
-        if (!mounted) return;
-        _showMessage(
-          value
-              ? '✅ Auto-backup enabled. Files will automatically upload to Google Drive after each transaction'
-              : 'Auto-backup disabled',
-          isError: false,
-        );
-      } catch (e) {
-        if (!mounted) return;
-        _showMessage('❌ Error: $e', isError: true);
-      }
-    } else {
-      // On desktop/mobile, folder selection required
-      if (value && settings.driveFolderPath == null) {
-        await _selectDriveFolder();
-      } else {
-        try {
-          await settings.setAutoBackup(enabled: value);
-          if (!mounted) return;
-          _showMessage(
-            value ? '✅ Auto-backup enabled' : 'Auto-backup disabled',
-            isError: false,
-          );
-        } catch (e) {
-          if (!mounted) return;
-          _showMessage('❌ Error: $e', isError: true);
-        }
-      }
-    }
-  }
-
-  Future<void> _backupToDriveNow() async {
-    if (_isProcessing) return;
-
-    final settings = context.read<SettingsProvider>();
-    final transactions = context.read<TransactionProvider>().transactions;
-
-    if (transactions.isEmpty) {
-      _showMessage('No transactions to backup', isError: true);
-      return;
-    }
-
-    if (kIsWeb) {
-      // On web, check authentication first
+    // Enforce Google Drive authentication for all platforms
+    if (value) {
       final isAuth = await GoogleDriveService.isAuthenticated();
       if (!isAuth) {
         _showMessage(
@@ -493,48 +406,52 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
         );
         return;
       }
+    }
 
-      // On web, upload to Google Drive
-      setState(() => _isProcessing = true);
-      try {
-        final result = await BackupService.autoBackupToFolder(transactions, '');
-        if (!mounted) return;
-        if (result.success) {
-          _showMessage(
-            '✅ ${result.message}\n${result.path != null ? 'Location: ${result.path}' : ''}',
-            isError: false,
-          );
-        } else {
-          _showMessage('❌ ${result.message}', isError: true);
-        }
-      } catch (e) {
-        if (!mounted) return;
-        _showMessage('❌ Backup error: $e', isError: true);
-      } finally {
-        if (mounted) setState(() => _isProcessing = false);
-      }
+    try {
+      await settings.setAutoBackup(enabled: value);
+      if (!mounted) return;
+      _showMessage(
+        value
+            ? '✅ Auto-backup enabled. Files will automatically upload to Google Drive after each transaction'
+            : 'Auto-backup disabled',
+        isError: false,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      _showMessage('❌ Error: $e', isError: true);
+    }
+  }
+
+  Future<void> _backupToDriveNow() async {
+    if (_isProcessing) return;
+
+    final transactions = context.read<TransactionProvider>().transactions;
+
+    if (transactions.isEmpty) {
+      _showMessage('No transactions to backup', isError: true);
       return;
     }
 
-    // Desktop/Mobile: require folder path
-    if (settings.driveFolderPath == null || settings.driveFolderPath!.isEmpty) {
-      _showMessage('Please select Google Drive folder first', isError: true);
+    // Enforce Google Drive authentication for all platforms
+    final isAuth = await GoogleDriveService.isAuthenticated();
+    if (!isAuth) {
+      _showMessage(
+        '⚠️ Please sign in to Google Drive first',
+        isError: true,
+      );
       return;
     }
 
     setState(() => _isProcessing = true);
-
     try {
-      final result = await BackupService.autoBackupToFolder(
-        transactions,
-        settings.driveFolderPath!,
-      );
+      // Use autoBackupToGoogleDrive directly or via BackupService
+      final result = await BackupService.autoBackupToGoogleDrive(transactions);
 
       if (!mounted) return;
-
       if (result.success) {
         _showMessage(
-          '✅ ${result.message}\n${result.path != null ? 'Location: ${result.path}' : ''}',
+          '✅ ${result.message}',
           isError: false,
         );
       } else {
@@ -629,28 +546,11 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
               const SizedBox(height: AppSpacing.lg),
               if (FeaturesConfig.enableGoogleDriveBackup) ...[
                 _buildSectionTitle('Automatic Google Drive Backup'),
-                if (kIsWeb)
-                  _buildInfoCard(
-                    'Auto-backup will automatically upload backup files to Google Drive after each transaction.\n\n'
-                    'You need to sign in to Google Drive first to use this feature.',
-                    Icons.cloud_outlined,
-                  )
-                else
-                  _buildInfoCard(
-                    'Automatically backup to Google Drive sync folder after every transaction',
-                    Icons.cloud_outlined,
-                  ),
-              ],
-              if (!FeaturesConfig.enableGoogleDriveBackup) ...[
-                _buildSectionTitle('Google Drive Backup (Disabled)'),
                 _buildInfoCard(
-                  '⚠️ Google Drive backup is temporarily disabled.\n\n'
-                  'To enable, set FeaturesConfig.enableGoogleDriveBackup = true\n'
-                  'in lib/config/features_config.dart after OAuth setup is complete.',
-                  Icons.warning_amber_outlined,
+                  'Auto-backup will automatically upload backup files to Google Drive after each transaction.\n\n'
+                  'You need to sign in to Google Drive first to use this feature.',
+                  Icons.cloud_outlined,
                 ),
-              ],
-              if (FeaturesConfig.enableGoogleDriveBackup && kIsWeb) ...[
                 FutureBuilder<bool>(
                   future: GoogleDriveService.isAuthenticated(),
                   builder: (context, snapshot) {
@@ -716,8 +616,6 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                     );
                   },
                 ),
-              ],
-              if (FeaturesConfig.enableGoogleDriveBackup) ...[
                 Container(
                   margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                   decoration: BoxDecoration(
@@ -727,25 +625,13 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                   child: SwitchListTile(
                     title: const Text('Enable Auto Backup'),
                     subtitle: Text(
-                      kIsWeb
-                          ? 'Backup will automatically upload to Google Drive after each transaction'
-                          : (settings.driveFolderPath == null
-                              ? 'Select Google Drive sync folder'
-                              : 'Folder: ${settings.driveFolderPath}'),
+                      'Backup will automatically upload to Google Drive after each transaction',
                       style: AppTextStyle.caption.copyWith(color: Colors.black),
                     ),
                     value: settings.autoBackupEnabled,
                     onChanged: _isProcessing ? null : _toggleAutoBackup,
                   ),
                 ),
-                if (!kIsWeb && settings.driveFolderPath != null)
-                  _buildButtonTile(
-                    icon: Icons.folder_open,
-                    title: 'Change Drive Folder',
-                    subtitle: 'Select different Google Drive folder',
-                    onTap: _selectDriveFolder,
-                    enabled: !_isProcessing,
-                  ),
                 if (settings.autoBackupEnabled)
                   Padding(
                     padding:
@@ -759,6 +645,15 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                       ),
                     ),
                   ),
+              ],
+              if (!FeaturesConfig.enableGoogleDriveBackup) ...[
+                _buildSectionTitle('Google Drive Backup (Disabled)'),
+                _buildInfoCard(
+                  '⚠️ Google Drive backup is temporarily disabled.\n\n'
+                  'To enable, set FeaturesConfig.enableGoogleDriveBackup = true\n'
+                  'in lib/config/features_config.dart after OAuth setup is complete.',
+                  Icons.warning_amber_outlined,
+                ),
               ],
             ],
           ),
