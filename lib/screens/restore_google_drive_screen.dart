@@ -120,11 +120,11 @@ class _RestoreGoogleDriveScreenState extends State<RestoreGoogleDriveScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      // backgroundColor: AppColors.background, // Removed to use Theme's scaffoldBackgroundColor
       appBar: AppBar(
         title: const Text('Restore from Google Drive',
             style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFFffcc02),
+        backgroundColor: AppColors.primary,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
@@ -134,7 +134,7 @@ class _RestoreGoogleDriveScreenState extends State<RestoreGoogleDriveScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline,
+                      Icon(Icons.error_outline,
                           size: 48, color: AppColors.expense),
                       const SizedBox(height: 16),
                       Text(_error!, textAlign: TextAlign.center),
@@ -182,7 +182,7 @@ class _RestoreGoogleDriveScreenState extends State<RestoreGoogleDriveScreen> {
                                   color: AppColors.primary.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Icon(Icons.backup,
+                                child: Icon(Icons.backup,
                                     color: AppColors.primary),
                               ),
                               title: Text(

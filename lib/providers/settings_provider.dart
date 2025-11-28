@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/currencies.dart';
+import '../data/app_themes.dart';
 import '../models/transaction.dart';
 import '../services/backup_service.dart';
 import '../services/google_drive_service.dart';
@@ -12,11 +13,17 @@ class SettingsProvider with ChangeNotifier {
   static const _nameKey = 'currency_name';
   static const _autoBackupKey = 'auto_backup_enabled';
   static const _drivePathKey = 'drive_folder_path';
+  static const _languageKey = 'language_code';
+  static const _themeIdKey = 'theme_id';
+  static const _darkModeKey = 'dark_mode'; // 'auto', 'light', 'dark'
 
   String _currencySymbol = '\$';
   String _currencyName = 'US Dollar';
   bool _autoBackupEnabled = false;
   String? _driveFolderPath;
+  String _languageCode = 'en';
+  String _themeId = 'sunny_yellow'; // Default theme
+  String _darkMode = 'auto'; // 'auto', 'light', 'dark'
 
   SettingsProvider() {
     _load();
@@ -26,6 +33,12 @@ class SettingsProvider with ChangeNotifier {
   String get currencyName => _currencyName;
   bool get autoBackupEnabled => _autoBackupEnabled;
   String? get driveFolderPath => _driveFolderPath;
+  String get languageCode => _languageCode;
+  String get themeId => _themeId;
+  String get darkMode => _darkMode;
+  bool get isDarkModeAuto => _darkMode == 'auto';
+  bool get isDarkMode => _darkMode == 'dark';
+  AppThemeColors get currentTheme => AppThemeData.getThemeById(_themeId);
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
@@ -33,6 +46,9 @@ class SettingsProvider with ChangeNotifier {
     _currencyName = prefs.getString(_nameKey) ?? 'US Dollar';
     _autoBackupEnabled = prefs.getBool(_autoBackupKey) ?? false;
     _driveFolderPath = prefs.getString(_drivePathKey);
+    _languageCode = prefs.getString(_languageKey) ?? 'en';
+    _themeId = prefs.getString(_themeIdKey) ?? 'sunny_yellow';
+    _darkMode = prefs.getString(_darkModeKey) ?? 'auto';
     Formatters.setCurrency(
       symbol: _currencySymbol,
       name: _currencyName,
@@ -53,6 +69,28 @@ class SettingsProvider with ChangeNotifier {
     await prefs.setString(_nameKey, _currencyName);
   }
 
+  Future<void> setLanguage(String languageCode) async {
+    _languageCode = languageCode;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_languageKey, _languageCode);
+  }
+
+  Future<void> setTheme(String themeId) async {
+    _themeId = themeId;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_themeIdKey, _themeId);
+  }
+
+  Future<void> setDarkMode(String mode) async {
+    // mode can be 'auto', 'light', or 'dark'
+    _darkMode = mode;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_darkModeKey, _darkMode);
+  }
+
   Future<void> setAutoBackup({
     required bool enabled,
     String? folderPath,
@@ -71,7 +109,7 @@ class SettingsProvider with ChangeNotifier {
 
   Future<void> autoBackupIfEnabled(List<Transaction> transactions) async {
     if (!_autoBackupEnabled) return;
-    
+
     // On web, upload to Google Drive (requires authentication)
     // On desktop/mobile, save to local folder
     if (kIsWeb) {
@@ -88,4 +126,3 @@ class SettingsProvider with ChangeNotifier {
     }
   }
 }
-

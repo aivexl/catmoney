@@ -88,7 +88,7 @@ class CatButton extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppBorderRadius.md),
           side: variant == ButtonVariant.outline
-              ? const BorderSide(color: AppColors.primary, width: 2)
+              ? BorderSide(color: AppColors.primary, width: 2)
               : BorderSide.none,
         ),
         elevation: variant == ButtonVariant.outline ? 0 : 2,

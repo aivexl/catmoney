@@ -1,16 +1,43 @@
 import 'package:flutter/material.dart';
+import '../providers/settings_provider.dart';
 
-/// Tema warna pastel biru untuk aplikasi Cat Money Manager
+/// Tema warna untuk aplikasi Cat Money Manager
+/// Sekarang menggunakan dynamic colors dari theme yang dipilih user
 class AppColors {
-  // Warna utama
-  static const Color primary = Color(0xFFffcc02); // Yellow #ffcc02
-  static const Color primaryBlue =
-      Color(0xFFffcc02); // Kept for backward compatibility but updated color
-  static const Color lightBlue = Color(0xFFFFF5E6); // Light Yellowish
-  static const Color paleBlue = Color(0xFFFFF9F0); // Pale Yellowish
-  static const Color deepBlue = Color(0xFFE6B800); // Darker Yellow
+  static SettingsProvider? _settingsProvider;
 
-  // Warna tambahan pastel
+  /// Initialize with SettingsProvider
+  static void init(SettingsProvider provider) {
+    _settingsProvider = provider;
+  }
+
+  /// Get current theme colors
+  static Color get primary =>
+      _settingsProvider?.currentTheme.primary ?? const Color(0xFFFFCC02);
+  static Color get background =>
+      _settingsProvider?.currentTheme.background ?? const Color(0xFFFFFBE6);
+  static Color get surface =>
+      _settingsProvider?.currentTheme.surface ?? const Color(0xFFFFFBE6);
+  static Color get accent =>
+      _settingsProvider?.currentTheme.accent ?? const Color(0xFFE6B800);
+  static Color get text =>
+      _settingsProvider?.currentTheme.text ?? const Color(0xFF7EC8E3);
+  static Color get textSecondary =>
+      _settingsProvider?.currentTheme.textSecondary ?? const Color(0xFF9DD5E8);
+  static Color get border =>
+      _settingsProvider?.currentTheme.border ?? const Color(0xFFD0E0E8);
+  static Color get income =>
+      _settingsProvider?.currentTheme.income ?? const Color(0xFFA8E6CF);
+  static Color get expense =>
+      _settingsProvider?.currentTheme.expense ?? const Color(0xFFFFB6C1);
+
+  // Backward compatibility - using primary color
+  static Color get primaryBlue => primary;
+  static Color get lightBlue => background;
+  static Color get paleBlue => surface;
+  static Color get deepBlue => accent;
+
+  // Additional pastel colors (static, tidak berubah dengan theme)
   static const Color pink = Color(0xFFFFB6C1); // Light Pink
   static const Color lavender = Color(0xFFE6E6FA); // Lavender
   static const Color mint = Color(0xFFB2F5EA); // Mint Green
@@ -18,38 +45,18 @@ class AppColors {
   static const Color orange = Color(0xFFFFE5CC); // Light Orange
   static const Color yellow = Color(0xFFFFFACD); // Lemon Chiffon
 
-  // Warna untuk transaction cards
-  // Warna untuk transaction cards
+  // Transaction card colors (static)
   static const Color cardPink = Color(0xFFFFC1CC); // Darker Pink
   static const Color cardOrange = Color(0xFFFFD1A3); // Darker Orange
   static const Color cardBlue = Color(0xFFFFE0B2); // Darker Yellowish
   static const Color cardLavender = Color(0xFFDCD0FF); // Darker Lavender
 
-  // Warna untuk UI
-  static const Color background =
-      Color(0xFFFFFBE6); // Light yellow (Butter/Vanilla)
-  static const Color surface =
-      Color(0xFFFFFBE6); // Light yellow (Butter/Vanilla)
-  static const Color tabBackground =
-      Color(0xFFFFF8DC); // Cornsilk - slightly darker yellow for tabs
-  static const Color contentBackground =
-      Color(0xFFFFFBE6); // Light yellow (Butter/Vanilla)
-  static const Color text = Color(
-      0xFF7EC8E3); // Biru pastel untuk teks list (warna seperti di bawah menu tabs)
-  static const Color textSecondary =
-      Color(0xFF9DD5E8); // Biru pastel medium untuk secondary text
-  static const Color border = Color(0xFFD0E0E8); // Light Blue Gray (lebih biru)
+  // UI colors
+  static Color get tabBackground => background;
+  static Color get contentBackground => background;
 
-  // Warna untuk transaksi
-  static const Color income = Color(0xFFA8E6CF); // Mint Green (untuk income)
-  static const Color expense = Color(0xFFFFB6C1); // Light Pink (untuk expense)
-
-  // Warna accent
-
-  static const Color secondary =
-      Color(0xFFD0E8F2); // Light Blue sebagai secondary
-  static const Color accent =
-      Color(0xFF87CEEB); // Deep Blue sebagai accent (Sky Blue)
+  // Secondary colors
+  static Color get secondary => accent;
 }
 
 /// Spacing constants
@@ -72,39 +79,39 @@ class AppBorderRadius {
 
 /// Typography
 class AppTextStyle {
-  static const TextStyle h1 = TextStyle(
-    fontSize: 32,
-    fontWeight: FontWeight.bold,
-    color: AppColors.text,
-  );
+  static TextStyle get h1 => TextStyle(
+        fontSize: 32,
+        fontWeight: FontWeight.bold,
+        color: AppColors.text,
+      );
 
-  static const TextStyle h2 = TextStyle(
-    fontSize: 24,
-    fontWeight: FontWeight.bold,
-    color: AppColors.text,
-  );
+  static TextStyle get h2 => TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+        color: AppColors.text,
+      );
 
-  static const TextStyle h3 = TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.w600,
-    color: AppColors.text,
-  );
+  static TextStyle get h3 => TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: AppColors.text,
+      );
 
-  static const TextStyle body = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.normal,
-    color: AppColors.text,
-  );
+  static TextStyle get body => TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.normal,
+        color: AppColors.text,
+      );
 
-  static const TextStyle caption = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.normal,
-    color: AppColors.textSecondary,
-  );
+  static TextStyle get caption => TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.normal,
+        color: AppColors.textSecondary,
+      );
 
-  static const TextStyle small = TextStyle(
-    fontSize: 12,
-    fontWeight: FontWeight.normal,
-    color: AppColors.textSecondary,
-  );
+  static TextStyle get small => TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.normal,
+        color: AppColors.textSecondary,
+      );
 }

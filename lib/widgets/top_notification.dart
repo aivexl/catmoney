@@ -293,7 +293,7 @@ class _FloatingNotificationWidgetState
                       // Message
                       Text(
                         widget.message,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.text,
                           fontSize: 16,
                           fontWeight: FontWeight.w600,

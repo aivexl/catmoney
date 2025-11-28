@@ -13,6 +13,8 @@ import '../widgets/category_pie_chart.dart';
 import '../widgets/monthly_summary.dart';
 import '../screens/add_transaction_screen.dart';
 import '../widgets/category_icon.dart';
+import '../providers/settings_provider.dart';
+import '../utils/app_localizations.dart';
 
 /// Reports/Transactions Screen - Sequential scrollable layout
 /// Shows: Search bar, Calendar, Bar chart, Pie charts, Transactions
@@ -63,7 +65,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             provider.transactions.where((t) => _isSameMonth(t.date)).toList();
 
         return Scaffold(
-          backgroundColor: AppColors.background,
+          // backgroundColor: AppColors.background, // Removed to use Theme's scaffoldBackgroundColor
           body: SafeArea(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -138,22 +140,27 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
           ),
           const SizedBox(height: AppSpacing.sm),
           // Search bar
-          TextField(
-            onChanged: (value) => setState(() => _searchQuery = value),
-            decoration: InputDecoration(
-              hintText: 'Search transactions...',
-              prefixIcon: const Icon(Icons.search),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppBorderRadius.lg),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
-              ),
-            ),
+          Consumer<SettingsProvider>(
+            builder: (context, settings, _) {
+              final loc = AppLocalizations(settings.languageCode);
+              return TextField(
+                onChanged: (value) => setState(() => _searchQuery = value),
+                decoration: InputDecoration(
+                  hintText: loc.searchTransactions,
+                  prefixIcon: const Icon(Icons.search),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppBorderRadius.lg),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -177,7 +184,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         boxShadow: [
           BoxShadow(
@@ -198,20 +205,26 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   color: const Color(0xFFE6E6FA).withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.calendar_month,
                   color: AppColors.primary,
                   size: 20,
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              const Text(
-                'Calendar',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
+              const SizedBox(width: AppSpacing.sm),
+              Consumer<SettingsProvider>(
+                builder: (context, settings, _) {
+                  final loc = AppLocalizations(settings.languageCode);
+                  return Text(
+                    loc.calendar,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -456,10 +469,15 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      child: CategoryPieChart(
-        categoryTotals: categoryTotals,
-        filterType: TransactionType.income,
-        title: 'Income',
+      child: Consumer<SettingsProvider>(
+        builder: (context, settings, _) {
+          final loc = AppLocalizations(settings.languageCode);
+          return CategoryPieChart(
+            categoryTotals: categoryTotals,
+            filterType: TransactionType.income,
+            title: loc.income,
+          );
+        },
       ),
     );
   }
@@ -479,10 +497,15 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      child: CategoryPieChart(
-        categoryTotals: categoryTotals,
-        filterType: TransactionType.expense,
-        title: 'Expenses',
+      child: Consumer<SettingsProvider>(
+        builder: (context, settings, _) {
+          final loc = AppLocalizations(settings.languageCode);
+          return CategoryPieChart(
+            categoryTotals: categoryTotals,
+            filterType: TransactionType.expense,
+            title: loc.expense,
+          );
+        },
       ),
     );
   }
@@ -510,8 +533,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
 
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        color: AppColors.background,
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(32),
           topRight: Radius.circular(32),
@@ -535,20 +558,26 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     color: const Color(0xFFE6E6FA).withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.receipt_long,
                     color: AppColors.primary,
                     size: 24,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
-                const Text(
-                  'Transactions',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
+                const SizedBox(width: AppSpacing.sm),
+                Consumer<SettingsProvider>(
+                  builder: (context, settings, _) {
+                    final loc = AppLocalizations(settings.languageCode);
+                    return Text(
+                      loc.transactions,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -557,9 +586,15 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               Center(
                 child: Padding(
                   padding: const EdgeInsets.all(AppSpacing.xl),
-                  child: Text(
-                    'No transactions',
-                    style: AppTextStyle.caption.copyWith(color: Colors.black),
+                  child: Consumer<SettingsProvider>(
+                    builder: (context, settings, _) {
+                      final loc = AppLocalizations(settings.languageCode);
+                      return Text(
+                        loc.noTransactions,
+                        style:
+                            AppTextStyle.caption.copyWith(color: Colors.black),
+                      );
+                    },
                   ),
                 ),
               )
@@ -868,7 +903,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.delete, color: AppColors.expense),
+                leading: Icon(Icons.delete, color: AppColors.expense),
                 title: const Text('Delete Transaction'),
                 onTap: () async {
                   Navigator.pop(ctx);

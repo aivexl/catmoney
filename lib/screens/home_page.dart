@@ -325,8 +325,8 @@ class _HomePageState extends State<HomePage>
                       style: AppTextStyle.body,
                     ),
                     subtitle: Text(
-                      transaction.note.isNotEmpty
-                          ? transaction.note
+                      transaction.notes != null && transaction.notes!.isNotEmpty
+                          ? transaction.notes!
                           : 'No note',
                       style: AppTextStyle.caption,
                       maxLines: 1,
@@ -456,7 +456,7 @@ class _HomePageState extends State<HomePage>
                         alignment: Alignment.centerLeft,
                         child: Text(
                           '-${Formatters.formatCurrency(totalExpense)}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: AppColors.expense,
@@ -500,7 +500,7 @@ class _HomePageState extends State<HomePage>
                         alignment: Alignment.centerLeft,
                         child: Text(
                           '+${Formatters.formatCurrency(totalIncome)}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: AppColors.income,

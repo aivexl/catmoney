@@ -77,7 +77,7 @@ class TransactionItem extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (transaction.isWatchlisted)
-                      const Icon(Icons.star,
+                      Icon(Icons.star,
                           color: AppColors.primary, size: 18),
                     if (transaction.isWatchlisted)
                       const SizedBox(width: AppSpacing.xs),
@@ -145,7 +145,7 @@ class TransactionItem extends StatelessWidget {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.delete, color: AppColors.expense),
+                leading: Icon(Icons.delete, color: AppColors.expense),
                 title: const Text('Hapus transaksi'),
                 onTap: () async {
                   Navigator.pop(ctx);

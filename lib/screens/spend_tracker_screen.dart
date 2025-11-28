@@ -43,7 +43,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      // backgroundColor: AppColors.background, // Removed to use Theme's scaffoldBackgroundColor
       body: Stack(
         children: [
           SafeArea(
@@ -92,9 +92,9 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: const BoxDecoration(
-        color: Color(0xFFffcc02),
-        borderRadius: const BorderRadius.only(
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(24),
           bottomRight: Radius.circular(24),
         ),
@@ -153,11 +153,11 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
             const Text('💰', style: TextStyle(fontSize: 64)),
             const SizedBox(height: AppSpacing.md),
             Text('No budgets yet',
-                style: AppTextStyle.h2.copyWith(color: Colors.black), textAlign: TextAlign.center),
+                style: AppTextStyle.h2, textAlign: TextAlign.center),
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Create a budget to control your spending!',
-              style: AppTextStyle.caption.copyWith(fontSize: 14, color: Colors.black),
+              style: AppTextStyle.caption.copyWith(fontSize: 14),
               textAlign: TextAlign.center,
             ),
           ],
@@ -180,7 +180,8 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
         ],
         if (inactive.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.md),
-          Text('Inactive', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+          Text('Inactive',
+              style: AppTextStyle.h3.copyWith(color: Colors.black)),
           const SizedBox(height: AppSpacing.sm),
           ...inactive.map((budget) => _buildBudgetCard(budget, provider)),
         ],
@@ -191,7 +192,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
   Widget _buildBudgetCard(Budget budget, BudgetProvider provider) {
     return Card(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      color: budget.color ?? AppColors.surface,
+      color: budget.color ?? Theme.of(context).cardColor,
       child: InkWell(
         onTap: () => _showBudgetDetails(budget, provider),
         borderRadius: BorderRadius.circular(12),
@@ -213,10 +214,12 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(budget.category, style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                        Text(budget.category,
+                            style:
+                                AppTextStyle.h3.copyWith(color: Colors.black)),
                         Text(
                           '${budget.period.displayName} • ${Formatters.formatCurrency(budget.spentAmount)} / ${Formatters.formatCurrency(budget.limitAmount)}',
-                          style: AppTextStyle.caption.copyWith(color: Colors.black),
+                          style: AppTextStyle.caption,
                         ),
                       ],
                     ),
@@ -246,8 +249,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
                     '⚠️ Over budget: ${Formatters.formatCurrency(budget.spentAmount - budget.limitAmount)}',
-                    style:
-                        const TextStyle(color: AppColors.expense, fontSize: 12),
+                    style: TextStyle(color: AppColors.expense, fontSize: 12),
                   ),
                 ),
             ],
@@ -284,9 +286,12 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(budget.category, style: AppTextStyle.h2.copyWith(color: Colors.black)),
-                        Text('${budget.period.displayName}',
-                            style: AppTextStyle.caption.copyWith(color: Colors.black)),
+                        Text(budget.category,
+                            style:
+                                AppTextStyle.h2.copyWith(color: Colors.black)),
+                        Text(budget.period.displayName,
+                            style: AppTextStyle.caption
+                                .copyWith(color: Colors.black)),
                       ],
                     ),
                   ),
@@ -350,9 +355,14 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: AppTextStyle.body.copyWith(color: Colors.black)),
-          Text(value,
-              style: AppTextStyle.body.copyWith(fontWeight: FontWeight.bold, color: Colors.black)),
+          Text(
+            label,
+            style: AppTextStyle.body,
+          ),
+          Text(
+            value,
+            style: AppTextStyle.body.copyWith(fontWeight: FontWeight.bold),
+          ),
         ],
       ),
     );
@@ -446,7 +456,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
           builder: (context, setState) {
             String categoryError = '';
             String limitError = '';
-            
+
             return Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -459,7 +469,8 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Add Budget', style: AppTextStyle.h2.copyWith(color: Colors.black)),
+                    Text('Add Budget',
+                        style: AppTextStyle.h2.copyWith(color: Colors.black)),
                     const SizedBox(height: 24),
                     TextField(
                       controller: categoryController,
@@ -476,7 +487,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                         padding: const EdgeInsets.only(left: 12),
                         child: Text(
                           categoryError,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.expense,
                             fontSize: 12,
                           ),
@@ -514,7 +525,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                         padding: const EdgeInsets.only(left: 12),
                         child: Text(
                           limitError,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.expense,
                             fontSize: 12,
                           ),
@@ -522,7 +533,8 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                       ),
                     ],
                     const SizedBox(height: 16),
-                    Text('Period', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text('Period',
+                        style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 8),
                     SegmentedButton<BudgetPeriod>(
                       segments: BudgetPeriod.values.map((period) {
@@ -537,7 +549,8 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    Text('Select Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text('Select Icon',
+                        style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 200, // Increased height for grid
@@ -580,7 +593,8 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Text('Select Color', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text('Select Color',
+                        style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 50,
@@ -672,7 +686,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                             categoryError = '';
                             limitError = '';
                           });
-                          
+
                           if (categoryController.text.isEmpty) {
                             setState(() {
                               categoryError = 'Category is required';
@@ -682,13 +696,17 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                             setState(() {
                               limitError = 'Limit amount is required';
                             });
-                          } else if (double.tryParse(Formatters.removeFormatting(limitController.text)) == null) {
+                          } else if (double.tryParse(
+                                  Formatters.removeFormatting(
+                                      limitController.text)) ==
+                              null) {
                             setState(() {
                               limitError = 'Invalid amount';
                             });
                           }
-                          
-                          if (categoryError.isNotEmpty || limitError.isNotEmpty) {
+
+                          if (categoryError.isNotEmpty ||
+                              limitError.isNotEmpty) {
                             return;
                           }
 
@@ -699,7 +717,9 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                                 .toString(),
                             category: categoryController.text,
                             emoji: selectedEmoji,
-                            limitAmount: double.parse(Formatters.removeFormatting(limitController.text)),
+                            limitAmount: double.parse(
+                                Formatters.removeFormatting(
+                                    limitController.text)),
                             period: selectedPeriod,
                             startDate: now,
                             endDate:
@@ -752,7 +772,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
           builder: (context, setState) {
             String categoryError = '';
             String limitError = '';
-            
+
             return Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -765,7 +785,8 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Edit Budget', style: AppTextStyle.h2.copyWith(color: Colors.black)),
+                    Text('Edit Budget',
+                        style: AppTextStyle.h2.copyWith(color: Colors.black)),
                     const SizedBox(height: 24),
                     TextField(
                       controller: categoryController,
@@ -782,7 +803,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                         padding: const EdgeInsets.only(left: 12),
                         child: Text(
                           categoryError,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.expense,
                             fontSize: 12,
                           ),
@@ -820,7 +841,7 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                         padding: const EdgeInsets.only(left: 12),
                         child: Text(
                           limitError,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.expense,
                             fontSize: 12,
                           ),
@@ -828,7 +849,8 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                       ),
                     ],
                     const SizedBox(height: 16),
-                    Text('Period', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text('Period',
+                        style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 8),
                     SegmentedButton<BudgetPeriod>(
                       segments: BudgetPeriod.values.map((period) {
@@ -843,7 +865,8 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    Text('Select Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text('Select Icon',
+                        style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 200, // Increased height for grid
@@ -886,7 +909,8 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Text('Select Color', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text('Select Color',
+                        style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 50,
@@ -982,7 +1006,9 @@ class _SpendTrackerScreenState extends State<SpendTrackerScreen> {
                           final updated = budget.copyWith(
                             category: categoryController.text,
                             emoji: selectedEmoji,
-                            limitAmount: double.parse(Formatters.removeFormatting(limitController.text)),
+                            limitAmount: double.parse(
+                                Formatters.removeFormatting(
+                                    limitController.text)),
                             period: selectedPeriod,
                             color: selectedColor,
                           );

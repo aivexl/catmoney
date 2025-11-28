@@ -60,7 +60,7 @@ class _TimeBarChartState extends State<TimeBarChart> {
                       color: const Color(0xFFE6E6FA).withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.bar_chart,
                       color: AppColors.primary,
                       size: 20,

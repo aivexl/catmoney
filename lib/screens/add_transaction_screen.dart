@@ -24,6 +24,7 @@ import '../screens/spend_tracker_screen.dart';
 import '../screens/bills_screen.dart';
 import '../widgets/top_notification.dart' as notification;
 import '../utils/app_icons.dart';
+import '../utils/app_localizations.dart';
 import '../widgets/category_icon.dart';
 
 class AddTransactionScreen extends StatefulWidget {
@@ -144,7 +145,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Add Category',
                       style: AppTextStyle.h2,
                     ),
@@ -305,7 +306,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         onPressed: () async {
                           if (nameController.text.isEmpty) {
                             ScaffoldMessenger.of(widgetContext).showSnackBar(
-                              const SnackBar(
+                              SnackBar(
                                 content: Text('Please enter category name'),
                                 backgroundColor: AppColors.expense,
                               ),
@@ -327,7 +328,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
                             if (widgetContext.mounted) {
                               ScaffoldMessenger.of(widgetContext).showSnackBar(
-                                const SnackBar(
+                                SnackBar(
                                   content:
                                       Text('Category added successfully! 🎉'),
                                   backgroundColor: AppColors.income,
@@ -546,7 +547,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Transaction added successfully! 🎉'),
           backgroundColor: AppColors.income,
           duration: Duration(seconds: 2),
@@ -564,7 +565,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     if (_selectedType != TransactionType.transfer &&
         _selectedCategoryId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Please select category'),
           backgroundColor: AppColors.expense,
         ),
@@ -674,7 +675,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Transaction added successfully! 🎉'),
           backgroundColor: AppColors.income,
           duration: Duration(seconds: 2),
@@ -772,7 +773,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Add Wallet',
                       style: AppTextStyle.h2,
                     ),
@@ -933,7 +934,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         onPressed: () async {
                           if (nameController.text.isEmpty) {
                             ScaffoldMessenger.of(widgetContext).showSnackBar(
-                              const SnackBar(
+                              SnackBar(
                                 content: Text('Please enter wallet name'),
                                 backgroundColor: AppColors.expense,
                               ),
@@ -961,7 +962,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
                             if (widgetContext.mounted) {
                               ScaffoldMessenger.of(widgetContext).showSnackBar(
-                                const SnackBar(
+                                SnackBar(
                                   content:
                                       Text('Wallet added successfully! 🎉'),
                                   backgroundColor: AppColors.income,
@@ -1013,13 +1014,19 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     final categories = categoryProvider.getCategoriesByType(_selectedType);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      // backgroundColor: AppColors.background, // Removed to use Theme's scaffoldBackgroundColor
       appBar: AppBar(
-        title: Text(
-          _isEditing ? 'Edit Transaction' : 'Add Transaction',
-          style: AppTextStyle.h2.copyWith(fontSize: 20, color: Colors.white),
+        title: Consumer<SettingsProvider>(
+          builder: (context, settings, _) {
+            final loc = AppLocalizations(settings.languageCode);
+            return Text(
+              _isEditing ? loc.editTransaction : loc.addTransaction,
+              style:
+                  AppTextStyle.h2.copyWith(fontSize: 20, color: Colors.white),
+            );
+          },
         ),
-        backgroundColor: const Color(0xFFffcc02),
+        backgroundColor: AppColors.primary,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
@@ -1036,75 +1043,87 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Transaction Type Selector
-                Row(
-                  children: [
-                    Expanded(
-                      child:
-                          _buildTypeButton('Expense', TransactionType.expense),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildTypeButton('Income', TransactionType.income),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildTypeButton(
-                          'Transfer', TransactionType.transfer),
-                    ),
-                  ],
+                Consumer<SettingsProvider>(
+                  builder: (context, settings, _) {
+                    final loc = AppLocalizations(settings.languageCode);
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: _buildTypeButton(
+                              loc.expense, TransactionType.expense),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildTypeButton(
+                              loc.income, TransactionType.income),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildTypeButton(
+                              loc.transfer, TransactionType.transfer),
+                        ),
+                      ],
+                    );
+                  },
                 ),
                 const SizedBox(height: 24),
 
                 // Amount Input
-                TextFormField(
-                  controller: _amountController,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [CurrencyInputFormatter()],
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                  ),
-                  decoration: InputDecoration(
-                    labelText: 'Amount (${settingsProvider.currencySymbol})',
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Text(
-                        settingsProvider.currencySymbol,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
+                Consumer<SettingsProvider>(
+                  builder: (context, settings, _) {
+                    final loc = AppLocalizations(settings.languageCode);
+                    return TextFormField(
+                      controller: _amountController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [CurrencyInputFormatter()],
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
                       ),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: AppColors.border),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: const BorderSide(color: AppColors.border),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide:
-                          const BorderSide(color: AppColors.primary, width: 2),
-                    ),
-                    filled: true,
-                    fillColor: AppColors.surface,
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Amount is required';
-                    }
-                    // Remove formatting before parsing
-                    final cleanValue = Formatters.removeFormatting(value);
-                    final parsedValue = double.tryParse(cleanValue);
-                    if (parsedValue == null || parsedValue <= 0) {
-                      return 'Invalid amount';
-                    }
-                    return null;
+                      decoration: InputDecoration(
+                        labelText:
+                            '${loc.amount} (${settingsProvider.currencySymbol})',
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Text(
+                            settingsProvider.currencySymbol,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(color: AppColors.border),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(color: AppColors.border),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(
+                              color: AppColors.primary, width: 2),
+                        ),
+                        filled: true,
+                        fillColor: Theme.of(context).cardColor,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return loc.translate('amountRequired');
+                        }
+                        // Remove formatting before parsing
+                        final cleanValue = Formatters.removeFormatting(value);
+                        final parsedValue = double.tryParse(cleanValue);
+                        if (parsedValue == null || parsedValue <= 0) {
+                          return 'Invalid amount';
+                        }
+                        return null;
+                      },
+                    );
                   },
                 ),
                 const SizedBox(height: 24),
@@ -1128,7 +1147,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: AppColors.surface,
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: AppColors.border),
                           ),
@@ -1166,7 +1185,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: AppColors.surface,
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: AppColors.border),
                           ),
@@ -1213,7 +1232,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                 width: 50,
                                 margin: const EdgeInsets.only(right: 12),
                                 decoration: BoxDecoration(
-                                  color: AppColors.surface,
+                                  color: Theme.of(context).cardColor,
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
                                       color: AppColors.border, width: 1),
@@ -1285,7 +1304,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     padding: const EdgeInsets.only(left: 12),
                     child: Text(
                       _accountError!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.expense,
                         fontSize: 12,
                       ),
@@ -1330,11 +1349,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                   width: 70,
                                   margin: const EdgeInsets.only(right: 12),
                                   decoration: BoxDecoration(
-                                    color: AppColors.surface,
+                                    color: Theme.of(context).cardColor,
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(color: AppColors.border),
                                   ),
-                                  child: const Column(
+                                  child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(Icons.add, color: AppColors.primary),
@@ -1437,11 +1456,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                   width: 70,
                                   margin: const EdgeInsets.only(right: 12),
                                   decoration: BoxDecoration(
-                                    color: AppColors.surface,
+                                    color: Theme.of(context).cardColor,
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(color: AppColors.border),
                                   ),
-                                  child: const Column(
+                                  child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(Icons.add, color: AppColors.primary),
@@ -1543,11 +1562,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                   width: 70,
                                   margin: const EdgeInsets.only(right: 12),
                                   decoration: BoxDecoration(
-                                    color: AppColors.surface,
+                                    color: Theme.of(context).cardColor,
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(color: AppColors.border),
                                   ),
-                                  child: const Column(
+                                  child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(Icons.add, color: AppColors.primary),
@@ -1708,7 +1727,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       padding: const EdgeInsets.only(left: 12),
                       child: Text(
                         _categoryError!,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.expense,
                           fontSize: 12,
                         ),
@@ -1835,7 +1854,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       onPressed: _saveAndStay,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.primary,
-                        side: const BorderSide(color: AppColors.primary),
+                        side: BorderSide(color: AppColors.primary),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),

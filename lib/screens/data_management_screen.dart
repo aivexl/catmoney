@@ -487,11 +487,11 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
     final transactions = context.watch<TransactionProvider>().transactions;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      // backgroundColor: AppColors.background, // Removed to use Theme's scaffoldBackgroundColor
       appBar: AppBar(
         title: const Text('📦 Data Management',
             style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFFffcc02),
+        backgroundColor: AppColors.primary,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Stack(
@@ -561,7 +561,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                       decoration: BoxDecoration(
                         color: isAuthenticated
                             ? AppColors.income.withValues(alpha: 0.1)
-                            : AppColors.surface,
+                            : Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(AppBorderRadius.md),
                         border: Border.all(
                           color: isAuthenticated
@@ -590,8 +590,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                           isAuthenticated
                               ? 'Backup will automatically upload to Google Drive'
                               : 'Click to sign in to Google Drive',
-                          style: AppTextStyle.caption
-                              .copyWith(color: Colors.black),
+                          style: AppTextStyle.caption,
                         ),
                         trailing: isAuthenticated
                             ? TextButton(
@@ -620,14 +619,14 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                 Container(
                   margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   ),
                   child: SwitchListTile(
                     title: const Text('Enable Auto Backup'),
                     subtitle: Text(
                       'Backup will automatically upload to Google Drive after each transaction',
-                      style: AppTextStyle.caption.copyWith(color: Colors.black),
+                      style: AppTextStyle.caption,
                     ),
                     value: settings.autoBackupEnabled,
                     onChanged: _isProcessing ? null : _toggleAutoBackup,
@@ -679,7 +678,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                     label: const Text('Restore from Google Drive'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.all(AppSpacing.md),
-                      side: const BorderSide(color: AppColors.primary),
+                      side: BorderSide(color: AppColors.primary),
                     ),
                   ),
                 ),
@@ -708,8 +707,11 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                         const CircularProgressIndicator(),
                         const SizedBox(height: AppSpacing.md),
                         Text('Processing...',
-                            style: AppTextStyle.body
-                                .copyWith(color: Colors.black)),
+                            style: AppTextStyle.body.copyWith(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.color)),
                       ],
                     ),
                   ),
@@ -730,9 +732,8 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
       ),
       child: Text(
         title,
-        style: AppTextStyle.h3.copyWith(
-          fontWeight: FontWeight.bold,
-          color: Colors.black,
+        style: AppTextStyle.body.copyWith(
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -773,7 +774,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
       ),
       child: ListTile(
@@ -794,9 +795,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
         ),
         title: Text(
           title,
-          style: AppTextStyle.body.copyWith(
-            color: enabled ? Colors.black : Colors.grey,
-          ),
+          style: AppTextStyle.body,
         ),
         subtitle: Text(
           subtitle,

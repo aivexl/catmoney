@@ -14,8 +14,11 @@
 // @since 2025
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../screens/add_transaction_screen.dart';
+import '../providers/settings_provider.dart';
+import '../utils/app_localizations.dart';
 
 class SharedBottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -54,97 +57,105 @@ class SharedBottomNavBar extends StatelessWidget {
               child: Container(
                 constraints: const BoxConstraints(minHeight: 70),
                 padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      flex: currentIndex == 0 ? 2 : 1,
-                      child: _buildNavItem(
-                        context,
-                        'assets/icons/transactionsicon.png',
-                        'Home',
-                        0,
-                      ),
-                    ),
-                    Expanded(
-                      flex: currentIndex == 1 ? 2 : 1,
-                      child: _buildNavItem(
-                        context,
-                        'assets/icons/reportsicon.png',
-                        'Reports',
-                        1,
-                      ),
-                    ),
-                    // Floating Action Button in the middle
-                    Container(
-                      width: 56,
-                      height: 56,
-                      margin: const EdgeInsets.only(bottom: 4),
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          FloatingActionButton(
-                            heroTag:
-                                'navbar_fab', // Unique tag to prevent Hero conflict
-                            onPressed: () => _navigateToAddTransaction(context),
-                            backgroundColor:
-                                Theme.of(context).colorScheme.primary,
-                            elevation: 4,
-                            child: const Icon(Icons.add, color: Colors.white),
+                child: Consumer<SettingsProvider>(
+                  builder: (context, settings, _) {
+                    final loc = AppLocalizations(settings.languageCode);
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          flex: currentIndex == 0 ? 2 : 1,
+                          child: _buildNavItem(
+                            context,
+                            'assets/icons/transactionsicon.png',
+                            loc.home,
+                            0,
                           ),
-                          // Iconcat2 di atas tombol dengan kualitas HD
-                          Positioned(
-                            top: -60,
-                            left: 0,
-                            right: 0,
-                            child: Center(
-                              child: Image.asset(
-                                'assets/icons/iconcat2.png',
-                                width: 80,
-                                height: 80,
-                                fit: BoxFit.contain,
-                                filterQuality: FilterQuality.high,
-                                isAntiAlias: true,
-                                cacheWidth: 160,
-                                cacheHeight: 160,
-                                errorBuilder: (context, error, stackTrace) {
-                                  debugPrint('Error loading iconcat2: $error');
-                                  return SizedBox(
+                        ),
+                        Expanded(
+                          flex: currentIndex == 1 ? 2 : 1,
+                          child: _buildNavItem(
+                            context,
+                            'assets/icons/reportsicon.png',
+                            loc.transactions,
+                            1,
+                          ),
+                        ),
+                        // Floating Action Button in the middle
+                        Container(
+                          width: 56,
+                          height: 56,
+                          margin: const EdgeInsets.only(bottom: 4),
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              FloatingActionButton(
+                                heroTag:
+                                    'navbar_fab', // Unique tag to prevent Hero conflict
+                                onPressed: () =>
+                                    _navigateToAddTransaction(context),
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                                elevation: 4,
+                                child:
+                                    const Icon(Icons.add, color: Colors.white),
+                              ),
+                              // Iconcat2 di atas tombol dengan kualitas HD
+                              Positioned(
+                                top: -60,
+                                left: 0,
+                                right: 0,
+                                child: Center(
+                                  child: Image.asset(
+                                    'assets/icons/iconcat2.png',
                                     width: 80,
                                     height: 80,
-                                    child: Icon(
-                                      Icons.pets,
-                                      size: 50,
-                                      color: AppColors.primary,
-                                    ),
-                                  );
-                                },
+                                    fit: BoxFit.contain,
+                                    filterQuality: FilterQuality.high,
+                                    isAntiAlias: true,
+                                    cacheWidth: 160,
+                                    cacheHeight: 160,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      debugPrint(
+                                          'Error loading iconcat2: $error');
+                                      return SizedBox(
+                                        width: 80,
+                                        height: 80,
+                                        child: Icon(
+                                          Icons.pets,
+                                          size: 50,
+                                          color: AppColors.primary,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      flex: currentIndex == 2 ? 2 : 1,
-                      child: _buildNavItem(
-                        context,
-                        'assets/icons/walletsicon.png',
-                        'Wallets',
-                        2,
-                      ),
-                    ),
-                    Expanded(
-                      flex: currentIndex == 3 ? 2 : 1,
-                      child: _buildNavItem(
-                        context,
-                        'assets/icons/settingsicon.png',
-                        'Settings',
-                        3,
-                      ),
-                    ),
-                  ],
+                        ),
+                        Expanded(
+                          flex: currentIndex == 2 ? 2 : 1,
+                          child: _buildNavItem(
+                            context,
+                            'assets/icons/walletsicon.png',
+                            loc.wallets,
+                            2,
+                          ),
+                        ),
+                        Expanded(
+                          flex: currentIndex == 3 ? 2 : 1,
+                          child: _buildNavItem(
+                            context,
+                            'assets/icons/settingsicon.png',
+                            loc.more,
+                            3,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
             ),

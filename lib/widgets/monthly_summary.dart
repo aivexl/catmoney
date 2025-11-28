@@ -78,7 +78,7 @@ class MonthlySummary extends StatelessWidget {
                   color: const Color(0xFFE6E6FA).withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.calendar_view_month,
                   color: AppColors.primary,
                   size: 20,

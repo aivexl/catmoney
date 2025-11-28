@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../data/currencies.dart';
+import '../data/languages.dart';
+import '../data/app_themes.dart';
 import '../providers/settings_provider.dart';
 import '../theme/app_colors.dart';
 import 'data_management_screen.dart';
@@ -17,7 +19,7 @@ class _MoreScreenState extends State<MoreScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background, // Yellowish background
+      // backgroundColor: AppColors.background, // Removed to use Theme's scaffoldBackgroundColor
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
@@ -42,6 +44,40 @@ class _MoreScreenState extends State<MoreScreen> {
                             '${settings.currencySymbol} (${settings.currencyName})',
                         color: const Color(0xFFBAE1FF), // Pastel Blue
                         onTap: () => _showCurrencySelector(context),
+                      ),
+                    ),
+                    Consumer<SettingsProvider>(
+                      builder: (context, settings, _) => _buildMenuItem(
+                        context,
+                        icon: Icons.language,
+                        title: 'Language',
+                        subtitle: LanguageData.getLanguageByCode(
+                                settings.languageCode)
+                            .nameNative,
+                        color: const Color(0xFFB4A7D6), // Pastel Purple
+                        onTap: () => _showLanguageSelector(context),
+                      ),
+                    ),
+                    Consumer<SettingsProvider>(
+                      builder: (context, settings, _) => _buildMenuItem(
+                        context,
+                        icon: Icons.palette,
+                        title: 'Theme',
+                        subtitle: _getThemeName(
+                            settings.themeId, settings.languageCode),
+                        color: const Color(0xFFFFD93D), // Pastel Yellow
+                        onTap: () => _showThemeSelector(context),
+                      ),
+                    ),
+                    Consumer<SettingsProvider>(
+                      builder: (context, settings, _) => _buildMenuItem(
+                        context,
+                        icon: Icons.dark_mode,
+                        title: 'Dark Mode',
+                        subtitle: _getDarkModeName(
+                            settings.darkMode, settings.languageCode),
+                        color: const Color(0xFF9B9B9B), // Pastel Gray
+                        onTap: () => _showDarkModeSelector(context),
                       ),
                     ),
                     _buildMenuItem(
@@ -128,8 +164,8 @@ class _MoreScreenState extends State<MoreScreen> {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: const BoxDecoration(
-        color: Color(0xFFffcc02), // Solid yellow header
+      decoration: BoxDecoration(
+        color: AppColors.primary, // Use dynamic primary color
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(24),
           bottomRight: Radius.circular(24),
@@ -147,7 +183,7 @@ class _MoreScreenState extends State<MoreScreen> {
                   color: Colors.white.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.settings,
                   color: AppColors.primary,
                   size: 24,
@@ -197,7 +233,7 @@ class _MoreScreenState extends State<MoreScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(AppBorderRadius.md),
         boxShadow: [
           BoxShadow(
@@ -249,7 +285,7 @@ class _MoreScreenState extends State<MoreScreen> {
                 title: Text(currency.name),
                 subtitle: Text(currency.code),
                 trailing: isSelected
-                    ? const Icon(Icons.check, color: AppColors.primary)
+                    ? Icon(Icons.check, color: AppColors.primary)
                     : null,
                 onTap: () {
                   settings.setCurrency(currency);
@@ -261,5 +297,259 @@ class _MoreScreenState extends State<MoreScreen> {
         );
       },
     );
+  }
+
+  void _showLanguageSelector(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppBorderRadius.lg)),
+      ),
+      builder: (ctx) {
+        final settings = context.read<SettingsProvider>();
+        return SafeArea(
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: LanguageData.languages.length,
+            itemBuilder: (context, index) {
+              final language = LanguageData.languages[index];
+              final isSelected = language.code == settings.languageCode;
+              return ListTile(
+                leading:
+                    Text(language.flag, style: const TextStyle(fontSize: 24)),
+                title: Text(language.nameNative),
+                subtitle: Text(language.nameEnglish),
+                trailing: isSelected
+                    ? Icon(Icons.check, color: AppColors.primary)
+                    : null,
+                onTap: () {
+                  settings.setLanguage(language.code);
+                  Navigator.pop(context);
+                },
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  void _showThemeSelector(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppBorderRadius.lg)),
+      ),
+      builder: (ctx) {
+        final settings = context.read<SettingsProvider>();
+        return SafeArea(
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: AppThemeData.themes.length,
+            itemBuilder: (context, index) {
+              final theme = AppThemeData.themes[index];
+              final isSelected = theme.id == settings.themeId;
+              return ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: theme.primary,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isSelected ? theme.accent : Colors.transparent,
+                      width: 2,
+                    ),
+                  ),
+                ),
+                title: Text(_getThemeName(theme.id, settings.languageCode)),
+                subtitle: Text(theme.nameKey),
+                trailing: isSelected
+                    ? Icon(Icons.check, color: AppColors.primary)
+                    : null,
+                onTap: () {
+                  settings.setTheme(theme.id);
+                  Navigator.pop(context);
+                },
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  String _getThemeName(String themeId, String languageCode) {
+    final langCode = languageCode;
+
+    // Theme names in different languages
+    final themeNames = {
+      'sunny_yellow': {
+        'en': 'Sunny Yellow',
+        'id': 'Kuning Cerah',
+        'es': 'Amarillo Soleado',
+        'fr': 'Jaune Ensoleillé',
+        'de': 'Sonnen-Gelb',
+        'ja': 'サニーイエロー',
+        'zh': '阳光黄',
+        'ko': '선니 옐로우',
+        'pt': 'Amarelo Ensolarado',
+        'ar': 'أصفر مشمس',
+      },
+      'ocean_blue': {
+        'en': 'Ocean Blue',
+        'id': 'Biru Laut',
+        'es': 'Azul Océano',
+        'fr': 'Bleu Océan',
+        'de': 'Ozean-Blau',
+        'ja': 'オーシャンブルー',
+        'zh': '海洋蓝',
+        'ko': '오션 블루',
+        'pt': 'Azul Oceano',
+        'ar': 'أزرق المحيط',
+      },
+      'mint_fresh': {
+        'en': 'Mint Fresh',
+        'id': 'Mint Segar',
+        'es': 'Menta Fresca',
+        'fr': 'Menthe Fraîche',
+        'de': 'Frische Minze',
+        'ja': 'ミントフレッシュ',
+        'zh': '薄荷清新',
+        'ko': '민트 프레시',
+        'pt': 'Menta Fresca',
+        'ar': 'النعناع الطازج',
+      },
+      'sunset_orange': {
+        'en': 'Sunset Orange',
+        'id': 'Oranye Senja',
+        'es': 'Naranja Atardecer',
+        'fr': 'Orange Coucher de Soleil',
+        'de': 'Sonnenuntergang-Orange',
+        'ja': 'サンセットオレンジ',
+        'zh': '日落橙',
+        'ko': '선셋 오렌지',
+        'pt': 'Laranja Pôr do Sol',
+        'ar': 'برتقالي الغروب',
+      },
+      'lavender_dream': {
+        'en': 'Lavender Dream',
+        'id': 'Impian Lavender',
+        'es': 'Sueño Lavanda',
+        'fr': 'Rêve de Lavande',
+        'de': 'Lavendel-Traum',
+        'ja': 'ラベンダードリーム',
+        'zh': '薰衣草之梦',
+        'ko': '라벤더 드림',
+        'pt': 'Sonho de Lavanda',
+        'ar': 'حلم الخزامى',
+      },
+    };
+
+    return themeNames[themeId]?[langCode] ??
+        themeNames[themeId]?['en'] ??
+        themeId;
+  }
+
+  void _showDarkModeSelector(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppBorderRadius.lg)),
+      ),
+      builder: (ctx) {
+        final settings = context.read<SettingsProvider>();
+        final langCode = settings.languageCode;
+
+        final darkModeOptions = [
+          {
+            'value': 'auto',
+            'name': _getDarkModeName('auto', langCode),
+            'icon': Icons.brightness_auto
+          },
+          {
+            'value': 'light',
+            'name': _getDarkModeName('light', langCode),
+            'icon': Icons.light_mode
+          },
+          {
+            'value': 'dark',
+            'name': _getDarkModeName('dark', langCode),
+            'icon': Icons.dark_mode
+          },
+        ];
+
+        return SafeArea(
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: darkModeOptions.length,
+            itemBuilder: (context, index) {
+              final option = darkModeOptions[index];
+              final isSelected = option['value'] == settings.darkMode;
+              return ListTile(
+                leading:
+                    Icon(option['icon'] as IconData, color: AppColors.primary),
+                title: Text(option['name'] as String),
+                trailing: isSelected
+                    ? Icon(Icons.check, color: AppColors.primary)
+                    : null,
+                onTap: () {
+                  settings.setDarkMode(option['value'] as String);
+                  Navigator.pop(context);
+                },
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  String _getDarkModeName(String mode, String languageCode) {
+    final darkModeNames = {
+      'auto': {
+        'en': 'Auto (System)',
+        'id': 'Otomatis (Sistem)',
+        'es': 'Automático (Sistema)',
+        'fr': 'Automatique (Système)',
+        'de': 'Automatisch (System)',
+        'ja': '自動（システム）',
+        'zh': '自动（系统）',
+        'ko': '자동 (시스템)',
+        'pt': 'Automático (Sistema)',
+        'ar': 'تلقائي (النظام)',
+      },
+      'light': {
+        'en': 'Light',
+        'id': 'Terang',
+        'es': 'Claro',
+        'fr': 'Clair',
+        'de': 'Hell',
+        'ja': 'ライト',
+        'zh': '浅色',
+        'ko': '라이트',
+        'pt': 'Claro',
+        'ar': 'فاتح',
+      },
+      'dark': {
+        'en': 'Dark',
+        'id': 'Gelap',
+        'es': 'Oscuro',
+        'fr': 'Sombre',
+        'de': 'Dunkel',
+        'ja': 'ダーク',
+        'zh': '深色',
+        'ko': '다크',
+        'pt': 'Escuro',
+        'ar': 'داكن',
+      },
+    };
+
+    return darkModeNames[mode]?[languageCode] ??
+        darkModeNames[mode]?['en'] ??
+        mode;
   }
 }

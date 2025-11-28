@@ -34,6 +34,8 @@ import '../screens/wishlist_screen.dart';
 import '../screens/spend_tracker_screen.dart';
 import '../screens/bills_screen.dart';
 import '../widgets/category_icon.dart';
+import '../utils/app_localizations.dart';
+import '../providers/settings_provider.dart';
 
 /// HomeScreen - Main dashboard screen
 ///
@@ -90,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         return Scaffold(
-          backgroundColor: AppColors.background, // Light yellow background
+          // backgroundColor: AppColors.background, // Removed to use Theme's scaffoldBackgroundColor
           body: SafeArea(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -136,8 +138,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.background, // Same as background color (no white)
-        borderRadius: const BorderRadius.only(
+        color:
+            Theme.of(context).scaffoldBackgroundColor, // Use theme background
+        borderRadius: BorderRadius.only(
           topLeft: Radius.circular(32),
           topRight: Radius.circular(32),
         ),
@@ -161,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: const Color(0xFFE6E6FA).withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.receipt_long,
                     color: AppColors.primary,
                     size: 24,
@@ -262,8 +265,8 @@ class _HomeScreenState extends State<HomeScreen> {
         right: AppSpacing.md,
         bottom: AppSpacing.md,
       ),
-      decoration: const BoxDecoration(
-        color: Color(0xFFffcc02), // Solid yellow header (same as other pages)
+      decoration: BoxDecoration(
+        color: AppColors.primary, // Header color follows theme
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(AppBorderRadius.xl),
           bottomRight: Radius.circular(AppBorderRadius.xl),
@@ -277,8 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color:
-                  AppColors.background, // Solid yellow background (no gradient)
+              color: Theme.of(context).cardColor, // Use theme card color
               borderRadius: BorderRadius.circular(AppBorderRadius.lg),
               boxShadow: [
                 BoxShadow(
@@ -295,13 +297,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Total Balance',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      Consumer<SettingsProvider>(
+                        builder: (context, settings, _) {
+                          final loc =
+                              AppLocalizations.fromCode(settings.languageCode);
+                          return Text(
+                            loc.totalBalance,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       FittedBox(
@@ -333,8 +341,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors
-                        .background, // Solid yellow background (no gradient)
+                    color: Theme.of(context).cardColor, // Use theme card color
                     borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                     boxShadow: [
                       BoxShadow(
@@ -347,13 +354,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Total Expenses',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      Consumer<SettingsProvider>(
+                        builder: (context, settings, _) {
+                          final loc =
+                              AppLocalizations.fromCode(settings.languageCode);
+                          return Text(
+                            loc.totalExpenses,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       FittedBox(
@@ -361,7 +374,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         alignment: Alignment.centerLeft,
                         child: Text(
                           '-${Formatters.formatCurrency(expense)}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: AppColors.expense,
@@ -378,8 +391,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors
-                        .background, // Solid yellow background (no gradient)
+                    color: Theme.of(context).cardColor, // Use theme card color
                     borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                     boxShadow: [
                       BoxShadow(
@@ -392,13 +404,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Total Income',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      Consumer<SettingsProvider>(
+                        builder: (context, settings, _) {
+                          final loc =
+                              AppLocalizations.fromCode(settings.languageCode);
+                          return Text(
+                            loc.totalIncome,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(height: AppSpacing.xs),
                       FittedBox(
@@ -406,7 +424,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         alignment: Alignment.centerLeft,
                         child: Text(
                           '+${Formatters.formatCurrency(income)}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: AppColors.income,
@@ -886,7 +904,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.delete, color: AppColors.expense),
+                leading: Icon(Icons.delete, color: AppColors.expense),
                 title: const Text('Delete Transaction'),
                 onTap: () async {
                   Navigator.pop(ctx);
@@ -945,7 +963,7 @@ class _HomeScreenState extends State<HomeScreen> {
               filterQuality: FilterQuality.high,
               isAntiAlias: true,
               errorBuilder: (context, error, stackTrace) {
-                return const Icon(
+                return Icon(
                   Icons.pets,
                   size: 100,
                   color: AppColors.primary,

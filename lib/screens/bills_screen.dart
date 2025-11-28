@@ -43,7 +43,7 @@ class _BillsScreenState extends State<BillsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      // backgroundColor: AppColors.background, // Removed to use Theme's scaffoldBackgroundColor
       body: Stack(
         children: [
           SafeArea(
@@ -92,9 +92,9 @@ class _BillsScreenState extends State<BillsScreen> {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: const BoxDecoration(
-        color: Color(0xFFffcc02),
-        borderRadius: const BorderRadius.only(
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(24),
           bottomRight: Radius.circular(24),
         ),
@@ -153,11 +153,11 @@ class _BillsScreenState extends State<BillsScreen> {
             const Text('📋', style: TextStyle(fontSize: 64)),
             const SizedBox(height: AppSpacing.md),
             Text('No bills yet',
-                style: AppTextStyle.h2.copyWith(color: Colors.black), textAlign: TextAlign.center),
+                style: AppTextStyle.h2, textAlign: TextAlign.center),
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Add bills for automatic reminders!',
-              style: AppTextStyle.caption.copyWith(fontSize: 14, color: Colors.black),
+              style: AppTextStyle.caption.copyWith(fontSize: 14),
               textAlign: TextAlign.center,
             ),
           ],
@@ -200,7 +200,7 @@ class _BillsScreenState extends State<BillsScreen> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      color: bill.color ?? AppColors.surface,
+      color: bill.color ?? Theme.of(context).cardColor,
       child: InkWell(
         onTap: () => _showBillDetails(bill, provider),
         borderRadius: BorderRadius.circular(12),
@@ -219,10 +219,11 @@ class _BillsScreenState extends State<BillsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(bill.name, style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text(bill.name,
+                        style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     Text(
                       Formatters.formatCurrency(bill.amount),
-                      style: AppTextStyle.body.copyWith(color: Colors.black)
+                      style: AppTextStyle.body
                           .copyWith(fontWeight: FontWeight.bold),
                     ),
                     Text(
@@ -279,8 +280,11 @@ class _BillsScreenState extends State<BillsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(bill.name, style: AppTextStyle.h2.copyWith(color: Colors.black)),
-                        Text(bill.statusText, style: AppTextStyle.caption.copyWith(color: Colors.black)),
+                        Text(bill.name,
+                            style: AppTextStyle.h2), // Removed hardcoded color
+                        Text(bill.statusText,
+                            style: AppTextStyle
+                                .caption), // Removed hardcoded color
                       ],
                     ),
                   ),
@@ -292,8 +296,8 @@ class _BillsScreenState extends State<BillsScreen> {
               _buildDetailRow('Status', bill.isPaid ? 'Paid' : 'Unpaid'),
               if (bill.isRecurring)
                 _buildDetailRow(
-                    'Recurring', 
-                    bill.recurringMonths != null 
+                    'Recurring',
+                    bill.recurringMonths != null
                         ? 'Every ${bill.recurringMonths} ${bill.recurringMonths == 1 ? 'month' : 'months'}'
                         : '-'),
               const SizedBox(height: 24),
@@ -367,9 +371,10 @@ class _BillsScreenState extends State<BillsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: AppTextStyle.body.copyWith(color: Colors.black)),
+          Text(label, style: AppTextStyle.body), // Removed hardcoded color
           Text(value,
-              style: AppTextStyle.body.copyWith(fontWeight: FontWeight.bold, color: Colors.black)),
+              style: AppTextStyle.body.copyWith(
+                  fontWeight: FontWeight.bold)), // Removed hardcoded color
         ],
       ),
     );
@@ -477,7 +482,8 @@ class _BillsScreenState extends State<BillsScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Add Bill', style: AppTextStyle.h2.copyWith(color: Colors.black)),
+                    Text('Add Bill',
+                        style: AppTextStyle.h2.copyWith(color: Colors.black)),
                     const SizedBox(height: 24),
                     TextField(
                       controller: nameController,
@@ -494,7 +500,7 @@ class _BillsScreenState extends State<BillsScreen> {
                         padding: const EdgeInsets.only(left: 12),
                         child: Text(
                           nameError!,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.expense,
                             fontSize: 12,
                           ),
@@ -532,7 +538,7 @@ class _BillsScreenState extends State<BillsScreen> {
                         padding: const EdgeInsets.only(left: 12),
                         child: Text(
                           amountError!,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.expense,
                             fontSize: 12,
                           ),
@@ -579,7 +585,8 @@ class _BillsScreenState extends State<BillsScreen> {
                       ),
                     ],
                     const SizedBox(height: 16),
-                    Text('Select Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text('Select Icon',
+                        style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 200, // Increased height for grid
@@ -622,7 +629,8 @@ class _BillsScreenState extends State<BillsScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Text('Select Color', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text('Select Color',
+                        style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 50,
@@ -714,7 +722,7 @@ class _BillsScreenState extends State<BillsScreen> {
                             nameError = null;
                             amountError = null;
                           });
-                          
+
                           if (nameController.text.isEmpty) {
                             setState(() {
                               nameError = 'Bill name is required';
@@ -724,12 +732,15 @@ class _BillsScreenState extends State<BillsScreen> {
                             setState(() {
                               amountError = 'Amount is required';
                             });
-                          } else if (double.tryParse(Formatters.removeFormatting(amountController.text)) == null) {
+                          } else if (double.tryParse(
+                                  Formatters.removeFormatting(
+                                      amountController.text)) ==
+                              null) {
                             setState(() {
                               amountError = 'Invalid amount';
                             });
                           }
-                          
+
                           if (nameError != null || amountError != null) {
                             return;
                           }
@@ -740,11 +751,14 @@ class _BillsScreenState extends State<BillsScreen> {
                                 .toString(),
                             name: nameController.text,
                             emoji: selectedEmoji,
-                            amount: double.parse(Formatters.removeFormatting(amountController.text)),
+                            amount: double.parse(Formatters.removeFormatting(
+                                amountController.text)),
                             dueDate: selectedDate,
                             isRecurring: isRecurring,
                             recurringMonths: isRecurring
-                                ? int.tryParse(recurringMonthsController.text) ?? 1
+                                ? int.tryParse(
+                                        recurringMonthsController.text) ??
+                                    1
                                 : null,
                             color: selectedColor,
                           );
@@ -780,8 +794,8 @@ class _BillsScreenState extends State<BillsScreen> {
     DateTime selectedDate = bill.dueDate;
     String selectedEmoji = bill.emoji;
     bool isRecurring = bill.isRecurring;
-    final recurringMonthsController = TextEditingController(
-        text: bill.recurringMonths?.toString() ?? '1');
+    final recurringMonthsController =
+        TextEditingController(text: bill.recurringMonths?.toString() ?? '1');
     Color selectedColor = bill.color ?? PastelColors.palette[0];
 
     showModalBottomSheet(
@@ -795,7 +809,7 @@ class _BillsScreenState extends State<BillsScreen> {
           builder: (context, setState) {
             String? nameError;
             String? amountError;
-            
+
             return Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -808,7 +822,8 @@ class _BillsScreenState extends State<BillsScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Edit Bill', style: AppTextStyle.h2.copyWith(color: Colors.black)),
+                    Text('Edit Bill',
+                        style: AppTextStyle.h2.copyWith(color: Colors.black)),
                     const SizedBox(height: 24),
                     TextField(
                       controller: nameController,
@@ -819,19 +834,6 @@ class _BillsScreenState extends State<BillsScreen> {
                         prefixIcon: const Icon(Icons.label),
                       ),
                     ),
-                    if (nameError != null) ...[
-                      const SizedBox(height: 4),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 12),
-                        child: Text(
-                          nameError!,
-                          style: const TextStyle(
-                            color: AppColors.expense,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ],
                     const SizedBox(height: 16),
                     Consumer<SettingsProvider>(
                       builder: (context, settings, _) {
@@ -857,19 +859,6 @@ class _BillsScreenState extends State<BillsScreen> {
                         );
                       },
                     ),
-                    if (amountError != null) ...[
-                      const SizedBox(height: 4),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 12),
-                        child: Text(
-                          amountError!,
-                          style: const TextStyle(
-                            color: AppColors.expense,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ],
                     const SizedBox(height: 16),
                     ListTile(
                       title: const Text('Due Date'),
@@ -910,7 +899,8 @@ class _BillsScreenState extends State<BillsScreen> {
                       ),
                     ],
                     const SizedBox(height: 16),
-                    Text('Select Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text('Select Icon',
+                        style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 200, // Increased height for grid
@@ -953,7 +943,8 @@ class _BillsScreenState extends State<BillsScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Text('Select Color', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text('Select Color',
+                        style: AppTextStyle.h3.copyWith(color: Colors.black)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 50,
@@ -1045,7 +1036,7 @@ class _BillsScreenState extends State<BillsScreen> {
                             nameError = null;
                             amountError = null;
                           });
-                          
+
                           if (nameController.text.isEmpty) {
                             setState(() {
                               nameError = 'Bill name is required';
@@ -1055,12 +1046,15 @@ class _BillsScreenState extends State<BillsScreen> {
                             setState(() {
                               amountError = 'Amount is required';
                             });
-                          } else if (double.tryParse(Formatters.removeFormatting(amountController.text)) == null) {
+                          } else if (double.tryParse(
+                                  Formatters.removeFormatting(
+                                      amountController.text)) ==
+                              null) {
                             setState(() {
                               amountError = 'Invalid amount';
                             });
                           }
-                          
+
                           if (nameError != null || amountError != null) {
                             return;
                           }
@@ -1068,11 +1062,14 @@ class _BillsScreenState extends State<BillsScreen> {
                           final updated = bill.copyWith(
                             name: nameController.text,
                             emoji: selectedEmoji,
-                            amount: double.parse(Formatters.removeFormatting(amountController.text)),
+                            amount: double.parse(Formatters.removeFormatting(
+                                amountController.text)),
                             dueDate: selectedDate,
                             isRecurring: isRecurring,
                             recurringMonths: isRecurring
-                                ? int.tryParse(recurringMonthsController.text) ?? 1
+                                ? int.tryParse(
+                                        recurringMonthsController.text) ??
+                                    1
                                 : null,
                             color: selectedColor,
                           );

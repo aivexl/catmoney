@@ -43,7 +43,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      // backgroundColor: AppColors.background, // Removed to use Theme's scaffoldBackgroundColor
       body: Stack(
         children: [
           SafeArea(
@@ -94,8 +94,8 @@ class _WishlistScreenState extends State<WishlistScreen> {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: const BoxDecoration(
-        color: Color(0xFFffcc02),
+      decoration: BoxDecoration(
+        color: AppColors.primary,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(24),
           bottomRight: Radius.circular(24),
@@ -163,13 +163,13 @@ class _WishlistScreenState extends State<WishlistScreen> {
             const SizedBox(height: AppSpacing.md),
             Text(
               'No wishlist yet',
-              style: AppTextStyle.h2.copyWith(color: Colors.black),
+              style: AppTextStyle.h2,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Create your wishlist targets and track their progress!',
-              style: AppTextStyle.caption.copyWith(fontSize: 14, color: Colors.black),
+              style: AppTextStyle.caption.copyWith(fontSize: 14),
               textAlign: TextAlign.center,
             ),
           ],
@@ -188,7 +188,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
         if (active.isNotEmpty) ...[
           Text(
             'Active',
-            style: AppTextStyle.h3.copyWith(color: Colors.black),
+            style: AppTextStyle.h3,
           ),
           const SizedBox(height: AppSpacing.sm),
           ...active.map((wishlist) => _buildWishlistCard(wishlist, provider)),
@@ -197,7 +197,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
           const SizedBox(height: AppSpacing.md),
           Text(
             'Completed',
-            style: AppTextStyle.h3.copyWith(color: Colors.black),
+            style: AppTextStyle.h3,
           ),
           const SizedBox(height: AppSpacing.sm),
           ...completed
@@ -210,7 +210,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
   Widget _buildWishlistCard(Wishlist wishlist, WishlistProvider provider) {
     return Card(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      color: wishlist.color ?? AppColors.surface,
+      color: wishlist.color ?? Theme.of(context).cardColor,
       child: InkWell(
         onTap: () => _showWishlistDetails(wishlist, provider),
         borderRadius: BorderRadius.circular(12),
@@ -234,11 +234,11 @@ class _WishlistScreenState extends State<WishlistScreen> {
                       children: [
                         Text(
                           wishlist.name,
-                          style: AppTextStyle.h3.copyWith(color: Colors.black),
+                          style: AppTextStyle.h3,
                         ),
                         Text(
                           '${Formatters.formatCurrency(wishlist.currentAmount)} / ${Formatters.formatCurrency(wishlist.targetAmount)}',
-                          style: AppTextStyle.caption.copyWith(color: Colors.black),
+                          style: AppTextStyle.caption,
                         ),
                       ],
                     ),
@@ -299,11 +299,11 @@ class _WishlistScreenState extends State<WishlistScreen> {
                       children: [
                         Text(
                           wishlist.name,
-                          style: AppTextStyle.h2.copyWith(color: Colors.black),
+                          style: AppTextStyle.h2,
                         ),
                         Text(
                           '${wishlist.progress.toStringAsFixed(1)}% achieved',
-                          style: AppTextStyle.caption.copyWith(color: Colors.black),
+                          style: AppTextStyle.caption,
                         ),
                       ],
                     ),
@@ -368,10 +368,10 @@ class _WishlistScreenState extends State<WishlistScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: AppTextStyle.body.copyWith(color: Colors.black)),
+          Text(label, style: AppTextStyle.body),
           Text(
             value,
-            style: AppTextStyle.body.copyWith(fontWeight: FontWeight.bold, color: Colors.black),
+            style: AppTextStyle.body.copyWith(fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -476,7 +476,8 @@ class _WishlistScreenState extends State<WishlistScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Add Wishlist', style: AppTextStyle.h2.copyWith(color: Colors.black)),
+                  Text('Add Wishlist',
+                      style: AppTextStyle.h2.copyWith(color: Colors.black)),
                   const SizedBox(height: 24),
                   TextField(
                     controller: nameController,
@@ -494,7 +495,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                       padding: const EdgeInsets.only(left: 12),
                       child: Text(
                         nameError!,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.expense,
                           fontSize: 12,
                         ),
@@ -533,7 +534,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                       padding: const EdgeInsets.only(left: 12),
                       child: Text(
                         targetError!,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.expense,
                           fontSize: 12,
                         ),
@@ -541,7 +542,8 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     ),
                   ],
                   const SizedBox(height: 16),
-                  Text('Select Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                  Text('Select Icon',
+                      style: AppTextStyle.h3.copyWith(color: Colors.black)),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 200, // Increased height for grid
@@ -583,7 +585,8 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Text('Select Color', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                  Text('Select Color',
+                      style: AppTextStyle.h3.copyWith(color: Colors.black)),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 50,
@@ -675,7 +678,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                           nameError = null;
                           targetError = null;
                         });
-                        
+
                         if (nameController.text.isEmpty) {
                           setState(() {
                             nameError = 'Target name is required';
@@ -686,19 +689,21 @@ class _WishlistScreenState extends State<WishlistScreen> {
                             targetError = 'Target amount is required';
                           });
                         } else {
-                          final amountText = Formatters.removeFormatting(targetController.text);
+                          final amountText = Formatters.removeFormatting(
+                              targetController.text);
                           if (double.tryParse(amountText) == null) {
                             setState(() {
                               targetError = 'Invalid amount';
                             });
                           }
                         }
-                        
+
                         if (nameError != null || targetError != null) {
                           return;
                         }
 
-                        final amountText = Formatters.removeFormatting(targetController.text);
+                        final amountText =
+                            Formatters.removeFormatting(targetController.text);
                         final wishlist = Wishlist(
                           id: DateTime.now().millisecondsSinceEpoch.toString(),
                           name: nameController.text,
@@ -762,7 +767,8 @@ class _WishlistScreenState extends State<WishlistScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Edit Wishlist', style: AppTextStyle.h2.copyWith(color: Colors.black)),
+                  Text('Edit Wishlist',
+                      style: AppTextStyle.h2.copyWith(color: Colors.black)),
                   const SizedBox(height: 24),
                   TextField(
                     controller: nameController,
@@ -780,7 +786,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                       padding: const EdgeInsets.only(left: 12),
                       child: Text(
                         nameError!,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.expense,
                           fontSize: 12,
                         ),
@@ -819,7 +825,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                       padding: const EdgeInsets.only(left: 12),
                       child: Text(
                         targetError!,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.expense,
                           fontSize: 12,
                         ),
@@ -827,7 +833,8 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     ),
                   ],
                   const SizedBox(height: 16),
-                  Text('Select Icon', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                  Text('Select Icon',
+                      style: AppTextStyle.h3.copyWith(color: Colors.black)),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 200, // Increased height for grid
@@ -869,7 +876,8 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Text('Select Color', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                  Text('Select Color',
+                      style: AppTextStyle.h3.copyWith(color: Colors.black)),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 50,
@@ -961,7 +969,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                           nameError = null;
                           targetError = null;
                         });
-                        
+
                         if (nameController.text.isEmpty) {
                           setState(() {
                             nameError = 'Target name is required';
@@ -972,19 +980,21 @@ class _WishlistScreenState extends State<WishlistScreen> {
                             targetError = 'Target amount is required';
                           });
                         } else {
-                          final amountText = Formatters.removeFormatting(targetController.text);
+                          final amountText = Formatters.removeFormatting(
+                              targetController.text);
                           if (double.tryParse(amountText) == null) {
                             setState(() {
                               targetError = 'Invalid amount';
                             });
                           }
                         }
-                        
+
                         if (nameError != null || targetError != null) {
                           return;
                         }
 
-                        final amountText = Formatters.removeFormatting(targetController.text);
+                        final amountText =
+                            Formatters.removeFormatting(targetController.text);
                         final updated = wishlist.copyWith(
                           name: nameController.text,
                           emoji: selectedEmoji,

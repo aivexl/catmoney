@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   
   # UI & Navigation
   cupertino_icons: ^1.0.6
@@ -22,7 +24,7 @@ dependencies:
   shared_preferences: ^2.2.2
   
   # Date & Time
-  intl: ^0.19.0
+  intl: any
   
   # Charts
   fl_chart: ^0.68.0

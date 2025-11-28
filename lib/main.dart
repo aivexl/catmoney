@@ -18,7 +18,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'utils/app_localizations.dart';
 import 'theme/app_theme.dart';
 import 'theme/app_colors.dart';
 import 'providers/transaction_provider.dart';
@@ -81,11 +83,46 @@ class MyApp extends StatelessWidget {
           },
         ),
       ],
-      child: MaterialApp(
-        title: 'Cat Money Manager',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        home: const MainScreen(),
+      child: Consumer<SettingsProvider>(
+        builder: (context, settings, _) {
+          // Initialize AppColors with current theme
+          AppColors.init(settings);
+
+          return MaterialApp(
+            title: 'Cat Money Manager',
+            debugShowCheckedModeBanner: false,
+
+            // Theme Configuration
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: settings.isDarkModeAuto
+                ? ThemeMode.system
+                : (settings.isDarkMode ? ThemeMode.dark : ThemeMode.light),
+
+            // Localization Configuration
+            locale: Locale(settings.languageCode),
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en', ''), // English
+              Locale('id', ''), // Indonesian
+              Locale('es', ''), // Spanish
+              Locale('fr', ''), // French
+              Locale('de', ''), // German
+              Locale('ja', ''), // Japanese
+              Locale('zh', ''), // Chinese
+              Locale('ko', ''), // Korean
+              Locale('pt', ''), // Portuguese
+              Locale('ar', ''), // Arabic
+            ],
+
+            home: const MainScreen(),
+          );
+        },
       ),
     );
   }

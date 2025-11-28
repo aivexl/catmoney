@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../providers/account_provider.dart';
 import '../providers/transaction_provider.dart';
+import '../providers/settings_provider.dart';
 import '../models/transaction.dart';
 import '../utils/formatters.dart';
+import '../utils/app_localizations.dart';
 import '../utils/pastel_colors.dart';
 import '../models/account.dart';
 import '../utils/app_icons.dart';
@@ -51,7 +53,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
             .toList();
 
         return Scaffold(
-          backgroundColor: AppColors.background, // Yellowish background
+          // backgroundColor: AppColors.background, // Removed to use Theme's scaffoldBackgroundColor
           body: SafeArea(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -67,22 +69,28 @@ class _AccountsScreenState extends State<AccountsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Add Wallet Button
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () => _showAddWalletDialog(context),
-                            icon: const Icon(Icons.add),
-                            label: const Text('Add Wallet'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                        Consumer<SettingsProvider>(
+                          builder: (context, settings, _) {
+                            final loc = AppLocalizations(settings.languageCode);
+                            return SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: () => _showAddWalletDialog(context),
+                                icon: const Icon(Icons.add),
+                                label: Text(loc.addAccount),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  foregroundColor: Colors.white,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 2,
+                                ),
                               ),
-                              elevation: 2,
-                            ),
-                          ),
+                            );
+                          },
                         ),
                         const SizedBox(height: AppSpacing.md),
 
@@ -111,8 +119,8 @@ class _AccountsScreenState extends State<AccountsScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(
           AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.lg),
-      decoration: const BoxDecoration(
-        color: Color(0xFFffcc02), // Solid yellow header
+      decoration: BoxDecoration(
+        color: AppColors.primary, // Use dynamic primary color
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(32),
           bottomRight: Radius.circular(32),
@@ -142,23 +150,28 @@ class _AccountsScreenState extends State<AccountsScreen> {
                           color: Colors.white.withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.account_balance_wallet,
                           color: AppColors.primary,
                           size: 20,
                         ),
                       ),
                       const SizedBox(width: 6),
-                      const Flexible(
-                        child: Text(
-                          'Wallets',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      Consumer<SettingsProvider>(
+                        builder: (context, settings, _) {
+                          final loc = AppLocalizations(settings.languageCode);
+                          return Flexible(
+                            child: Text(
+                              loc.wallets,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -214,7 +227,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
   Widget _buildAccountIcon(Account account) {
     // Check for wallet icon
     if (account.icon == 'wallet') {
-      return const Icon(
+      return Icon(
         Icons.account_balance_wallet,
         size: 32,
         color: AppColors.primary,
@@ -349,21 +362,32 @@ class _AccountsScreenState extends State<AccountsScreen> {
           const SizedBox(height: AppSpacing.md),
           const Divider(),
           const SizedBox(height: AppSpacing.sm),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildStatItem('Balance', balance,
-                  balance >= 0 ? AppColors.income : AppColors.expense),
-              _buildStatItem('Income', income, AppColors.income),
-              _buildStatItem('Expense', expense, AppColors.expense),
-            ],
+          Consumer<SettingsProvider>(
+            builder: (context, settings, _) {
+              final loc = AppLocalizations(settings.languageCode);
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildStatItem(
+                      loc.balance,
+                      balance,
+                      balance >= 0 ? AppColors.income : AppColors.expense,
+                      settings.languageCode),
+                  _buildStatItem(loc.income, income, AppColors.income,
+                      settings.languageCode),
+                  _buildStatItem(loc.expense, expense, AppColors.expense,
+                      settings.languageCode),
+                ],
+              );
+            },
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStatItem(String label, double amount, Color color) {
+  Widget _buildStatItem(
+      String label, double amount, Color color, String languageCode) {
     return Column(
       children: [
         Text(
@@ -405,14 +429,14 @@ class _AccountsScreenState extends State<AccountsScreen> {
                 ),
               ],
             ),
-            child: const Icon(
+            child: Icon(
               Icons.account_balance_wallet_outlined,
               size: 64,
               color: AppColors.primary,
             ),
           ),
           const SizedBox(height: AppSpacing.md),
-          const Text(
+          Text(
             'No Wallets Yet',
             style: AppTextStyle.h2,
             textAlign: TextAlign.center,
@@ -468,7 +492,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Add New Wallet',
                     style: AppTextStyle.h2,
                   ),
@@ -484,7 +508,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  const Text('Select Icon', style: AppTextStyle.h3),
+                  Text('Select Icon', style: AppTextStyle.h3),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 60,
@@ -529,7 +553,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  const Text('Select Color', style: AppTextStyle.h3),
+                  Text('Select Color', style: AppTextStyle.h3),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 50,
