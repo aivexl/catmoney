@@ -79,39 +79,33 @@ class AppBorderRadius {
 
 /// Typography
 class AppTextStyle {
-  static TextStyle get h1 => TextStyle(
+  static TextStyle get h1 => const TextStyle(
         fontSize: 32,
         fontWeight: FontWeight.bold,
-        color: AppColors.text,
       );
 
-  static TextStyle get h2 => TextStyle(
+  static TextStyle get h2 => const TextStyle(
         fontSize: 24,
         fontWeight: FontWeight.bold,
-        color: AppColors.text,
       );
 
-  static TextStyle get h3 => TextStyle(
+  static TextStyle get h3 => const TextStyle(
         fontSize: 20,
         fontWeight: FontWeight.w600,
-        color: AppColors.text,
       );
 
-  static TextStyle get body => TextStyle(
+  static TextStyle get body => const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.normal,
-        color: AppColors.text,
       );
 
-  static TextStyle get caption => TextStyle(
+  static TextStyle get caption => const TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.normal,
-        color: AppColors.textSecondary,
       );
 
-  static TextStyle get small => TextStyle(
+  static TextStyle get small => const TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.normal,
-        color: AppColors.textSecondary,
       );
 }

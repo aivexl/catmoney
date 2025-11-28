@@ -171,13 +171,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
-                const Text(
-                  'Transactions',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
+                Consumer<SettingsProvider>(
+                  builder: (context, settings, _) {
+                    final loc =
+                        AppLocalizations.fromCode(settings.languageCode);
+                    return Text(
+                      loc.transactions,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -215,7 +220,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: AppTextStyle.caption.copyWith(
                               fontWeight: FontWeight.w600,
                               fontSize: 12,
-                              color: Colors.black,
                             ),
                           ),
                           Row(
@@ -303,9 +307,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               AppLocalizations.fromCode(settings.languageCode);
                           return Text(
                             loc.totalBalance,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 14,
-                              color: Colors.black,
                               fontWeight: FontWeight.w500,
                             ),
                           );
@@ -360,9 +363,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               AppLocalizations.fromCode(settings.languageCode);
                           return Text(
                             loc.totalExpenses,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 14,
-                              color: Colors.black,
                               fontWeight: FontWeight.w500,
                             ),
                           );
@@ -449,35 +451,35 @@ class _HomeScreenState extends State<HomeScreen> {
     final menuItems = [
       {
         'icon': 'assets/icons/walleticon.webp',
-        'label': 'Wallet',
+        'label': 'wallet',
         'color': AppColors.primaryBlue,
         'backgroundColor': const Color(0xFFB0E0E6), // Light teal/cyan pastel
         'onTap': _navigateToAccounts,
       },
       {
         'icon': 'assets/icons/moneytrackericon.png',
-        'label': 'Spend Tracker',
+        'label': 'spendTracker',
         'color': AppColors.lavender,
         'backgroundColor': const Color(0xFFE6E6FA), // Light pink/purple pastel
         'onTap': _navigateToSpendTracker,
       },
       {
         'icon': 'assets/icons/wishlisticon.png',
-        'label': 'Wishlist',
+        'label': 'wishlist',
         'color': AppColors.orange,
         'backgroundColor': const Color(0xFFFFE5CC), // Light orange pastel
         'onTap': _navigateToWishlist,
       },
       {
         'icon': 'assets/icons/watchlisticon.webp',
-        'label': 'Watchlist',
+        'label': 'watchlist',
         'color': AppColors.yellow,
         'backgroundColor': const Color(0xFFFFFACD), // Light yellow pastel
         'onTap': _navigateToWatchlistScreen,
       },
       {
         'icon': 'assets/icons/billsicon.png',
-        'label': 'Bills',
+        'label': 'bills',
         'color': AppColors.mint,
         'backgroundColor': const Color(0xFFB2F5EA), // Light green/mint pastel
         'onTap': _navigateToBills,
@@ -777,7 +779,7 @@ class _HomeScreenState extends State<HomeScreen> {
       amountColor = const Color(
           0xFFE91E63); // Material Pink 500 - darker and more visible
     } else {
-      amountColor = Colors.black;
+      amountColor = Theme.of(context).textTheme.bodyLarge?.color ?? Colors.grey;
     }
 
     final cardColor = _getCardColor(transaction.category);
@@ -949,10 +951,15 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'Welcome',
-              style: AppTextStyle.h2.copyWith(color: Colors.black),
-              textAlign: TextAlign.center,
+            Consumer<SettingsProvider>(
+              builder: (context, settings, _) {
+                final loc = AppLocalizations.fromCode(settings.languageCode);
+                return Text(
+                  loc.welcome,
+                  style: AppTextStyle.h2,
+                  textAlign: TextAlign.center,
+                );
+              },
             ),
             const SizedBox(height: AppSpacing.md),
             Image.asset(
@@ -971,13 +978,17 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             const SizedBox(height: AppSpacing.md),
-            Text(
-              'Start managing your finances by adding your first transaction',
-              style: AppTextStyle.caption.copyWith(
-                fontSize: 14,
-                color: Colors.black,
-              ),
-              textAlign: TextAlign.center,
+            Consumer<SettingsProvider>(
+              builder: (context, settings, _) {
+                final loc = AppLocalizations.fromCode(settings.languageCode);
+                return Text(
+                  loc.startManaging,
+                  style: AppTextStyle.caption.copyWith(
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
+                );
+              },
             ),
           ],
         ),
@@ -1106,17 +1117,42 @@ class _MenuIconButtonState extends State<_MenuIconButton> {
           ),
         ),
         SizedBox(height: spacing),
-        // Label tanpa hover effect
-        Text(
-          widget.label,
-          style: AppTextStyle.caption.copyWith(
-            fontSize: fontSize,
-            fontWeight: FontWeight.w700, // Lebih bold
-            color: Colors.black,
-          ),
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        // Label with localization
+        Consumer<SettingsProvider>(
+          builder: (context, settings, _) {
+            final loc = AppLocalizations.fromCode(settings.languageCode);
+            // Translate the label key to actual text
+            String labelText;
+            switch (widget.label) {
+              case 'wallet':
+                labelText = loc.wallet;
+                break;
+              case 'spendTracker':
+                labelText = loc.spendTracker;
+                break;
+              case 'wishlist':
+                labelText = loc.wishlist;
+                break;
+              case 'watchlist':
+                labelText = loc.watchlist;
+                break;
+              case 'bills':
+                labelText = loc.bills;
+                break;
+              default:
+                labelText = widget.label;
+            }
+            return Text(
+              labelText,
+              style: AppTextStyle.caption.copyWith(
+                fontSize: fontSize,
+                fontWeight: FontWeight.w700,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            );
+          },
         ),
       ],
     );
