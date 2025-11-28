@@ -756,34 +756,6 @@ class AppLocalizations {
       'pt': 'Contas',
       'ar': 'الفواتير',
     },
-    'welcome': {
-      'en': 'Welcome',
-      'id': 'Selamat Datang',
-      'es': 'Bienvenido',
-      'fr': 'Bienvenue',
-      'de': 'Willkommen',
-      'ja': 'ようこそ',
-      'zh': '欢迎',
-      'ko': '환영합니다',
-      'pt': 'Bem-vindo',
-      'ar': 'مرحبا',
-    },
-    'startManaging': {
-      'en': 'Start managing your finances by adding your first transaction',
-      'id': 'Mulai kelola keuangan Anda dengan menambahkan transaksi pertama',
-      'es':
-          'Comienza a gestionar tus finanzas agregando tu primera transacción',
-      'fr':
-          'Commencez à gérer vos finances en ajoutant votre première transaction',
-      'de':
-          'Beginnen Sie mit der Verwaltung Ihrer Finanzen, indem Sie Ihre erste Transaktion hinzufügen',
-      'ja': '最初の取引を追加して財務管理を始めましょう',
-      'zh': '通过添加您的第一笔交易开始管理您的财务',
-      'ko': '첫 거래를 추가하여 재무 관리를 시작하세요',
-      'pt':
-          'Comece a gerenciar suas finanças adicionando sua primeira transação',
-      'ar': 'ابدأ في إدارة أموالك عن طريق إضافة معاملتك الأولى',
-    },
 
     // Transactions Screen
     'calendar': {
