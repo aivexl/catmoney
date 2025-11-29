@@ -231,7 +231,7 @@ class _FloatingNotificationWidgetState
     return GestureDetector(
       onTap: _dismiss,
       child: Material(
-        color: Colors.black.withOpacity(0.5),
+        color: AppColors.text.withOpacity(0.5),
         child: Center(
           child: ScaleTransition(
             scale: _scaleAnimation,
@@ -247,7 +247,7 @@ class _FloatingNotificationWidgetState
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: AppColors.text.withOpacity(0.3),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),

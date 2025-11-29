@@ -119,6 +119,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     debugPrint('🐱 _showAddCategoryDialog called');
 
     try {
+      final settings = Provider.of<SettingsProvider>(context, listen: false);
+      final loc = AppLocalizations(settings.languageCode);
       final nameController = TextEditingController();
       Color selectedColor = PastelColors.palette[0]; // Default color
       String selectedIcon = 'label'; // Default icon key
@@ -146,14 +148,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Add Category',
+                      loc.addCategory,
                       style: AppTextStyle.h2,
                     ),
                     const SizedBox(height: 24),
                     TextField(
                       controller: nameController,
                       decoration: InputDecoration(
-                        labelText: 'Category Name',
+                        labelText: loc.categoryName,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -161,11 +163,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const Text('Select Icon',
+                    Text(loc.selectIcon,
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black,
+                          color: AppColors.text,
                         )),
                     const SizedBox(height: 12),
                     SizedBox(
@@ -209,11 +211,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const Text('Select Color',
+                    Text(loc.selectColor,
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black,
+                          color: AppColors.text,
                         )),
                     const SizedBox(height: 12),
                     SizedBox(
@@ -307,7 +309,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                           if (nameController.text.isEmpty) {
                             ScaffoldMessenger.of(widgetContext).showSnackBar(
                               SnackBar(
-                                content: Text('Please enter category name'),
+                                content: Text(loc.enterCategoryName),
                                 backgroundColor: AppColors.expense,
                               ),
                             );
@@ -329,8 +331,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                             if (widgetContext.mounted) {
                               ScaffoldMessenger.of(widgetContext).showSnackBar(
                                 SnackBar(
-                                  content:
-                                      Text('Category added successfully! 🎉'),
+                                  content: Text(loc.categoryAdded),
                                   backgroundColor: AppColors.income,
                                   duration: Duration(seconds: 2),
                                 ),
@@ -343,7 +344,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                             if (widgetContext.mounted) {
                               ScaffoldMessenger.of(widgetContext).showSnackBar(
                                 SnackBar(
-                                  content: Text('Error: $e'),
+                                  content:
+                                      Text('${loc.errorAddingCategory}: $e'),
                                   backgroundColor: AppColors.expense,
                                 ),
                               );
@@ -357,7 +359,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('Save Category'),
+                        child: Text(loc.saveCategory),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -374,6 +376,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Future<void> _pickImage() async {
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    final loc = AppLocalizations(settings.languageCode);
     try {
       final XFile? image = await _picker.pickImage(
         source: ImageSource.gallery,
@@ -402,7 +406,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error taking photo: $e'),
+            content: Text('${loc.errorTakingPhoto}: $e'),
             backgroundColor: AppColors.expense,
           ),
         );
@@ -411,6 +415,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Future<void> _saveTransaction() async {
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    final loc = AppLocalizations(settings.languageCode);
     // Reset error messages
     setState(() {
       _accountError = null;
@@ -548,7 +554,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Transaction added successfully! 🎉'),
+          content: Text(loc.transactionAdded),
           backgroundColor: AppColors.income,
           duration: Duration(seconds: 2),
         ),
@@ -558,6 +564,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Future<void> _saveAndStay() async {
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    final loc = AppLocalizations(settings.languageCode);
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -566,7 +574,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         _selectedCategoryId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Please select category'),
+          content: Text(loc.selectCategory),
           backgroundColor: AppColors.expense,
         ),
       );
@@ -736,7 +744,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           child: Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.white : Colors.black,
+              color: isSelected ? Colors.white : AppColors.text,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -747,6 +755,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
   Future<void> _showAddAccountDialog() async {
     try {
+      final settings = Provider.of<SettingsProvider>(context, listen: false);
+      final loc = AppLocalizations(settings.languageCode);
       final nameController = TextEditingController();
       Color selectedColor = PastelColors.palette[0]; // Default color
       String selectedIcon = 'account_balance_wallet'; // Default icon key
@@ -774,14 +784,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Add Wallet',
+                      loc.addWallet,
                       style: AppTextStyle.h2,
                     ),
                     const SizedBox(height: 24),
                     TextField(
                       controller: nameController,
                       decoration: InputDecoration(
-                        labelText: 'Wallet Name',
+                        labelText: loc.walletName,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -789,11 +799,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const Text('Select Icon',
+                    Text(loc.selectIcon,
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black,
+                          color: AppColors.text,
                         )),
                     const SizedBox(height: 12),
                     SizedBox(
@@ -837,11 +847,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    const Text('Select Color',
+                    Text('Select Color',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black,
+                          color: AppColors.text,
                         )),
                     const SizedBox(height: 12),
                     SizedBox(
@@ -935,7 +945,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                           if (nameController.text.isEmpty) {
                             ScaffoldMessenger.of(widgetContext).showSnackBar(
                               SnackBar(
-                                content: Text('Please enter wallet name'),
+                                content: Text(loc.enterWalletName),
                                 backgroundColor: AppColors.expense,
                               ),
                             );
@@ -963,8 +973,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                             if (widgetContext.mounted) {
                               ScaffoldMessenger.of(widgetContext).showSnackBar(
                                 SnackBar(
-                                  content:
-                                      Text('Wallet added successfully! 🎉'),
+                                  content: Text(loc.walletAdded),
                                   backgroundColor: AppColors.income,
                                   duration: Duration(seconds: 2),
                                 ),
@@ -977,7 +986,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                             if (widgetContext.mounted) {
                               ScaffoldMessenger.of(widgetContext).showSnackBar(
                                 SnackBar(
-                                  content: Text('Error: $e'),
+                                  content: Text('${loc.errorAddingWallet}: $e'),
                                   backgroundColor: AppColors.expense,
                                 ),
                               );
@@ -991,7 +1000,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('Save Wallet'),
+                        child: Text(loc.saveWallet),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -1012,6 +1021,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     final categoryProvider = context.watch<CategoryProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
     final categories = categoryProvider.getCategoriesByType(_selectedType);
+    final loc = AppLocalizations(settingsProvider.languageCode);
 
     return Scaffold(
       // backgroundColor: AppColors.background, // Removed to use Theme's scaffoldBackgroundColor
@@ -1079,7 +1089,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
+                        color: AppColors.text,
                       ),
                       decoration: InputDecoration(
                         labelText:
@@ -1091,7 +1101,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.primary,
+                              color: AppColors.text,
                             ),
                           ),
                         ),
@@ -1105,8 +1115,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(
-                              color: AppColors.primary, width: 2),
+                          borderSide:
+                              BorderSide(color: AppColors.primary, width: 2),
                         ),
                         filled: true,
                         fillColor: Theme.of(context).cardColor,
@@ -1207,11 +1217,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 const SizedBox(height: 24),
 
                 // Account Selection
-                const Text('Account',
+                Text(loc.account,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black,
+                      color: AppColors.text,
                     )),
                 const SizedBox(height: 12),
                 Consumer<AccountProvider>(
@@ -1237,8 +1247,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                   border: Border.all(
                                       color: AppColors.border, width: 1),
                                 ),
-                                child:
-                                    const Icon(Icons.add, color: Colors.black),
+                                child: Icon(Icons.add, color: AppColors.text),
                               ),
                             );
                           }
@@ -1285,8 +1294,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                           ? FontWeight.bold
                                           : FontWeight.normal,
                                       color: isSelected
-                                          ? AppColors.primary
-                                          : Colors.black,
+                                          ? AppColors.text
+                                          : AppColors.text,
                                     ),
                                   ),
                                 ],
@@ -1316,11 +1325,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
                 // Wishlist Selection (Optional)
                 if (_selectedType == TransactionType.expense) ...[
-                  const Text('Wishlist (Optional)',
+                  Text('${loc.wishlist} ${loc.optional}',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black,
+                        color: AppColors.text,
                       )),
                   const SizedBox(height: 12),
                   Consumer<WishlistProvider>(
@@ -1356,9 +1365,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.add, color: AppColors.primary),
+                                      Icon(Icons.add, color: AppColors.text),
                                       SizedBox(height: 4),
-                                      Text('Create',
+                                      Text(loc.create,
                                           style: TextStyle(fontSize: 10)),
                                     ],
                                   ),
@@ -1387,7 +1396,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
                                     color: isSelected
-                                        ? AppColors.primary
+                                        ? AppColors.text
                                         : AppColors.border,
                                     width: isSelected ? 2 : 1,
                                   ),
@@ -1425,11 +1434,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
                 // Spend Tracker / Budget Selection (Optional)
                 if (_selectedType == TransactionType.expense) ...[
-                  const Text('Spend Tracker (Optional)',
+                  Text('${loc.spendTracker} ${loc.optional}',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black,
+                        color: AppColors.text,
                       )),
                   const SizedBox(height: 12),
                   Consumer<BudgetProvider>(
@@ -1463,9 +1472,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.add, color: AppColors.primary),
+                                      Icon(Icons.add, color: AppColors.text),
                                       SizedBox(height: 4),
-                                      Text('Create',
+                                      Text(loc.create,
                                           style: TextStyle(fontSize: 10)),
                                     ],
                                   ),
@@ -1493,7 +1502,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
                                     color: isSelected
-                                        ? AppColors.primary
+                                        ? AppColors.text
                                         : AppColors.border,
                                     width: isSelected ? 2 : 1,
                                   ),
@@ -1531,11 +1540,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
                 // Bills Selection (Optional)
                 if (_selectedType == TransactionType.expense) ...[
-                  const Text('Bills (Optional)',
+                  Text('${loc.bills} ${loc.optional}',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black,
+                        color: AppColors.text,
                       )),
                   const SizedBox(height: 12),
                   Consumer<BillProvider>(
@@ -1569,9 +1578,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.add, color: AppColors.primary),
+                                      Icon(Icons.add, color: AppColors.text),
                                       SizedBox(height: 4),
-                                      Text('Buat',
+                                      Text(loc.create,
                                           style: TextStyle(fontSize: 10)),
                                     ],
                                   ),
@@ -1598,7 +1607,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
                                     color: isSelected
-                                        ? AppColors.primary
+                                        ? AppColors.text
                                         : AppColors.border,
                                     width: isSelected ? 2 : 1,
                                   ),
@@ -1640,11 +1649,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Text('Category',
+                      Text('Category',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
-                            color: Colors.black,
+                            color: AppColors.text,
                           )),
                       ElevatedButton.icon(
                         onPressed: _showAddCategoryDialog,
@@ -1742,10 +1751,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       color: AppColors.surface,
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
                         'Transfer does not require a category.',
-                        style: TextStyle(color: Colors.black),
+                        style: TextStyle(color: AppColors.text),
                       ),
                     ),
                   ),
@@ -1805,15 +1814,15 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                           : null,
                     ),
                     child: _photoPath == null
-                        ? const Column(
+                        ? Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.camera_alt,
-                                  size: 40, color: Colors.black),
+                                  size: 40, color: AppColors.text),
                               SizedBox(height: 8),
                               Text(
                                 'Add Photo',
-                                style: TextStyle(color: Colors.black),
+                                style: TextStyle(color: AppColors.text),
                               ),
                             ],
                           )
@@ -1853,8 +1862,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     child: OutlinedButton(
                       onPressed: _saveAndStay,
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.primary,
-                        side: BorderSide(color: AppColors.primary),
+                        foregroundColor: AppColors.text,
+                        side: BorderSide(color: AppColors.text),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -1885,10 +1894,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     return showDialog<Color>(
       context: context,
       builder: (context) {
+        final widgetContext = this.context;
+        final loc = AppLocalizations.of(context)!;
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text('Custom Color'),
+              title: Text(loc.customColor),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [

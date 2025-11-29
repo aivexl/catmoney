@@ -105,8 +105,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   Widget _buildSearchSection() {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: const BoxDecoration(
-        color: Color(0xFFffcc02),
+      decoration: BoxDecoration(
+        color: AppColors.primary,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(24),
           bottomRight: Radius.circular(24),
@@ -218,10 +218,10 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                   final loc = AppLocalizations(settings.languageCode);
                   return Text(
                     loc.calendar,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: AppColors.text,
                     ),
                   );
                 },
@@ -368,8 +368,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               fontSize: 11,
               fontWeight: FontWeight.w600,
               color: isOutside
-                  ? Colors.black.withValues(alpha: 0.4)
-                  : Colors.black,
+                  ? AppColors.text.withValues(alpha: 0.4)
+                  : AppColors.text,
             ),
           ),
           if (dayEvents.isNotEmpty) ...[
@@ -571,10 +571,10 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                     final loc = AppLocalizations(settings.languageCode);
                     return Text(
                       loc.transactions,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                        color: AppColors.text,
                       ),
                     );
                   },
@@ -591,8 +591,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       final loc = AppLocalizations(settings.languageCode);
                       return Text(
                         loc.noTransactions,
-                        style:
-                            AppTextStyle.caption.copyWith(color: Colors.black),
+                        style: AppTextStyle.caption
+                            .copyWith(color: AppColors.text),
                       );
                     },
                   ),
@@ -627,7 +627,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                             style: AppTextStyle.caption.copyWith(
                               fontWeight: FontWeight.w600,
                               fontSize: 12,
-                              color: Colors.black,
+                              color: AppColors.text,
                             ),
                           ),
                           Row(
@@ -690,7 +690,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       Formatters.formatTime(sorted[i].date),
                       style: AppTextStyle.caption.copyWith(
                         fontSize: 10,
-                        color: Colors.black,
+                        color: AppColors.text,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xs / 2),
@@ -777,7 +777,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       amountColor = const Color(
           0xFFE91E63); // Material Pink 500 - darker and more visible
     } else {
-      amountColor = Colors.black;
+      amountColor = AppColors.text;
     }
 
     final cardColor = _getCardColor(transaction.category);
@@ -797,7 +797,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             borderRadius: BorderRadius.circular(AppBorderRadius.sm),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
+                color: AppColors.text.withValues(alpha: 0.03),
                 blurRadius: 2,
                 offset: const Offset(0, 1),
               ),
@@ -824,7 +824,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       style: AppTextStyle.body.copyWith(
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
-                        color: Colors.black,
+                        color: AppColors.text,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -834,7 +834,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                       transaction.category,
                       style: AppTextStyle.caption.copyWith(
                         fontSize: 12,
-                        color: Colors.black,
+                        color: AppColors.text,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

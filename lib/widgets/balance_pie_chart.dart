@@ -20,7 +20,7 @@ class BalancePieChart extends StatelessWidget {
       return Container(
         height: 200,
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         ),
         child: Center(
@@ -34,7 +34,8 @@ class BalancePieChart extends StatelessWidget {
               const SizedBox(height: AppSpacing.sm),
               Text(
                 'No data yet',
-                style: AppTextStyle.caption.copyWith(color: Colors.black),
+                style: AppTextStyle.caption.copyWith(
+                    color: Theme.of(context).textTheme.bodyMedium?.color),
               ),
             ],
           ),
@@ -49,7 +50,7 @@ class BalancePieChart extends StatelessWidget {
       ),
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
       ),
       child: SizedBox(
@@ -82,7 +83,9 @@ class BalancePieChart extends StatelessWidget {
               children: [
                 Text(
                   'Comparison',
-                  style: AppTextStyle.caption.copyWith(fontSize: 11, color: Colors.black),
+                  style: AppTextStyle.caption.copyWith(
+                      fontSize: 11,
+                      color: Theme.of(context).textTheme.bodyMedium?.color),
                 ),
                 const SizedBox(height: 2),
                 Row(
@@ -111,7 +114,10 @@ class BalancePieChart extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 6),
                       child: Text(
                         'vs',
-                        style: AppTextStyle.caption.copyWith(fontSize: 10, color: Colors.black),
+                        style: AppTextStyle.caption.copyWith(
+                            fontSize: 10,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium?.color),
                       ),
                     ),
                     Column(
@@ -143,4 +149,3 @@ class BalancePieChart extends StatelessWidget {
     );
   }
 }
-

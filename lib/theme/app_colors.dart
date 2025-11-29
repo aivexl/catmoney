@@ -1,35 +1,55 @@
 import 'package:flutter/material.dart';
 import '../providers/settings_provider.dart';
+import '../data/app_themes.dart';
 
 /// Tema warna untuk aplikasi Cat Money Manager
 /// Sekarang menggunakan dynamic colors dari theme yang dipilih user
 class AppColors {
   static SettingsProvider? _settingsProvider;
+  static Brightness _systemBrightness = Brightness.light;
 
-  /// Initialize with SettingsProvider
-  static void init(SettingsProvider provider) {
+  /// Initialize with SettingsProvider and System Brightness
+  static void init(SettingsProvider provider, Brightness brightness) {
     _settingsProvider = provider;
+    _systemBrightness = brightness;
   }
 
-  /// Get current theme colors
-  static Color get primary =>
-      _settingsProvider?.currentTheme.primary ?? const Color(0xFFFFCC02);
-  static Color get background =>
-      _settingsProvider?.currentTheme.background ?? const Color(0xFFFFFBE6);
-  static Color get surface =>
-      _settingsProvider?.currentTheme.surface ?? const Color(0xFFFFFBE6);
-  static Color get accent =>
-      _settingsProvider?.currentTheme.accent ?? const Color(0xFFE6B800);
-  static Color get text =>
-      _settingsProvider?.currentTheme.text ?? const Color(0xFF7EC8E3);
-  static Color get textSecondary =>
-      _settingsProvider?.currentTheme.textSecondary ?? const Color(0xFF9DD5E8);
-  static Color get border =>
-      _settingsProvider?.currentTheme.border ?? const Color(0xFFD0E0E8);
-  static Color get income =>
-      _settingsProvider?.currentTheme.income ?? const Color(0xFFA8E6CF);
-  static Color get expense =>
-      _settingsProvider?.currentTheme.expense ?? const Color(0xFFFFB6C1);
+  /// Get effective theme based on settings and system brightness
+  static AppThemeColors get _effectiveTheme {
+    final settings = _settingsProvider;
+    if (settings == null) return AppThemeData.themes[0];
+
+    // Check if we should use Dark Mode
+    bool useDark = false;
+    if (settings.darkMode == 'dark') {
+      useDark = true;
+    } else if (settings.darkMode == 'auto') {
+      useDark = _systemBrightness == Brightness.dark;
+    }
+
+    if (useDark) {
+      return AppThemeData.getThemeById('dark_mode');
+    }
+
+    // If not dark mode, use the selected theme
+    // Ensure we don't return dark_mode if we are in light mode
+    if (settings.themeId == 'dark_mode') {
+      return AppThemeData.themes[
+          0]; // Fallback to default if somehow dark_mode is selected but we are in light mode
+    }
+    return settings.currentTheme;
+  }
+
+  /// Get current theme colors - directly from effective theme
+  static Color get primary => _effectiveTheme.primary;
+  static Color get background => _effectiveTheme.background;
+  static Color get surface => _effectiveTheme.surface;
+  static Color get accent => _effectiveTheme.accent;
+  static Color get text => _effectiveTheme.text;
+  static Color get textSecondary => _effectiveTheme.textSecondary;
+  static Color get border => _effectiveTheme.border;
+  static Color get income => _effectiveTheme.income;
+  static Color get expense => _effectiveTheme.expense;
 
   // Backward compatibility - using primary color
   static Color get primaryBlue => primary;

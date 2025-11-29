@@ -78,7 +78,7 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      // backgroundColor: Use Theme's scaffoldBackgroundColor for dark mode support
       body: SafeArea(
         bottom: false,
         child: Consumer<TransactionProvider>(
@@ -160,7 +160,7 @@ class _HomePageState extends State<HomePage>
         curve: Curves.easeOut,
         height: _panelHeight,
         decoration: BoxDecoration(
-          color: AppColors.tabBackground,
+          color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
@@ -197,7 +197,11 @@ class _HomePageState extends State<HomePage>
                       width: 50,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.4),
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.color
+                            ?.withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(3),
                       ),
                     ),
@@ -212,7 +216,11 @@ class _HomePageState extends State<HomePage>
                       width: 50,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.4),
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.color
+                            ?.withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(3),
                       ),
                     ),
@@ -225,7 +233,8 @@ class _HomePageState extends State<HomePage>
               controller: _tabController,
               isScrollable: false,
               labelColor: AppColors.primary,
-              unselectedLabelColor: Colors.black,
+              unselectedLabelColor:
+                  Theme.of(context).textTheme.bodyLarge?.color,
               indicatorColor: AppColors.primary,
               indicatorSize: TabBarIndicatorSize.tab,
               indicator: BoxDecoration(
@@ -275,7 +284,7 @@ class _HomePageState extends State<HomePage>
   /// Build transaction list content
   Widget _buildTransactionList(String title, List<dynamic> items) {
     return Container(
-      color: AppColors.tabBackground,
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: items.isEmpty
           ? Center(
               child: Padding(
@@ -286,13 +295,17 @@ class _HomePageState extends State<HomePage>
                     Icon(
                       Icons.inbox_outlined,
                       size: 64,
-                      color: Colors.black.withValues(alpha: 0.5),
+                      color: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.color
+                          ?.withValues(alpha: 0.5),
                     ),
                     const SizedBox(height: AppSpacing.md),
                     Text(
                       'No transactions yet',
                       style: AppTextStyle.body.copyWith(
-                        color: Colors.black,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
                       ),
                     ),
                   ],
@@ -308,7 +321,7 @@ class _HomePageState extends State<HomePage>
 
                 return Card(
                   margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  color: AppColors.surface,
+                  color: Theme.of(context).cardColor,
                   child: ListTile(
                     leading: CircleAvatar(
                       backgroundColor:
@@ -376,7 +389,7 @@ class _HomePageState extends State<HomePage>
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(AppBorderRadius.lg),
               boxShadow: [
                 BoxShadow(
@@ -396,7 +409,7 @@ class _HomePageState extends State<HomePage>
                       'Total Saldo',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.black,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -429,7 +442,7 @@ class _HomePageState extends State<HomePage>
                 child: Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                     boxShadow: [
                       BoxShadow(
@@ -446,7 +459,7 @@ class _HomePageState extends State<HomePage>
                         'Total Expenses',
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.black,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -473,7 +486,7 @@ class _HomePageState extends State<HomePage>
                 child: Container(
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(AppBorderRadius.lg),
                     boxShadow: [
                       BoxShadow(
@@ -608,7 +621,7 @@ class _HomePageState extends State<HomePage>
   /// Build welcome area (empty space for background)
   Widget _buildWelcomeArea() {
     return Container(
-      color: AppColors.background,
+      color: Theme.of(context).scaffoldBackgroundColor,
     );
   }
 
@@ -616,7 +629,7 @@ class _HomePageState extends State<HomePage>
   Widget _buildBottomNavigationBar() {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).cardColor,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(AppBorderRadius.lg),
           topRight: Radius.circular(AppBorderRadius.lg),
@@ -680,7 +693,9 @@ class _HomePageState extends State<HomePage>
       children: [
         Icon(
           icon,
-          color: isActive ? AppColors.primary : Colors.black,
+          color: isActive
+              ? AppColors.primary
+              : (Theme.of(context).iconTheme.color ?? Colors.black),
           size: 24,
         ),
         if (label.isNotEmpty) ...[
@@ -689,7 +704,10 @@ class _HomePageState extends State<HomePage>
             label,
             style: AppTextStyle.caption.copyWith(
               fontSize: 10,
-              color: isActive ? AppColors.primary : Colors.black,
+              color: isActive
+                  ? AppColors.primary
+                  : (Theme.of(context).textTheme.bodyLarge?.color ??
+                      Colors.black),
               fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
             ),
           ),

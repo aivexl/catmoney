@@ -85,8 +85,10 @@ class MyApp extends StatelessWidget {
       ],
       child: Consumer<SettingsProvider>(
         builder: (context, settings, _) {
-          // Initialize AppColors with current theme
-          AppColors.init(settings);
+          // Initialize AppColors with current theme and system brightness
+          final brightness =
+              View.of(context).platformDispatcher.platformBrightness;
+          AppColors.init(settings, brightness);
 
           return MaterialApp(
             title: 'Cat Money Manager',
@@ -148,13 +150,13 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   late final PageController _pageController;
 
-  // Immutable screen list untuk performance optimization
-  static const List<Widget> _screens = [
-    HomeScreen(),
-    TransactionsScreen(),
-    AccountsScreen(),
-    MoreScreen(),
-  ];
+  // Screens list - removed const to ensure rebuild on theme change
+  List<Widget> get _screens => [
+        HomeScreen(),
+        TransactionsScreen(),
+        AccountsScreen(),
+        MoreScreen(),
+      ];
 
   // Constants untuk navigation
   static const int _navItemCount = 4;

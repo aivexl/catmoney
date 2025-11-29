@@ -56,7 +56,7 @@ class MonthlySummary extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         boxShadow: [
           BoxShadow(
@@ -85,12 +85,12 @@ class MonthlySummary extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              const Text(
+              Text(
                 'Monthly Summary',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
                 ),
               ),
             ],
@@ -132,7 +132,10 @@ class MonthlySummary extends StatelessWidget {
                               'Income',
                               style: AppTextStyle.caption.copyWith(
                                 fontSize: 11,
-                                color: Colors.black,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.color,
                               ),
                             ),
                             Text(
@@ -154,7 +157,10 @@ class MonthlySummary extends StatelessWidget {
                               'Expenses',
                               style: AppTextStyle.caption.copyWith(
                                 fontSize: 11,
-                                color: Colors.black,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.color,
                               ),
                             ),
                             Text(
@@ -176,7 +182,10 @@ class MonthlySummary extends StatelessWidget {
                               'Balance',
                               style: AppTextStyle.caption.copyWith(
                                 fontSize: 11,
-                                color: Colors.black,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.color,
                               ),
                             ),
                             Text(
@@ -207,7 +216,7 @@ class MonthlySummary extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
-              color: AppColors.background,
+              color: Theme.of(context).scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(AppBorderRadius.md),
             ),
             child: Column(
@@ -222,7 +231,8 @@ class MonthlySummary extends StatelessWidget {
                           'Total Income',
                           style: AppTextStyle.caption.copyWith(
                             fontSize: 12,
-                            color: Colors.black,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium?.color,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -242,7 +252,8 @@ class MonthlySummary extends StatelessWidget {
                           'Total Expenses',
                           style: AppTextStyle.caption.copyWith(
                             fontSize: 12,
-                            color: Colors.black,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium?.color,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -262,7 +273,7 @@ class MonthlySummary extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(AppBorderRadius.md),
                   ),
                   child: Column(
@@ -271,7 +282,7 @@ class MonthlySummary extends StatelessWidget {
                         'Total Balance',
                         style: AppTextStyle.caption.copyWith(
                           fontSize: 12,
-                          color: Colors.black,
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
                         ),
                       ),
                       const SizedBox(height: 4),

@@ -85,16 +85,16 @@ class AppTheme {
       colorScheme: ColorScheme.dark(
         primary: AppColors.primary,
         secondary: AppColors.secondary,
-        surface: const Color(0xFF1E1E1E),
+        surface: const Color(0xFF2A2A2A),
         error: AppColors.expense,
-        background: const Color(0xFF121212),
+        background: const Color(0xFF000000),
         onPrimary: Colors.black,
         onSecondary: Colors.black,
         onSurface: Colors.white,
         onBackground: Colors.white,
         onError: Colors.white,
       ),
-      scaffoldBackgroundColor: const Color(0xFF121212),
+      scaffoldBackgroundColor: const Color(0xFF000000),
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
@@ -108,7 +108,7 @@ class AppTheme {
         ),
       ),
       cardTheme: CardThemeData(
-        color: const Color(0xFF1E1E1E),
+        color: const Color(0xFF2A2A2A),
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppBorderRadius.lg),
@@ -116,7 +116,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0xFF1E1E1E),
+        fillColor: const Color(0xFF2A2A2A),
         labelStyle: const TextStyle(color: Colors.white70),
         hintStyle: const TextStyle(color: Colors.white38),
         border: OutlineInputBorder(

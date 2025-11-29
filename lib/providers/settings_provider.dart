@@ -23,7 +23,7 @@ class SettingsProvider with ChangeNotifier {
   String? _driveFolderPath;
   String _languageCode = 'en';
   String _themeId = 'sunny_yellow'; // Default theme
-  String _darkMode = 'auto'; // 'auto', 'light', 'dark'
+  String _darkMode = 'light'; // 'light', 'dark'
 
   SettingsProvider() {
     _load();
@@ -38,7 +38,12 @@ class SettingsProvider with ChangeNotifier {
   String get darkMode => _darkMode;
   bool get isDarkModeAuto => _darkMode == 'auto';
   bool get isDarkMode => _darkMode == 'dark';
-  AppThemeColors get currentTheme => AppThemeData.getThemeById(_themeId);
+  AppThemeColors get currentTheme {
+    if (_darkMode == 'dark') {
+      return AppThemeData.getThemeById('dark_mode');
+    }
+    return AppThemeData.getThemeById(_themeId);
+  }
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
@@ -48,7 +53,7 @@ class SettingsProvider with ChangeNotifier {
     _driveFolderPath = prefs.getString(_drivePathKey);
     _languageCode = prefs.getString(_languageKey) ?? 'en';
     _themeId = prefs.getString(_themeIdKey) ?? 'sunny_yellow';
-    _darkMode = prefs.getString(_darkModeKey) ?? 'auto';
+    _darkMode = prefs.getString(_darkModeKey) ?? 'light';
     Formatters.setCurrency(
       symbol: _currencySymbol,
       name: _currencyName,

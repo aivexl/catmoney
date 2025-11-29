@@ -29,7 +29,7 @@ class CategoryPieChart extends StatelessWidget {
         ),
         margin: const EdgeInsets.only(bottom: AppSpacing.md),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(AppBorderRadius.lg),
         ),
         child: Column(
@@ -58,10 +58,10 @@ class CategoryPieChart extends StatelessWidget {
                   const SizedBox(width: AppSpacing.sm),
                   Text(
                     title!,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: Theme.of(context).textTheme.bodyLarge?.color,
                     ),
                   ),
                 ],
@@ -104,7 +104,8 @@ class CategoryPieChart extends StatelessWidget {
                           'Total',
                           style: AppTextStyle.caption.copyWith(
                             fontSize: 11,
-                            color: Colors.black,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium?.color,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -113,7 +114,7 @@ class CategoryPieChart extends StatelessWidget {
                           style: AppTextStyle.body.copyWith(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black,
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -146,7 +147,7 @@ class CategoryPieChart extends StatelessWidget {
                   Text(
                     'No data yet',
                     style: AppTextStyle.caption.copyWith(
-                      color: Colors.black,
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
                     ),
                   ),
                 ],
@@ -224,7 +225,7 @@ class CategoryPieChart extends StatelessWidget {
       ),
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(AppBorderRadius.lg),
       ),
       child: Column(
@@ -253,10 +254,10 @@ class CategoryPieChart extends StatelessWidget {
                 const SizedBox(width: AppSpacing.sm),
                 Text(
                   title!,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                 ),
               ],
@@ -291,7 +292,7 @@ class CategoryPieChart extends StatelessWidget {
                         'Total',
                         style: AppTextStyle.caption.copyWith(
                           fontSize: 11,
-                          color: Colors.black,
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -300,7 +301,7 @@ class CategoryPieChart extends StatelessWidget {
                         style: AppTextStyle.body.copyWith(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -368,7 +369,10 @@ class CategoryPieChart extends StatelessWidget {
                       Expanded(
                         child: Text(
                           category.name,
-                          style: AppTextStyle.body.copyWith(fontSize: 12, color: Colors.black),
+                          style: AppTextStyle.body.copyWith(
+                              fontSize: 12,
+                              color:
+                                  Theme.of(context).textTheme.bodyLarge?.color),
                         ),
                       ),
                       Text(
@@ -376,7 +380,7 @@ class CategoryPieChart extends StatelessWidget {
                         style: AppTextStyle.body.copyWith(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
                         ),
                       ),
                     ],

@@ -106,6 +106,21 @@ class AppThemeData {
       expense: Color(0xFFEF5350), // Red
       border: Color(0xFFE1BEE7), // Light Purple Border
     ),
+
+    // 6. Dark Mode
+    AppThemeColors(
+      id: 'dark_mode',
+      nameKey: 'darkMode',
+      primary: Color(0xFF000000), // Black Header
+      background: Color(0xFF303030), // Gray Background
+      surface: Color(0xFF424242), // Lighter Gray Surface
+      accent: Color(0xFF616161), // Dark Gray Accent
+      text: Color(0xFFFFFFFF), // White Text
+      textSecondary: Color(0xFFBDBDBD), // Light Gray Text
+      income: Color(0xFF81C784), // Soft Green
+      expense: Color(0xFFE57373), // Soft Red
+      border: Color(0xFF616161), // Gray Border
+    ),
   ];
 
   /// Mendapatkan tema berdasarkan ID

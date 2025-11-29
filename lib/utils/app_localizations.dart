@@ -780,46 +780,6 @@ class AppLocalizations {
       'ja': '取引を検索...',
       'zh': '搜索交易...',
       'ko': '거래 검색...',
-      'pt': 'Pesquisar transações...',
-      'ar': 'البحث في المعاملات...',
-    },
-
-    // Bills Screen
-    'manageBills': {
-      'en': 'Manage your bills & installments',
-      'id': 'Kelola tagihan & cicilan Anda',
-      'es': 'Administra tus facturas y cuotas',
-      'fr': 'Gérez vos factures et versements',
-      'de': 'Verwalten Sie Ihre Rechnungen und Raten',
-      'ja': '請求書と分割払いを管理',
-      'zh': '管理您的账单和分期付款',
-      'ko': '청구서 및 할부 관리',
-      'pt': 'Gerencie suas contas e parcelas',
-      'ar': 'إدارة الفواتير والأقساط الخاصة بك',
-    },
-    'noBills': {
-      'en': 'No bills yet',
-      'id': 'Belum ada tagihan',
-      'es': 'Aún no hay facturas',
-      'fr': 'Aucune facture pour le moment',
-      'de': 'Noch keine Rechnungen',
-      'ja': 'まだ請求書はありません',
-      'zh': '暂无账单',
-      'ko': '아직 청구서가 없습니다',
-      'pt': 'Ainda não há contas',
-      'ar': 'لا توجد فواتير بعد',
-    },
-    'addBillsReminder': {
-      'en': 'Add bills for automatic reminders!',
-      'id': 'Tambahkan tagihan untuk pengingat otomatis!',
-      'es': '¡Agrega facturas para recordatorios automáticos!',
-      'fr': 'Ajoutez des factures pour des rappels automatiques!',
-      'de': 'Fügen Sie Rechnungen für automatische Erinnerungen hinzu!',
-      'ja': '自動リマインダーのために請求書を追加！',
-      'zh': '添加账单以获取自动提醒！',
-      'ko': '자동 알림을 위해 청구서를 추가하세요!',
-      'pt': 'Adicione contas para lembretes automáticos!',
-      'ar': 'أضف فواتير للتذكيرات التلقائية!',
     },
     'unpaid': {
       'en': 'Unpaid',
@@ -962,46 +922,10 @@ class AppLocalizations {
       'fr': 'Suivi des Dépenses',
       'de': 'Ausgaben-Tracker',
       'ja': '支出トラッカー',
-      'zh': '支出追踪',
-      'ko': '지출 추적',
+      'zh': '支出追踪器',
+      'ko': '지출 추적기',
       'pt': 'Rastreador de Gastos',
       'ar': 'متتبع الإنفاق',
-    },
-    'manageBudgets': {
-      'en': 'Manage your spending budget',
-      'id': 'Kelola anggaran pengeluaran Anda',
-      'es': 'Administra tu presupuesto de gastos',
-      'fr': 'Gérez votre budget de dépenses',
-      'de': 'Verwalten Sie Ihr Ausgabenbudget',
-      'ja': '支出予算を管理',
-      'zh': '管理您的支出预算',
-      'ko': '지출 예산 관리',
-      'pt': 'Gerencie seu orçamento de gastos',
-      'ar': 'إدارة ميزانية الإنفاق الخاصة بك',
-    },
-    'noBudgets': {
-      'en': 'No budgets yet',
-      'id': 'Belum ada anggaran',
-      'es': 'Aún no hay presupuestos',
-      'fr': 'Aucun budget pour le moment',
-      'de': 'Noch keine Budgets',
-      'ja': 'まだ予算はありません',
-      'zh': '暂无预算',
-      'ko': '아직 예산이 없습니다',
-      'pt': 'Ainda não há orçamentos',
-      'ar': 'لا توجد ميزانيات بعد',
-    },
-    'createBudget': {
-      'en': 'Create a budget to control your spending!',
-      'id': 'Buat anggaran untuk mengontrol pengeluaran Anda!',
-      'es': '¡Crea un presupuesto para controlar tus gastos!',
-      'fr': 'Créez un budget pour contrôler vos dépenses!',
-      'de': 'Erstellen Sie ein Budget, um Ihre Ausgaben zu kontrollieren!',
-      'ja': '支出を管理するために予算を作成しましょう！',
-      'zh': '创建预算以控制您的支出！',
-      'ko': '지출을 관리하기 위해 예산을 만드세요!',
-      'pt': 'Crie um orçamento para controlar seus gastos!',
-      'ar': 'أنشئ ميزانية للتحكم في إنفاقك!',
     },
     'active': {
       'en': 'Active',
@@ -1026,30 +950,6 @@ class AppLocalizations {
       'ko': '비활성',
       'pt': 'Inativo',
       'ar': 'غير نشط',
-    },
-    'overBudget': {
-      'en': 'Over budget',
-      'id': 'Melebihi anggaran',
-      'es': 'Sobre el presupuesto',
-      'fr': 'Budget dépassé',
-      'de': 'Über dem Budget',
-      'ja': '予算超過',
-      'zh': '超出预算',
-      'ko': '예산 초과',
-      'pt': 'Acima do orçamento',
-      'ar': 'تجاوز الميزانية',
-    },
-    'limit': {
-      'en': 'Limit',
-      'id': 'Batas',
-      'es': 'Límite',
-      'fr': 'Limite',
-      'de': 'Limit',
-      'ja': '制限',
-      'zh': '限额',
-      'ko': '한도',
-      'pt': 'Limite',
-      'ar': 'الحد',
     },
     'spent': {
       'en': 'Spent',
@@ -1433,6 +1333,355 @@ class AppLocalizations {
           'Comece a gerenciar suas finanças adicionando sua primeira transação',
       'ar': 'ابدأ في إدارة أموالك بإضافة معاملتك الأولى',
     },
+    'addCategory': {
+      'en': 'Add Category',
+      'id': 'Tambah Kategori',
+      'es': 'Agregar Categoría',
+      'fr': 'Ajouter une Catégorie',
+      'de': 'Kategorie Hinzufügen',
+      'ja': 'カテゴリを追加',
+      'zh': '添加类别',
+      'ko': '카테고리 추가',
+      'pt': 'Adicionar Categoria',
+      'ar': 'إضافة فئة',
+    },
+    'categoryName': {
+      'en': 'Category Name',
+      'id': 'Nama Kategori',
+      'es': 'Nombre de la Categoría',
+      'fr': 'Nom de la Catégorie',
+      'de': 'Kategoriename',
+      'ja': 'カテゴリ名',
+      'zh': '类别名称',
+      'ko': '카테고리 이름',
+      'pt': 'Nome da Categoria',
+      'ar': 'اسم الفئة',
+    },
+    'saveCategory': {
+      'en': 'Save Category',
+      'id': 'Simpan Kategori',
+      'es': 'Guardar Categoría',
+      'fr': 'Enregistrer la Catégorie',
+      'de': 'Kategorie Speichern',
+      'ja': 'カテゴリを保存',
+      'zh': '保存类别',
+      'ko': '카테고리 저장',
+      'pt': 'Salvar Categoria',
+      'ar': 'حفظ الفئة',
+    },
+    'enterCategoryName': {
+      'en': 'Please enter a category name',
+      'id': 'Silakan masukkan nama kategori',
+      'es': 'Por favor ingrese un nombre de categoría',
+      'fr': 'Veuillez entrer un nom de catégorie',
+      'de': 'Bitte geben Sie einen Kategorienamen ein',
+      'ja': 'カテゴリ名を入力してください',
+      'zh': '请输入类别名称',
+      'ko': '카테고리 이름을 입력하세요',
+      'pt': 'Por favor, insira um nome de categoria',
+      'ar': 'الرجاء إدخال اسم الفئة',
+    },
+    'categoryAdded': {
+      'en': 'Category added successfully',
+      'id': 'Kategori berhasil ditambahkan',
+      'es': 'Categoría agregada exitosamente',
+      'fr': 'Catégorie ajoutée avec succès',
+      'de': 'Kategorie erfolgreich hinzugefügt',
+      'ja': 'カテゴリが正常に追加されました',
+      'zh': '类别添加成功',
+      'ko': '카테고리가 성공적으로 추가되었습니다',
+      'pt': 'Categoria adicionada com sucesso',
+      'ar': 'تمت إضافة الفئة بنجاح',
+    },
+    'errorAddingCategory': {
+      'en': 'Error adding category',
+      'id': 'Gagal menambahkan kategori',
+      'es': 'Error al agregar categoría',
+      'fr': 'Erreur lors de l\'ajout de la catégorie',
+      'de': 'Fehler beim Hinzufügen der Kategorie',
+      'ja': 'カテゴリの追加エラー',
+      'zh': '添加类别时出错',
+      'ko': '카테고리 추가 오류',
+      'pt': 'Erro ao adicionar categoria',
+      'ar': 'خطأ في إضافة الفئة',
+    },
+    'errorTakingPhoto': {
+      'en': 'Error taking photo',
+      'id': 'Gagal mengambil foto',
+      'es': 'Error al tomar la foto',
+      'fr': 'Erreur lors de la prise de photo',
+      'de': 'Fehler beim Aufnehmen des Fotos',
+      'ja': '写真撮影エラー',
+      'zh': '拍照时出错',
+      'ko': '사진 촬영 오류',
+      'pt': 'Erro ao tirar foto',
+      'ar': 'خطأ في التقاط الصورة',
+    },
+    'transactionAdded': {
+      'en': 'Transaction added successfully',
+      'id': 'Transaksi berhasil ditambahkan',
+      'es': 'Transacción agregada exitosamente',
+      'fr': 'Transaction ajoutée avec succès',
+      'de': 'Transaktion erfolgreich hinzugefügt',
+      'ja': '取引が正常に追加されました',
+      'zh': '交易添加成功',
+      'ko': '거래가 성공적으로 추가되었습니다',
+      'pt': 'Transação adicionada com sucesso',
+      'ar': 'تمت إضافة المعاملة بنجاح',
+    },
+
+    // Wishlist
+    'addWishlist': {
+      'en': 'Add Wishlist',
+      'id': 'Tambah Wishlist',
+      'es': 'Agregar Lista de Deseos',
+      'fr': 'Ajouter une Liste de Souhaits',
+      'de': 'Wunschliste Hinzufügen',
+      'ja': 'ウィッシュリストを追加',
+      'zh': '添加愿望清单',
+      'ko': '위시리스트 추가',
+      'pt': 'Adicionar Lista de Desejos',
+      'ar': 'إضافة قائمة الأمنيات',
+    },
+    'editWishlist': {
+      'en': 'Edit Wishlist',
+      'id': 'Edit Wishlist',
+      'es': 'Editar Lista de Deseos',
+      'fr': 'Modifier la Liste de Souhaits',
+      'de': 'Wunschliste Bearbeiten',
+      'ja': 'ウィッシュリストを編集',
+      'zh': '编辑愿望清单',
+      'ko': '위시리스트 편집',
+      'pt': 'Editar Lista de Desejos',
+      'ar': 'تعديل قائمة الأمنيات',
+    },
+    'wishlistName': {
+      'en': 'Wishlist Name',
+      'id': 'Nama Wishlist',
+      'es': 'Nombre de la Lista de Deseos',
+      'fr': 'Nom de la Liste de Souhaits',
+      'de': 'Wunschlistenname',
+      'ja': 'ウィッシュリスト名',
+      'zh': '愿望清单名称',
+      'ko': '위시리스트 이름',
+      'pt': 'Nome da Lista de Desejos',
+      'ar': 'اسم قائمة الأمنيات',
+    },
+    'targetAmount': {
+      'en': 'Target Amount',
+      'id': 'Jumlah Target',
+      'es': 'Monto Objetivo',
+      'fr': 'Montant Cible',
+      'de': 'Zielbetrag',
+      'ja': '目標金額',
+      'zh': '目标金额',
+      'ko': '목표 금액',
+      'pt': 'Valor Alvo',
+      'ar': 'المبلغ المستهدف',
+    },
+    'currentAmount': {
+      'en': 'Current Amount',
+      'id': 'Jumlah Saat Ini',
+      'es': 'Monto Actual',
+      'fr': 'Montant Actuel',
+      'de': 'Aktueller Betrag',
+      'ja': '現在の金額',
+      'zh': '当前金额',
+      'ko': '현재 금액',
+      'pt': 'Valor Atual',
+      'ar': 'المبلغ الحالي',
+    },
+
+    // Bill Edit
+    'editBill': {
+      'en': 'Edit Bill',
+      'id': 'Edit Tagihan',
+      'es': 'Editar Factura',
+      'fr': 'Modifier la Facture',
+      'de': 'Rechnung Bearbeiten',
+      'ja': '請求書を編集',
+      'zh': '编辑账单',
+      'ko': '청구서 편집',
+      'pt': 'Editar Conta',
+      'ar': 'تعديل الفاتورة',
+    },
+
+    // Budget
+    'budgetName': {
+      'en': 'Budget Name',
+      'id': 'Nama Anggaran',
+      'es': 'Nombre del Presupuesto',
+      'fr': 'Nom du Budget',
+      'de': 'Budgetname',
+      'ja': '予算名',
+      'zh': '预算名称',
+      'ko': '예산 이름',
+      'pt': 'Nome do Orçamento',
+      'ar': 'اسم الميزانية',
+    },
+    'enterNumberOfMonths': {
+      'en': 'Enter number of months',
+      'id': 'Masukkan jumlah bulan',
+      'es': 'Ingrese el número de meses',
+      'fr': 'Entrez le nombre de mois',
+      'de': 'Anzahl der Monate eingeben',
+      'ja': '月数を入力',
+      'zh': '输入月数',
+      'ko': '개월 수 입력',
+      'pt': 'Digite o número de meses',
+      'ar': 'أدخل عدد الأشهر',
+    },
+
+    // Headers & Subtitles
+
+    'manageBudget': {
+      'en': 'Manage your spending budget',
+      'id': 'Kelola anggaran pengeluaran Anda',
+      'es': 'Administra tu presupuesto de gastos',
+      'fr': 'Gérez votre budget de dépenses',
+      'de': 'Verwalten Sie Ihr Ausgabenbudget',
+      'ja': '支出予算を管理',
+      'zh': '管理您的支出预算',
+      'ko': '지출 예산 관리',
+      'pt': 'Gerencie seu orçamento de gastos',
+      'ar': 'إدارة ميزانية الإنفاق الخاصة بك',
+    },
+    'backupRestoreSubtitle': {
+      'en': 'Backup, restore & export data',
+      'id': 'Cadangkan, pulihkan & ekspor data',
+      'es': 'Copia de seguridad, restauración y exportación',
+      'fr': 'Sauvegarde, restauration et exportation',
+      'de': 'Sichern, Wiederherstellen und Exportieren',
+      'ja': 'バックアップ、復元、データのエクスポート',
+      'zh': '备份、恢复和导出数据',
+      'ko': '데이터 백업, 복원 및 내보내기',
+      'pt': 'Backup, restauração e exportação',
+      'ar': 'النسخ الاحتياطي والاستعادة وتصدير البيانات',
+    },
+    'aboutAppSubtitle': {
+      'en': 'App version & information',
+      'id': 'Versi aplikasi & informasi',
+      'es': 'Versión e información de la aplicación',
+      'fr': 'Version et informations de l\'application',
+      'de': 'App-Version und Informationen',
+      'ja': 'アプリのバージョンと情報',
+      'zh': '应用版本和信息',
+      'ko': '앱 버전 및 정보',
+      'pt': 'Versão e informações do aplicativo',
+      'ar': 'إصدار التطبيق والمعلومات',
+    },
+    'wishlistTargets': {
+      'en': 'Your wishlist targets',
+      'id': 'Target wishlist Anda',
+      'es': 'Tus objetivos de lista de deseos',
+      'fr': 'Vos objectifs de liste de souhaits',
+      'de': 'Ihre Wunschlistenziele',
+      'ja': 'ウィッシュリストの目標',
+      'zh': '您的愿望清单目标',
+      'ko': '위시리스트 목표',
+      'pt': 'Seus objetivos da lista de desejos',
+      'ar': 'أهداف قائمة الأمنيات الخاصة بك',
+    },
+    'manageBills': {
+      'en': 'Manage your bills & installments',
+      'id': 'Kelola tagihan & cicilan Anda',
+      'es': 'Administra tus facturas y cuotas',
+      'fr': 'Gérez vos factures et versements',
+      'de': 'Verwalten Sie Ihre Rechnungen und Raten',
+      'ja': '請求書と分割払いを管理',
+      'zh': '管理您的账单和分期付款',
+      'ko': '청구서 및 할부 관리',
+      'pt': 'Gerencie suas contas e parcelas',
+      'ar': 'إدارة الفواتير والأقساط الخاصة بك',
+    },
+
+    // Empty States
+    'noBudgets': {
+      'en': 'No budgets yet',
+      'id': 'Belum ada anggaran',
+      'es': 'Aún no hay presupuestos',
+      'fr': 'Pas encore de budget',
+      'de': 'Noch keine Budgets',
+      'ja': '予算はまだありません',
+      'zh': '暂无预算',
+      'ko': '아직 예산이 없습니다',
+      'pt': 'Ainda não há orçamentos',
+      'ar': 'لا توجد ميزانيات بعد',
+    },
+    'createBudget': {
+      'en': 'Create a budget to control your spending!',
+      'id': 'Buat anggaran untuk mengontrol pengeluaran Anda!',
+      'es': '¡Crea un presupuesto para controlar tus gastos!',
+      'fr': 'Créez un budget pour contrôler vos dépenses!',
+      'de': 'Erstellen Sie ein Budget, um Ihre Ausgaben zu kontrollieren!',
+      'ja': '支出を管理するために予算を作成しましょう！',
+      'zh': '创建预算以控制您的支出！',
+      'ko': '지출을 통제하기 위해 예산을 만드세요!',
+      'pt': 'Crie um orçamento para controlar seus gastos!',
+      'ar': 'أنشئ ميزانية للتحكم في إنفاقك!',
+    },
+    'noWishlist': {
+      'en': 'No wishlist yet',
+      'id': 'Belum ada wishlist',
+      'es': 'Aún no hay lista de deseos',
+      'fr': 'Pas encore de liste de souhaits',
+      'de': 'Noch keine Wunschliste',
+      'ja': 'ウィッシュリストはまだありません',
+      'zh': '暂无愿望清单',
+      'ko': '아직 위시리스트가 없습니다',
+      'pt': 'Ainda não há lista de desejos',
+      'ar': 'لا توجد قائمة أمنيات بعد',
+    },
+    'createWishlist': {
+      'en': 'Create your wishlist targets and track their progress!',
+      'id': 'Buat target wishlist Anda dan pantau kemajuannya!',
+      'es': '¡Crea tus objetivos de lista de deseos y sigue su progreso!',
+      'fr': 'Créez vos objectifs de liste de souhaits et suivez leurs progrès!',
+      'de':
+          'Erstellen Sie Ihre Wunschlistenziele und verfolgen Sie deren Fortschritt!',
+      'ja': 'ウィッシュリストの目標を作成して進捗状況を追跡しましょう！',
+      'zh': '创建您的愿望清单目标并跟踪其进度！',
+      'ko': '위시리스트 목표를 만들고 진행 상황을 추적하세요!',
+      'pt':
+          'Crie seus objetivos da lista de desejos e acompanhe seu progresso!',
+      'ar': 'أنشئ أهداف قائمة الأمنيات الخاصة بك وتتبع تقدمها!',
+    },
+    'noBills': {
+      'en': 'No bills yet',
+      'id': 'Belum ada tagihan',
+      'es': 'Aún no hay facturas',
+      'fr': 'Pas encore de facture',
+      'de': 'Noch keine Rechnungen',
+      'ja': '請求書はまだありません',
+      'zh': '暂无账单',
+      'ko': '아직 청구서가 없습니다',
+      'pt': 'Ainda não há contas',
+      'ar': 'لا توجد فواتير بعد',
+    },
+    'addBills': {
+      'en': 'Add bills for automatic reminders!',
+      'id': 'Tambahkan tagihan untuk pengingat otomatis!',
+      'es': '¡Agrega facturas para recordatorios automáticos!',
+      'fr': 'Ajoutez des factures pour des rappels automatiques!',
+      'de': 'Fügen Sie Rechnungen für automatische Erinnerungen hinzu!',
+      'ja': '自動リマインダーのために請求書を追加しましょう！',
+      'zh': '添加账单以获得自动提醒！',
+      'ko': '자동 알림을 위해 청구서를 추가하세요!',
+      'pt': 'Adicione contas para lembretes automáticos!',
+      'ar': 'أضف فواتير للتذكيرات التلقائية!',
+    },
+    'noWatchlist': {
+      'en': 'No transactions in watchlist',
+      'id': 'Tidak ada transaksi di watchlist',
+      'es': 'No hay transacciones en la lista de seguimiento',
+      'fr': 'Aucune transaction dans la liste de surveillance',
+      'de': 'Keine Transaktionen in der Beobachtungsliste',
+      'ja': 'ウォッチリストに取引はありません',
+      'zh': '关注列表中没有交易',
+      'ko': '관심목록에 거래가 없습니다',
+      'pt': 'Nenhuma transação na lista de observação',
+      'ar': 'لا توجد معاملات في قائمة المراقبة',
+    },
   };
 
   String translate(String key) {
@@ -1503,6 +1752,19 @@ class AppLocalizations {
   String get watchlist => translate('watchlist');
   String get bills => translate('bills');
 
+  String get spendTracker => translate('spendTracker');
+  String get manageBudget => translate('manageBudget');
+  String get wishlistTargets => translate('wishlistTargets');
+  String get manageBills => translate('manageBills');
+
+  String get noBudgets => translate('noBudgets');
+  String get createBudget => translate('createBudget');
+  String get noWishlist => translate('noWishlist');
+  String get createWishlist => translate('createWishlist');
+  String get noBills => translate('noBills');
+  String get addBills => translate('addBills');
+  String get noWatchlist => translate('noWatchlist');
+
   String get addTransaction => translate('addTransaction');
   String get editTransaction => translate('editTransaction');
   String get selectCategory => translate('selectCategory');
@@ -1523,8 +1785,6 @@ class AppLocalizations {
   String get calendar => translate('calendar');
   String get searchTransactions => translate('searchTransactions');
 
-  String get manageBills => translate('manageBills');
-  String get noBills => translate('noBills');
   String get addBillsReminder => translate('addBillsReminder');
   String get unpaid => translate('unpaid');
   String get paid => translate('paid');
@@ -1538,10 +1798,23 @@ class AppLocalizations {
   String get billMarkedPaid => translate('billMarkedPaid');
   String get billDeleted => translate('billDeleted');
 
-  String get spendTracker => translate('spendTracker');
   String get manageBudgets => translate('manageBudgets');
-  String get noBudgets => translate('noBudgets');
-  String get createBudget => translate('createBudget');
+  String get addCategory => translate('addCategory');
+  String get categoryName => translate('categoryName');
+  String get saveCategory => translate('saveCategory');
+  String get enterCategoryName => translate('enterCategoryName');
+  String get categoryAdded => translate('categoryAdded');
+  String get errorAddingCategory => translate('errorAddingCategory');
+  String get errorTakingPhoto => translate('errorTakingPhoto');
+  String get transactionAdded => translate('transactionAdded');
+  String get addWallet => translate('addWallet');
+  String get addNewWallet => translate('addNewWallet');
+  String get walletName => translate('walletName');
+  String get saveWallet => translate('saveWallet');
+  String get noWallets => translate('noWallets');
+  String get addFirstWallet => translate('addFirstWallet');
+  String get transactionsThisMonth => translate('transactionsThisMonth');
+
   String get active => translate('active');
   String get inactive => translate('inactive');
   String get overBudget => translate('overBudget');
@@ -1578,6 +1851,28 @@ class AppLocalizations {
 
   String get welcome => translate('welcome');
   String get startManaging => translate('startManaging');
+
+  String get dark => translate('dark');
+  String get enterWalletName => translate('enterWalletName');
+  String get walletAdded => translate('walletAdded');
+  String get errorAddingWallet => translate('errorAddingWallet');
+  String get account => translate('account');
+  String get create => translate('create');
+  String get manageCategoriesSubtitle => translate('manageCategoriesSubtitle');
+  String get viewReportsSubtitle => translate('viewReportsSubtitle');
+  String get backupRestoreSubtitle => translate('backupRestoreSubtitle');
+  String get aboutAppSubtitle => translate('aboutAppSubtitle');
+  String get aboutDialogContent => translate('aboutDialogContent');
+
+  // New getters for wishlist, bill edit, and budget
+  String get addWishlist => translate('addWishlist');
+  String get editWishlist => translate('editWishlist');
+  String get wishlistName => translate('wishlistName');
+  String get targetAmount => translate('targetAmount');
+  String get currentAmount => translate('currentAmount');
+  String get editBill => translate('editBill');
+  String get budgetName => translate('budgetName');
+  String get enterNumberOfMonths => translate('enterNumberOfMonths');
 }
 
 class _AppLocalizationsDelegate

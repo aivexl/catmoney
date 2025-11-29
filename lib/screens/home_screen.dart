@@ -414,7 +414,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             loc.totalIncome,
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.black,
+                              color: AppColors.text,
                               fontWeight: FontWeight.w500,
                             ),
                           );
@@ -686,7 +686,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Formatters.formatTime(sorted[i].date),
                       style: AppTextStyle.caption.copyWith(
                         fontSize: 10, // Font lebih kecil
-                        color: Colors.black,
+                        color: AppColors.text,
                       ),
                     ),
                     const SizedBox(

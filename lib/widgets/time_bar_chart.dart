@@ -67,12 +67,12 @@ class _TimeBarChartState extends State<TimeBarChart> {
                     ),
                   ),
                   const SizedBox(width: AppSpacing.sm),
-                  const Text(
+                  Text(
                     'Time Chart',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: AppColors.text,
                     ),
                   ),
                 ],
@@ -106,7 +106,8 @@ class _TimeBarChartState extends State<TimeBarChart> {
                 ? Center(
                     child: Text(
                       'No data available',
-                      style: AppTextStyle.caption.copyWith(color: Colors.black),
+                      style:
+                          AppTextStyle.caption.copyWith(color: AppColors.text),
                     ),
                   )
                 : BarChart(
@@ -117,7 +118,7 @@ class _TimeBarChartState extends State<TimeBarChart> {
                         enabled: true,
                         touchTooltipData: BarTouchTooltipData(
                           getTooltipColor: (group) =>
-                              Colors.black.withValues(alpha: 0.8),
+                              AppColors.text.withValues(alpha: 0.8),
                           getTooltipItem: (group, groupIndex, rod, rodIndex) {
                             final label = widget.timeLabels[groupIndex];
                             final value = rod.toY;
@@ -147,7 +148,7 @@ class _TimeBarChartState extends State<TimeBarChart> {
                                   widget.timeLabels[value.toInt()],
                                   style: AppTextStyle.caption.copyWith(
                                     fontSize: 10,
-                                    color: Colors.black,
+                                    color: AppColors.text,
                                   ),
                                 ),
                               );
@@ -163,7 +164,7 @@ class _TimeBarChartState extends State<TimeBarChart> {
                                 Formatters.formatCompactCurrency(value),
                                 style: AppTextStyle.caption.copyWith(
                                   fontSize: 10,
-                                  color: Colors.black,
+                                  color: AppColors.text,
                                 ),
                               );
                             },

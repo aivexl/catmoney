@@ -21,6 +21,7 @@ import '../widgets/shared_bottom_nav_bar.dart';
 import '../utils/app_icons.dart';
 import '../widgets/category_icon.dart';
 import '../utils/pastel_colors.dart';
+import '../utils/app_localizations.dart';
 
 class BillsScreen extends StatefulWidget {
   const BillsScreen({super.key});
@@ -119,9 +120,10 @@ class _BillsScreenState extends State<BillsScreen> {
                         const Text('📄', style: TextStyle(fontSize: 24)),
                   ),
                   const SizedBox(width: 8),
-                  const Text(
-                    'Bills',
-                    style: TextStyle(
+                  const SizedBox(width: 8),
+                  Text(
+                    AppLocalizations.of(context).bills,
+                    style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Colors.white),
@@ -131,11 +133,11 @@ class _BillsScreenState extends State<BillsScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          const Padding(
-            padding: EdgeInsets.only(left: 56),
+          Padding(
+            padding: const EdgeInsets.only(left: 56),
             child: Text(
-              'Manage your bills & installments',
-              style: TextStyle(fontSize: 14, color: Colors.white),
+              AppLocalizations.of(context).manageBills,
+              style: const TextStyle(fontSize: 14, color: Colors.white),
             ),
           ),
         ],
@@ -152,11 +154,11 @@ class _BillsScreenState extends State<BillsScreen> {
           children: [
             const Text('📋', style: TextStyle(fontSize: 64)),
             const SizedBox(height: AppSpacing.md),
-            Text('No bills yet',
+            Text(AppLocalizations.of(context).noBills,
                 style: AppTextStyle.h2, textAlign: TextAlign.center),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Add bills for automatic reminders!',
+              AppLocalizations.of(context).addBills,
               style: AppTextStyle.caption.copyWith(fontSize: 14),
               textAlign: TextAlign.center,
             ),
@@ -174,13 +176,15 @@ class _BillsScreenState extends State<BillsScreen> {
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
         if (unpaid.isNotEmpty) ...[
-          Text('Unpaid', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+          Text(AppLocalizations.of(context).unpaid,
+              style: AppTextStyle.h3.copyWith(color: AppColors.text)),
           const SizedBox(height: AppSpacing.sm),
           ...unpaid.map((bill) => _buildBillCard(bill, provider)),
         ],
         if (paid.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.md),
-          Text('Paid', style: AppTextStyle.h3.copyWith(color: Colors.black)),
+          Text(AppLocalizations.of(context).paid,
+              style: AppTextStyle.h3.copyWith(color: AppColors.text)),
           const SizedBox(height: AppSpacing.sm),
           ...paid.map((bill) => _buildBillCard(bill, provider)),
         ],
@@ -220,7 +224,7 @@ class _BillsScreenState extends State<BillsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(bill.name,
-                        style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                        style: AppTextStyle.h3.copyWith(color: AppColors.text)),
                     Text(
                       Formatters.formatCurrency(bill.amount),
                       style: AppTextStyle.body
@@ -470,6 +474,7 @@ class _BillsScreenState extends State<BillsScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setState) {
+            final loc = AppLocalizations.of(context);
             return Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -482,13 +487,13 @@ class _BillsScreenState extends State<BillsScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Add Bill',
-                        style: AppTextStyle.h2.copyWith(color: Colors.black)),
+                    Text(loc.addBill,
+                        style: AppTextStyle.h2.copyWith(color: AppColors.text)),
                     const SizedBox(height: 24),
                     TextField(
                       controller: nameController,
                       decoration: InputDecoration(
-                        labelText: 'Bill Name',
+                        labelText: loc.billName,
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12)),
                         prefixIcon: const Icon(Icons.label),
@@ -515,7 +520,7 @@ class _BillsScreenState extends State<BillsScreen> {
                           keyboardType: TextInputType.number,
                           inputFormatters: [CurrencyInputFormatter()],
                           decoration: InputDecoration(
-                            labelText: 'Amount',
+                            labelText: loc.amount,
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12)),
                             prefixIcon: Padding(
@@ -547,7 +552,7 @@ class _BillsScreenState extends State<BillsScreen> {
                     ],
                     const SizedBox(height: 16),
                     ListTile(
-                      title: const Text('Due Date'),
+                      title: Text(loc.dueDate),
                       subtitle: Text(Formatters.formatDate(selectedDate)),
                       trailing: const Icon(Icons.calendar_today),
                       onTap: () async {
@@ -565,7 +570,7 @@ class _BillsScreenState extends State<BillsScreen> {
                     ),
                     const SizedBox(height: 16),
                     SwitchListTile(
-                      title: const Text('Recurring'),
+                      title: Text(loc.recurring),
                       value: isRecurring,
                       onChanged: (value) => setState(() => isRecurring = value),
                     ),
@@ -575,8 +580,8 @@ class _BillsScreenState extends State<BillsScreen> {
                         controller: recurringMonthsController,
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
-                          labelText: 'Repeat every (months)',
-                          hintText: 'Enter number of months',
+                          labelText: loc.repeatEveryMonths,
+                          hintText: loc.enterNumberOfMonths,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -585,8 +590,8 @@ class _BillsScreenState extends State<BillsScreen> {
                       ),
                     ],
                     const SizedBox(height: 16),
-                    Text('Select Icon',
-                        style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text(loc.selectIcon,
+                        style: AppTextStyle.h3.copyWith(color: AppColors.text)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 200, // Increased height for grid
@@ -629,8 +634,8 @@ class _BillsScreenState extends State<BillsScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Text('Select Color',
-                        style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                    Text(loc.selectColor,
+                        style: AppTextStyle.h3.copyWith(color: AppColors.text)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 50,
@@ -773,7 +778,7 @@ class _BillsScreenState extends State<BillsScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('Simpan'),
+                        child: Text(loc.save),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -807,6 +812,7 @@ class _BillsScreenState extends State<BillsScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setState) {
+            final loc = AppLocalizations.of(context);
             String? nameError;
             String? amountError;
 
@@ -822,13 +828,13 @@ class _BillsScreenState extends State<BillsScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Edit Bill',
-                        style: AppTextStyle.h2.copyWith(color: Colors.black)),
+                    Text(loc.editBill,
+                        style: AppTextStyle.h2.copyWith(color: AppColors.text)),
                     const SizedBox(height: 24),
                     TextField(
                       controller: nameController,
                       decoration: InputDecoration(
-                        labelText: 'Bill Name',
+                        labelText: loc.billName,
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12)),
                         prefixIcon: const Icon(Icons.label),
@@ -842,7 +848,7 @@ class _BillsScreenState extends State<BillsScreen> {
                           keyboardType: TextInputType.number,
                           inputFormatters: [CurrencyInputFormatter()],
                           decoration: InputDecoration(
-                            labelText: 'Amount',
+                            labelText: loc.amount,
                             border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12)),
                             prefixIcon: Padding(
@@ -900,7 +906,7 @@ class _BillsScreenState extends State<BillsScreen> {
                     ],
                     const SizedBox(height: 16),
                     Text('Select Icon',
-                        style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                        style: AppTextStyle.h3.copyWith(color: AppColors.text)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 200, // Increased height for grid
@@ -944,7 +950,7 @@ class _BillsScreenState extends State<BillsScreen> {
                     ),
                     const SizedBox(height: 24),
                     Text('Select Color',
-                        style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                        style: AppTextStyle.h3.copyWith(color: AppColors.text)),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 50,

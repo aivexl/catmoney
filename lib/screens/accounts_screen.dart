@@ -45,8 +45,9 @@ class _AccountsScreenState extends State<AccountsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<AccountProvider, TransactionProvider>(
-      builder: (context, accountProvider, transactionProvider, child) {
+    return Consumer3<AccountProvider, TransactionProvider, SettingsProvider>(
+      builder:
+          (context, accountProvider, transactionProvider, settings, child) {
         final accounts = accountProvider.accounts;
         final transactions = transactionProvider.transactions
             .where((t) => _isSameMonth(t.date))
@@ -77,7 +78,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                               child: ElevatedButton.icon(
                                 onPressed: () => _showAddWalletDialog(context),
                                 icon: const Icon(Icons.add),
-                                label: Text(loc.addAccount),
+                                label: Text(loc.addWallet),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.primary,
                                   foregroundColor: Colors.white,
@@ -96,10 +97,13 @@ class _AccountsScreenState extends State<AccountsScreen> {
 
                         // Accounts list
                         if (accounts.isEmpty)
-                          _buildEmptyState()
+                          _buildEmptyState(
+                              AppLocalizations(settings.languageCode))
                         else
-                          ...accounts.map((account) =>
-                              _buildAccountCard(account, transactions)),
+                          ...accounts.map((account) => _buildAccountCard(
+                              account,
+                              transactions,
+                              AppLocalizations(settings.languageCode))),
 
                         // Bottom padding for navbar
                         const SizedBox(height: 100),
@@ -276,7 +280,8 @@ class _AccountsScreenState extends State<AccountsScreen> {
     );
   }
 
-  Widget _buildAccountCard(Account account, List<Transaction> transactions) {
+  Widget _buildAccountCard(
+      Account account, List<Transaction> transactions, AppLocalizations loc) {
     // Calculate balance for this account
     double balance = 0.0;
     double income = 0.0;
@@ -342,11 +347,12 @@ class _AccountsScreenState extends State<AccountsScreen> {
                   children: [
                     Text(
                       account.name,
-                      style: AppTextStyle.h3.copyWith(color: Colors.black),
+                      style: AppTextStyle.h3.copyWith(color: AppColors.text),
                     ),
                     Text(
-                      '$transactionCount transactions this month',
-                      style: AppTextStyle.caption.copyWith(color: Colors.black),
+                      '$transactionCount ${loc.transactionsThisMonth}',
+                      style:
+                          AppTextStyle.caption.copyWith(color: AppColors.text),
                     ),
                   ],
                 ),
@@ -408,7 +414,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(AppLocalizations loc) {
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
@@ -437,13 +443,13 @@ class _AccountsScreenState extends State<AccountsScreen> {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            'No Wallets Yet',
+            loc.noWallets,
             style: AppTextStyle.h2,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            'Add your first wallet to start tracking finances!',
+            loc.addFirstWallet,
             style: AppTextStyle.caption.copyWith(
               fontSize: 14,
             ),
@@ -456,6 +462,8 @@ class _AccountsScreenState extends State<AccountsScreen> {
   }
 
   void _showAddWalletDialog(BuildContext context) {
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    final loc = AppLocalizations(settings.languageCode);
     final nameController = TextEditingController();
     int selectedColorIndex = 0;
     String selectedIcon = '💰';
@@ -493,14 +501,14 @@ class _AccountsScreenState extends State<AccountsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Add New Wallet',
+                    loc.addNewWallet,
                     style: AppTextStyle.h2,
                   ),
                   const SizedBox(height: 24),
                   TextField(
                     controller: nameController,
                     decoration: InputDecoration(
-                      labelText: 'Wallet Name',
+                      labelText: loc.walletName,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -508,7 +516,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Text('Select Icon', style: AppTextStyle.h3),
+                  Text(loc.selectIcon, style: AppTextStyle.h3),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 60,
@@ -553,7 +561,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Text('Select Color', style: AppTextStyle.h3),
+                  Text(loc.selectColor, style: AppTextStyle.h3),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 50,
@@ -620,7 +628,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('Save Wallet'),
+                      child: Text(loc.saveWallet),
                     ),
                   ),
                   const SizedBox(height: 32),

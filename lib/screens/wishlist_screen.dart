@@ -21,6 +21,7 @@ import '../widgets/shared_bottom_nav_bar.dart';
 import '../utils/app_icons.dart';
 import '../widgets/category_icon.dart';
 import '../utils/pastel_colors.dart';
+import '../utils/app_localizations.dart';
 
 class WishlistScreen extends StatefulWidget {
   const WishlistScreen({super.key});
@@ -121,9 +122,9 @@ class _WishlistScreenState extends State<WishlistScreen> {
                         const Text('⭐', style: TextStyle(fontSize: 24)),
                   ),
                   const SizedBox(width: 8),
-                  const Text(
-                    'Wishlist',
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context).wishlist,
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -134,11 +135,11 @@ class _WishlistScreenState extends State<WishlistScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          const Padding(
-            padding: EdgeInsets.only(left: 56),
+          Padding(
+            padding: const EdgeInsets.only(left: 56),
             child: Text(
-              'Your wishlist targets',
-              style: TextStyle(
+              AppLocalizations.of(context).wishlistTargets,
+              style: const TextStyle(
                 fontSize: 14,
                 color: Colors.white,
               ),
@@ -162,13 +163,13 @@ class _WishlistScreenState extends State<WishlistScreen> {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'No wishlist yet',
+              AppLocalizations.of(context).noWishlist,
               style: AppTextStyle.h2,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Create your wishlist targets and track their progress!',
+              AppLocalizations.of(context).createWishlist,
               style: AppTextStyle.caption.copyWith(fontSize: 14),
               textAlign: TextAlign.center,
             ),
@@ -465,6 +466,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setState) {
+            final loc = AppLocalizations.of(context);
             return Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -476,13 +478,13 @@ class _WishlistScreenState extends State<WishlistScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Add Wishlist',
-                      style: AppTextStyle.h2.copyWith(color: Colors.black)),
+                  Text(loc.addWishlist,
+                      style: AppTextStyle.h2.copyWith(color: AppColors.text)),
                   const SizedBox(height: 24),
                   TextField(
                     controller: nameController,
                     decoration: InputDecoration(
-                      labelText: 'Target Name',
+                      labelText: loc.wishlistName,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -510,7 +512,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                         keyboardType: TextInputType.number,
                         inputFormatters: [CurrencyInputFormatter()],
                         decoration: InputDecoration(
-                          labelText: 'Target Amount',
+                          labelText: loc.targetAmount,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -542,8 +544,8 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     ),
                   ],
                   const SizedBox(height: 16),
-                  Text('Select Icon',
-                      style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                  Text(loc.selectIcon,
+                      style: AppTextStyle.h3.copyWith(color: AppColors.text)),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 200, // Increased height for grid
@@ -585,8 +587,8 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Text('Select Color',
-                      style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                  Text(loc.selectColor,
+                      style: AppTextStyle.h3.copyWith(color: AppColors.text)),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 50,
@@ -660,8 +662,10 @@ class _WishlistScreenState extends State<WishlistScreen> {
                               ],
                             ),
                             child: isSelected
-                                ? const Icon(Icons.check,
-                                    color: Colors.black54, size: 20)
+                                ? Icon(Icons.check,
+                                    color:
+                                        AppColors.text.withValues(alpha: 0.54),
+                                    size: 20)
                                 : null,
                           ),
                         );
@@ -725,7 +729,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text('Simpan'),
+                      child: Text(loc.save),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -756,6 +760,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setState) {
+            final loc = AppLocalizations.of(context);
             return Padding(
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -767,13 +772,13 @@ class _WishlistScreenState extends State<WishlistScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Edit Wishlist',
-                      style: AppTextStyle.h2.copyWith(color: Colors.black)),
+                  Text(loc.editWishlist,
+                      style: AppTextStyle.h2.copyWith(color: AppColors.text)),
                   const SizedBox(height: 24),
                   TextField(
                     controller: nameController,
                     decoration: InputDecoration(
-                      labelText: 'Target Name',
+                      labelText: loc.wishlistName,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -834,7 +839,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                   ],
                   const SizedBox(height: 16),
                   Text('Select Icon',
-                      style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                      style: AppTextStyle.h3.copyWith(color: AppColors.text)),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 200, // Increased height for grid
@@ -877,7 +882,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                   ),
                   const SizedBox(height: 24),
                   Text('Select Color',
-                      style: AppTextStyle.h3.copyWith(color: Colors.black)),
+                      style: AppTextStyle.h3.copyWith(color: AppColors.text)),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 50,
@@ -951,8 +956,10 @@ class _WishlistScreenState extends State<WishlistScreen> {
                               ],
                             ),
                             child: isSelected
-                                ? const Icon(Icons.check,
-                                    color: Colors.black54, size: 20)
+                                ? Icon(Icons.check,
+                                    color:
+                                        AppColors.text.withValues(alpha: 0.54),
+                                    size: 20)
                                 : null,
                           ),
                         );
