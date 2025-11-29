@@ -725,27 +725,21 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.surface,
+          color: isSelected
+              ? AppColors.primary.withOpacity(0.1)
+              : AppColors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
+            color: isSelected ? AppColors.text : AppColors.border,
+            width: isSelected ? 2 : 1,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.primary.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  )
-                ]
-              : null,
         ),
         child: Center(
           child: Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.white : AppColors.text,
-              fontWeight: FontWeight.w600,
+              color: AppColors.text,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
             ),
           ),
         ),
@@ -1267,13 +1261,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 16),
                               decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AppColors.primary.withOpacity(0.1)
-                                    : AppColors.surface,
+                                color: Color(account.color),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
                                   color: isSelected
-                                      ? AppColors.primary
+                                      ? AppColors.text
                                       : AppColors.border,
                                   width: isSelected ? 2 : 1,
                                 ),
@@ -1281,10 +1273,17 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(
-                                    AppIcons.getIcon(account.icon),
-                                    color: Color(account.color),
-                                    size: 20,
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Icon(
+                                      AppIcons.getIcon(account.icon),
+                                      color: Color(account.color),
+                                      size: 20,
+                                    ),
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
@@ -1293,9 +1292,11 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                       fontWeight: isSelected
                                           ? FontWeight.bold
                                           : FontWeight.normal,
-                                      color: isSelected
-                                          ? AppColors.text
-                                          : AppColors.text,
+                                      color: Color(account.color)
+                                                  .computeLuminance() >
+                                              0.5
+                                          ? Colors.black87
+                                          : Colors.white,
                                     ),
                                   ),
                                 ],
@@ -1325,7 +1326,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
                 // Wishlist Selection (Optional)
                 if (_selectedType == TransactionType.expense) ...[
-                  Text('${loc.wishlist} ${loc.optional}',
+                  Text('${loc.wishlist} (${loc.optional})',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
@@ -1390,9 +1391,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                 width: 70,
                                 margin: const EdgeInsets.only(right: 12),
                                 decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? AppColors.primary.withOpacity(0.1)
-                                      : AppColors.surface,
+                                  color: wishlist.color ?? AppColors.surface,
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
                                     color: isSelected
@@ -1408,6 +1407,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                       iconName: wishlist.emoji,
                                       size: 24,
                                       useYellowLines: true,
+                                      withBackground: true,
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
@@ -1418,6 +1418,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                             ? FontWeight.bold
                                             : FontWeight.normal,
                                         overflow: TextOverflow.ellipsis,
+                                        color: wishlist.color != null
+                                            ? (wishlist.color!
+                                                        .computeLuminance() >
+                                                    0.5
+                                                ? Colors.black87
+                                                : Colors.white)
+                                            : AppColors.text,
                                       ),
                                     ),
                                   ],
@@ -1434,7 +1441,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
                 // Spend Tracker / Budget Selection (Optional)
                 if (_selectedType == TransactionType.expense) ...[
-                  Text('${loc.spendTracker} ${loc.optional}',
+                  Text('${loc.spendTracker} (${loc.optional})',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
@@ -1496,9 +1503,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                 width: 70,
                                 margin: const EdgeInsets.only(right: 12),
                                 decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? AppColors.primary.withOpacity(0.1)
-                                      : AppColors.surface,
+                                  color: budget.color ?? AppColors.surface,
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
                                     color: isSelected
@@ -1514,6 +1519,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                       iconName: budget.emoji,
                                       size: 24,
                                       useYellowLines: true,
+                                      withBackground: true,
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
@@ -1524,6 +1530,13 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                             ? FontWeight.bold
                                             : FontWeight.normal,
                                         overflow: TextOverflow.ellipsis,
+                                        color: budget.color != null
+                                            ? (budget.color!
+                                                        .computeLuminance() >
+                                                    0.5
+                                                ? Colors.black87
+                                                : Colors.white)
+                                            : AppColors.text,
                                       ),
                                     ),
                                   ],
@@ -1540,7 +1553,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
                 // Bills Selection (Optional)
                 if (_selectedType == TransactionType.expense) ...[
-                  Text('${loc.bills} ${loc.optional}',
+                  Text('${loc.bills} (${loc.optional})',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
@@ -1601,9 +1614,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                 width: 70,
                                 margin: const EdgeInsets.only(right: 12),
                                 decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? AppColors.primary.withOpacity(0.1)
-                                      : AppColors.surface,
+                                  color: bill.color ?? AppColors.surface,
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
                                     color: isSelected
@@ -1619,6 +1630,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                       iconName: bill.emoji,
                                       size: 24,
                                       useYellowLines: true,
+                                      withBackground: true,
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
@@ -1629,6 +1641,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                             ? FontWeight.bold
                                             : FontWeight.normal,
                                         overflow: TextOverflow.ellipsis,
+                                        color: bill.color != null
+                                            ? (bill.color!.computeLuminance() >
+                                                    0.5
+                                                ? Colors.black87
+                                                : Colors.white)
+                                            : AppColors.text,
                                       ),
                                     ),
                                   ],
@@ -1680,6 +1698,8 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     runSpacing: 12,
                     children: categories.map((category) {
                       final isSelected = _selectedCategoryId == category.id;
+                      final isDarkMode =
+                          Theme.of(context).brightness == Brightness.dark;
                       return GestureDetector(
                         onTap: () => setState(() {
                           _selectedCategoryId = category.id;
@@ -1692,10 +1712,16 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                             color: category.color,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: isSelected
-                                  ? Colors.black
-                                  : Colors.transparent,
-                              width: isSelected ? 2 : 0,
+                              color: isDarkMode
+                                  ? (isSelected
+                                      ? Colors.white
+                                      : Colors.transparent)
+                                  : (isSelected
+                                      ? AppColors.text
+                                      : AppColors.border),
+                              width: isDarkMode
+                                  ? (isSelected ? 3 : 0)
+                                  : (isSelected ? 2 : 1),
                             ),
                             boxShadow: [
                               BoxShadow(
@@ -1721,7 +1747,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                   fontWeight: isSelected
                                       ? FontWeight.bold
                                       : FontWeight.normal,
-                                  color: Colors.black87,
+                                  color: category.color.computeLuminance() > 0.5
+                                      ? Colors.black87
+                                      : Colors.white,
                                 ),
                               ),
                             ],
@@ -1840,6 +1868,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
+                      side: BorderSide(color: Colors.white, width: 2),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
