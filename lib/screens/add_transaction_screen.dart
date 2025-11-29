@@ -1277,7 +1277,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
                                       color: Colors.white,
-                                      borderRadius: BorderRadius.circular(8),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Icon(
                                       AppIcons.getIcon(account.icon),
